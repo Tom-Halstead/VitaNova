@@ -1,0 +1,44 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: vitanova-backend
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Make mvnw executable
+        working-directory: vitanova-backend
+        run: chmod +x mvnw
+
+      - name: Build with Maven
+        working-directory: vitanova-backend
+        run: ./mvnw clean package -DskipTests
+
+      - name: Build and push Docker image
+        working-directory: vitanova-backend
+        env:
+          AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
+          AWS_REGION: us-east-2
+          IMAGE_NAME: vitanova-backend
+        run: |
+          REGISTRY="${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com"
+          echo "Building image $REGISTRY/$IMAGE_NAME:latest"
+          docker build -t $REGISTRY/$IMAGE_NAME:latest .
+          docker push $REGISTRY/$IMAGE_NAME:latest
+
+
+          # Now build & push
+          docker build -t ${REGISTRY}/${IMAGE_NAME}:latest .
+          docker push ${REGISTRY}/${IMAGE_NAME}:latest
+
+
+
