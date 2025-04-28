@@ -7,6 +7,8 @@ on:
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
+
+    # ← Add these two lines
     defaults:
       run:
         working-directory: vitanova-backend
@@ -16,15 +18,30 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Make mvnw executable
-        working-directory: vitanova-backend
         run: chmod +x mvnw
 
+      - name: Set up Java
+        uses: actions/setup-java@v3
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id:     ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region:            us-east-2
+
+      - name: Authenticate to Amazon ECR
+        uses: aws-actions/amazon-ecr-login@v2
+        with:
+          registries: ${{ secrets.AWS_ACCOUNT_ID }}
+
       - name: Build with Maven
-        working-directory: vitanova-backend
         run: ./mvnw clean package -DskipTests
 
       - name: Build and push Docker image
-        working-directory: vitanova-backend
         env:
           AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
           AWS_REGION: us-east-2
@@ -35,10 +52,6 @@ jobs:
           docker build -t $REGISTRY/$IMAGE_NAME:latest .
           docker push $REGISTRY/$IMAGE_NAME:latest
 
-
-          # Now build & push
-          docker build -t ${REGISTRY}/${IMAGE_NAME}:latest .
-          docker push ${REGISTRY}/${IMAGE_NAME}:latest
 
 
 
