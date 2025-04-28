@@ -20,7 +20,7 @@
 
 	<properties>
 		<!-- Downgrade to Java 11 so App Runner Corretto 11 works -->
-		<java.version>11</java.version>
+		<java.version>17</java.version>
 		<!-- Make sure Lombok resolves -->
 		<lombok.version>1.18.26</lombok.version>
 	</properties>
