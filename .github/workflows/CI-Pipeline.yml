@@ -1,0 +1,41 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    # ← Add this so all `run:` commands start in vitanova/vitanova-backend
+    defaults:
+      run:
+        working-directory: vitanova/vitanova-backend
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Java
+        uses: actions/setup-java@v3
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Build with Maven
+        run: ./mvnw clean package -DskipTests
+
+      - name: Authenticate to Amazon ECR
+        uses: aws-actions/amazon-ecr-login@v2
+        with:
+          region: us-east-2
+
+      - name: Build and push Docker image
+        env:
+          ECR_REGISTRY: ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.us-east-2.amazonaws.com
+          IMAGE_NAME: vitanova-backend
+        run: |
+          docker build -t $ECR_REGISTRY/$IMAGE_NAME:latest .
+          docker push $ECR_REGISTRY/$IMAGE_NAME:latest
+
