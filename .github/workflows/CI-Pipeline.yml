@@ -7,8 +7,6 @@ on:
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
-
-    # ← Add this so all `run:` commands start in vitanova/vitanova-backend
     defaults:
       run:
         working-directory: vitanova-backend
@@ -17,11 +15,9 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Set up Java
-        uses: actions/setup-java@v3
-        with:
-          distribution: temurin
-          java-version: '17'
+      # ← Add this step:
+      - name: Make mvnw executable
+        run: chmod +x mvnw
 
       - name: Build with Maven
         run: ./mvnw clean package -DskipTests
