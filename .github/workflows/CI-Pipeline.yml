@@ -11,7 +11,7 @@ jobs:
     # ← Add this so all `run:` commands start in vitanova/vitanova-backend
     defaults:
       run:
-        working-directory: vitanova/vitanova-backend
+        working-directory: vitanova-backend
 
     steps:
       - name: Checkout code
