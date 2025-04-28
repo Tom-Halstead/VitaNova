@@ -43,10 +43,18 @@ jobs:
 
       - name: Build and push Docker image
         env:
-          ECR_REGISTRY: ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.us-east-2.amazonaws.com
-          IMAGE_NAME:   vitanova-backend
+          AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
+          IMAGE_NAME: vitanova-backend
+          AWS_REGION: us-east-2
         run: |
-          docker build -t $ECR_REGISTRY/$IMAGE_NAME:latest .
-          docker push $ECR_REGISTRY/$IMAGE_NAME:latest
+          # Compose the full registry URI here
+          REGISTRY="${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com"
+          echo "Registry: $REGISTRY"
+          echo "Image : $IMAGE_NAME:latest"
+
+          # Now build & push
+          docker build -t ${REGISTRY}/${IMAGE_NAME}:latest .
+          docker push ${REGISTRY}/${IMAGE_NAME}:latest
+
 
 
