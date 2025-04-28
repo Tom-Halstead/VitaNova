@@ -15,23 +15,38 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # ← Add this step:
       - name: Make mvnw executable
         run: chmod +x mvnw
+
+      - name: Set up Java
+        uses: actions/setup-java@v3
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      # ← NEW: configure AWS creds so the login action can read AWS_REGION
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id:     ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region:            us-east-2
+
+      # ← UPDATED: no 'region:' input, instead supply your ECR registry URI
+      - name: Authenticate to Amazon ECR
+        uses: aws-actions/amazon-ecr-login@v2
+        with:
+          registries: ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.us-east-2.amazonaws.com
 
       - name: Build with Maven
         run: ./mvnw clean package -DskipTests
 
-      - name: Authenticate to Amazon ECR
-        uses: aws-actions/amazon-ecr-login@v2
-        with:
-          region: us-east-2
-
       - name: Build and push Docker image
         env:
           ECR_REGISTRY: ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.us-east-2.amazonaws.com
-          IMAGE_NAME: vitanova-backend
+          IMAGE_NAME:   vitanova-backend
         run: |
           docker build -t $ECR_REGISTRY/$IMAGE_NAME:latest .
           docker push $ECR_REGISTRY/$IMAGE_NAME:latest
+
 
