@@ -4,7 +4,7 @@ import React, { useEffect } from 'react';
 function LoginButton() {
   return (
     <button
-      onClick={() => window.location.href = '/oauth2/authorization/cognito'}
+      onClick={() => window.location.href = 'http://localhost:8080/oauth2/authorization/cognito'}
       style={{
         padding: '0.5rem 1rem',
         fontSize: '1rem',
