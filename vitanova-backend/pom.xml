@@ -19,10 +19,13 @@
 	<description>Backend for Vita Nova</description>
 
 	<properties>
-		<!-- Downgrade to Java 11 so App Runner Corretto 11 works -->
+
 		<java.version>17</java.version>
 		<!-- Make sure Lombok resolves -->
 		<lombok.version>1.18.26</lombok.version>
+		<!--	Pull down V. that supports J17	-->
+		<flyway.version>11.8.0</flyway.version>
+
 	</properties>
 
 	<dependencies>
@@ -57,6 +60,7 @@
 		<dependency>
 			<groupId>org.flywaydb</groupId>
 			<artifactId>flyway-core</artifactId>
+			<version>${flyway.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.postgresql</groupId>
