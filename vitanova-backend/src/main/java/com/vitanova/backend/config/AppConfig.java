@@ -23,23 +23,10 @@ public class AppConfig {
 
 
     @Bean
-    public CorsConfigurationSource corsConfigurationSource() {
-        var config = new CorsConfiguration();
-        config.setAllowedOrigins(List.of("http://localhost:3000"));
-        config.setAllowedMethods(List.of("*"));
-        config.setAllowedHeaders(List.of("*"));
-        config.setAllowCredentials(true);
-        var source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", config);
-        return source;
-    }
-
-
-    @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 // 1) CORS for React dev server
-//                .cors(Customizer.withDefaults())
+                .cors(Customizer.withDefaults())
                 // 2) Stateless, no CSRF (we’re using JWTs + OAuth2 redirects)
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(sm -> sm
@@ -48,12 +35,8 @@ public class AppConfig {
 
                 // 3) Public vs Protected
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/health", "/static/**").permitAll()
-                        .requestMatchers("/oauth2/**").permitAll()                   // /oauth2/authorization/cognito
-                        .requestMatchers("/login/oauth2/**").permitAll()             // /login/oauth2/code/cognito callback
-                        // your APIs
+                        .requestMatchers("/health", "/static/**", "/oauth2/**", "/login/oauth2/**").permitAll()
                         .requestMatchers("/api/**").authenticated()
-                        // everything else you want blocked
                         .anyRequest().denyAll()
                 )
 
@@ -68,16 +51,16 @@ public class AppConfig {
         return http.build();
     }
 
-//    @Bean
-//    public CorsConfigurationSource corsConfigurationSource() {
-//        CorsConfiguration config = new CorsConfiguration();
-//        config.setAllowCredentials(true);
-//        config.setAllowedOrigins(List.of("http://localhost:3000"));
-//        config.setAllowedMethods(List.of("GET","POST","PUT","PATCH","DELETE","OPTIONS"));
-//        config.setAllowedHeaders(List.of("*"));
-//
-//        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-//        source.registerCorsConfiguration("/api/**", config);
-//        return source;
-//    }
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration config = new CorsConfiguration();
+        config.setAllowCredentials(true);
+        config.setAllowedOrigins(List.of("http://localhost:3000"));
+        config.setAllowedMethods(List.of("GET","POST","PUT","PATCH","DELETE","OPTIONS"));
+        config.setAllowedHeaders(List.of("*"));
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/api/**", config);
+        return source;
+    }
     }

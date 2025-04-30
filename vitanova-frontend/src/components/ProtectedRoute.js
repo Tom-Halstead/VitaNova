@@ -5,8 +5,8 @@ export default function ProtectedRoute({ children }) {
   const [auth, setAuth] = useState("checking"); // 'checking' | 'ok' | 'fail';
 
   useEffect(() => {
-    fetch("/api/users/me", {
-      credentials: "include", // <— send the JSESSIONID cookie
+    fetch("http://localhost:8080/api/users/me", {
+      credentials: "include",
     })
       .then((res) => {
         if (res.ok) setAuth("ok");
