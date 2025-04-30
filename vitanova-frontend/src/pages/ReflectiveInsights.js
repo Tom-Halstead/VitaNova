@@ -23,67 +23,53 @@ export default function ReflectiveInsights() {
     setNewTarget(0);
     setNewDue("");
   };
-
   const handleUpdate = async (id) => {
-    const goal = goals.find((g) => g.goalId === id);
-    if (!goal) return;
-    const updated = await updateGoal(id, {
-      currentValue: goal.currentValue + 1,
-    });
-    setGoals((prev) => prev.map((g) => (g.goalId === id ? updated : g)));
+    const g = goals.find((g) => g.goalId === id);
+    const updated = await updateGoal(id, { currentValue: g.currentValue + 1 });
+    setGoals((prev) => prev.map((x) => (x.goalId === id ? updated : x)));
   };
 
   return (
     <div className="p-6 space-y-6">
-      <h2 className="text-2xl font-bold">Reflective Insights & Goals</h2>
+      <h2 className="text-2xl font-semibold">Reflective Insights & Goals</h2>
       <div className="flex space-x-2">
         <input
           type="text"
           placeholder="Goal type"
           value={newType}
           onChange={(e) => setNewType(e.target.value)}
-          className="border p-2"
+          className="border p-2 rounded flex-1 focus:border-indigo-600"
         />
         <input
           type="number"
           placeholder="Target"
           value={newTarget}
-          onChange={(e) => setNewTarget(Number(e.target.value))}
-          className="border p-2"
+          onChange={(e) => setNewTarget(+e.target.value)}
+          className="border p-2 rounded w-24 focus:border-indigo-600"
         />
         <input
           type="date"
           value={newDue}
           onChange={(e) => setNewDue(e.target.value)}
-          className="border p-2"
+          className="border p-2 rounded focus:border-indigo-600"
         />
-        <button
-          onClick={handleCreate}
-          className="bg-green-600 text-white px-4 py-2 rounded"
-        >
+        <button onClick={handleCreate} className="btn btn-primary">
           Add Goal
         </button>
       </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {goals.map((goal) => (
-          <Card
-            key={goal.goalId}
-            title={goal.type}
-            value={
-              <div>
-                <p>
-                  Progress: {goal.currentValue}/{goal.targetValue}
-                </p>
-                <button
-                  onClick={() => handleUpdate(goal.goalId)}
-                  className="mt-2 bg-blue-500 text-white px-2 py-1 rounded"
-                >
-                  Increment
-                </button>
-              </div>
-            }
-          />
+          <Card key={goal.goalId} title={goal.type} className="card">
+            <div className="text-lg font-medium">
+              {goal.currentValue}/{goal.targetValue}
+            </div>
+            <button
+              onClick={() => handleUpdate(goal.goalId)}
+              className="mt-2 px-3 py-1 bg-indigo-600 text-white rounded hover:bg-indigo-700"
+            >
+              +1
+            </button>
+          </Card>
         ))}
       </div>
     </div>

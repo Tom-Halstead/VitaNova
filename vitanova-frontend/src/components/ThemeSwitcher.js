@@ -1,26 +1,21 @@
 import React, { useState, useEffect } from "react";
 import { toggleTheme } from "../api/settingsApi";
-
 export default function ThemeSwitcher() {
   const [theme, setTheme] = useState("light");
-
   useEffect(() => {
-    const saved = document.documentElement.getAttribute("data-theme");
-    if (saved) setTheme(saved);
+    const t = document.documentElement.getAttribute("data-theme");
+    if (t) setTheme(t);
   }, []);
-
-  const handleToggle = async () => {
+  const flip = async () => {
     const next = theme === "light" ? "dark" : "light";
     await toggleTheme(next);
-    setTheme(next);
     document.documentElement.setAttribute("data-theme", next);
+    setTheme(next);
   };
-
   return (
     <button
-      onClick={handleToggle}
-      className="px-2 py-1 bg-gray-200 rounded"
-      aria-label="Toggle theme"
+      onClick={flip}
+      className="p-2 rounded bg-gray-200 hover:bg-gray-300"
     >
       {theme === "light" ? "🌙" : "☀️"}
     </button>

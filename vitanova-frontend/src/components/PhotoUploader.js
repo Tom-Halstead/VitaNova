@@ -1,5 +1,4 @@
 import React from "react";
-
 export default function PhotoUploader({ onFiles }) {
   return (
     <div className="mb-4">
@@ -9,6 +8,7 @@ export default function PhotoUploader({ onFiles }) {
         accept="image/*"
         multiple
         onChange={(e) => onFiles(e.target.files)}
+        className=""
       />
     </div>
   );

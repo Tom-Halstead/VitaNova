@@ -1,10 +1,10 @@
 import React from "react";
 
-export default function Card({ title, value }) {
+export default function Card({ title, className = "", children }) {
   return (
-    <div className="p-4 bg-white rounded shadow">
-      <h3 className="text-sm text-gray-500">{title}</h3>
-      <div className="mt-2">{value}</div>
+    <div className={`${className} p-6 bg-white rounded shadow`}>
+      <h3 className="text-sm text-gray-500 mb-2">{title}</h3>
+      {children}
     </div>
   );
 }

@@ -22,22 +22,40 @@ export default function NewEntry() {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="p-6 space-y-4">
+    <form
+      onSubmit={handleSubmit}
+      className="space-y-6 max-w-xl mx-auto p-4 bg-white rounded shadow"
+    >
       <textarea
         value={text}
         onChange={(e) => setText(e.target.value)}
-        placeholder="Journal text"
-        className="w-full border p-2"
+        placeholder="Write your journal entry..."
+        className="w-full h-32 border rounded p-3 focus:border-indigo-600"
       />
-      <input
-        type="date"
-        value={date}
-        onChange={(e) => setDate(e.target.value)}
-      />
-      <MoodInput label="Mood Pre" value={moodPre} onChange={setMoodPre} />
-      <MoodInput label="Mood Post" value={moodPost} onChange={setMoodPost} />
+      <div className="flex flex-col sm:flex-row sm:space-x-4">
+        <input
+          type="date"
+          value={date}
+          onChange={(e) => setDate(e.target.value)}
+          className="border rounded p-2 flex-1 focus:border-indigo-600"
+        />
+        <div className="flex-1">
+          <MoodInput
+            label="Mood Before"
+            value={moodPre}
+            onChange={setMoodPre}
+          />
+        </div>
+        <div className="flex-1">
+          <MoodInput
+            label="Mood After"
+            value={moodPost}
+            onChange={setMoodPost}
+          />
+        </div>
+      </div>
       <PhotoUploader onFiles={setPhotos} />
-      <button type="submit" className="bg-blue-600 text-white px-4 py-2">
+      <button type="submit" className="btn btn-primary w-full">
         Save Entry
       </button>
     </form>

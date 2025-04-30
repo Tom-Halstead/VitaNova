@@ -23,38 +23,48 @@ public class AppConfig {
 
 
     @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        var config = new CorsConfiguration();
+        config.setAllowedOrigins(List.of("http://localhost:3000"));
+        config.setAllowedMethods(List.of("*"));
+        config.setAllowedHeaders(List.of("*"));
+        config.setAllowCredentials(true);
+        var source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", config);
+        return source;
+    }
+
+
+    @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 // 1) CORS for React dev server
 //                .cors(Customizer.withDefaults())
                 // 2) Stateless, no CSRF (we’re using JWTs + OAuth2 redirects)
-                .csrf(csrf -> csrf.disable())
+                .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(sm -> sm
-                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                        .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
                 )
 
                 // 3) Public vs Protected
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/health", "/static/**").permitAll()
-                        .requestMatchers("/oauth2/**").permitAll()
-                        // Allow the SPA shell
-                        .requestMatchers("/dashboard", "/dashboard/**").permitAll()
-                        // Protect all API calls
+                        .requestMatchers("/oauth2/**").permitAll()                   // /oauth2/authorization/cognito
+                        .requestMatchers("/login/oauth2/**").permitAll()             // /login/oauth2/code/cognito callback
+                        // your APIs
                         .requestMatchers("/api/**").authenticated()
+                        // everything else you want blocked
                         .anyRequest().denyAll()
                 )
 
-                // 4) JWT‐based Resource Server for API
-                .oauth2ResourceServer(rs -> rs
-                        .jwt(Customizer.withDefaults())
-                )
-
-                // 5) OAuth2 login → Cognito, then back here
                 .oauth2Login(login -> login
-                        .loginPage("/oauth2/authorization/cognito")          // kickoff
-                        .defaultSuccessUrl("/dashboard", /* alwaysUse */ true) // after login, go to SPA
-                );
-
+                        .loginPage("/oauth2/authorization/cognito")
+                        // **AFTER** Cognito callback and token exchange, send user to React:
+                        .defaultSuccessUrl("http://localhost:3000/dashboard", true)
+                        // On error, send back to your React home page
+                        .failureUrl("http://localhost:3000/")
+                )
+                .oauth2ResourceServer(rs -> rs.jwt(Customizer.withDefaults()));
         return http.build();
     }
 

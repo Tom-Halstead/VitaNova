@@ -7,10 +7,12 @@ import "./App.css";
 export default function App() {
   return (
     <BrowserRouter>
-      {/* Navigation bar appears on all routes except Home */}
-      <NavBar />
-      {/* Routes will render Home, Dashboard, etc. */}
-      <AppRoutes />
+      <div className="min-h-screen bg-gray-100">
+        <NavBar />
+        <main className="pt-6 px-4">
+          <AppRoutes />
+        </main>
+      </div>
     </BrowserRouter>
   );
 }

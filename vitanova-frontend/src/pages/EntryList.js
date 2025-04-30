@@ -7,14 +7,18 @@ export default function EntryList() {
   useEffect(() => {
     listEntries(0, 10).then(setEntries);
   }, []);
+
   return (
-    <div className="p-6 space-y-4">
-      <h2 className="text-2xl">Your Entries</h2>
-      <ul>
+    <div className="p-4 space-y-4">
+      <h2 className="text-2xl font-semibold">Your Entries</h2>
+      <ul className="divide-y">
         {entries.map((e) => (
-          <li key={e.entryId}>
-            <Link to={`/entries/${e.entryId}`} className="hover:underline">
-              {e.entryDate}: {e.text.substring(0, 30)}...
+          <li key={e.entryId} className="py-2">
+            <Link
+              to={`/entries/${e.entryId}`}
+              className="text-indigo-600 hover:underline"
+            >
+              {e.entryDate}: {e.text.slice(0, 30)}...
             </Link>
           </li>
         ))}

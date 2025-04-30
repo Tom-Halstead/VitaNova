@@ -1,80 +1,87 @@
-import React, { useEffect, useState } from 'react';
-import { NavLink, Routes, Route } from 'react-router-dom';
+import React, { useEffect, useState } from "react";
+import { Routes, Route, NavLink } from "react-router-dom";
+import { fetchSummary, fetchMoodTrend } from "../api/dashboardApi";
+import InteractiveChart from "../components/InteractiveChart";
+import Card from "../components/Card";
 
-// Stubs for the three views
-function Timeline()  { return <div>Timeline View</div>; }
-function Trends()    { return <div>Trends View</div>; }
-function Insights()  { return <div>Insights View</div>; }
-
-// Simple stat card
-function Card({ title, value }) {
-  return (
-    <div className="p-4 bg-white rounded shadow">
-      <h3 className="text-sm text-gray-500">{title}</h3>
-      <p className="text-2xl font-bold">{value}</p>
-    </div>
-  );
+function Timeline() {
+  const [data, setData] = useState([]);
+  useEffect(() => {
+    fetchSummary().then(setData);
+  }, []);
+  return <InteractiveChart data={data} />;
 }
-
-// Interactive chart placeholder
-function InteractiveChart({ data }) {
-  return (
-    <div className="h-64 bg-gray-100 rounded flex items-center justify-center">
-      <span className="text-gray-400">[Interactive Chart]</span>
-    </div>
-  );
+function Trends() {
+  const [data, setData] = useState([]);
+  useEffect(() => {
+    fetchMoodTrend().then(setData);
+  }, []);
+  return <InteractiveChart data={data} />;
+}
+function Insights() {
+  return <div className="text-gray-600">Insights coming soon.</div>;
 }
 
 export default function Dashboard() {
   const [summary, setSummary] = useState({});
-  const [trendData, setTrendData] = useState([]);
-
-  // Fetch summary on mount
   useEffect(() => {
-    fetch('/api/dashboard/summary')
-      .then(res => res.json())
-      .then(setSummary)
-      .catch(console.error);
+    fetchSummary().then(setSummary);
   }, []);
 
-  // Fetch mood-trend when Trends tab mounts
-  function loadTrend(days = 30) {
-    fetch(`/api/dashboard/mood-trend?days=${days}`)
-      .then(res => res.json())
-      .then(setTrendData)
-      .catch(console.error);
-  }
-
   return (
-    <div className="p-6 space-y-6 font-sans">
-      {/* Nav */}
-      <nav className="flex space-x-4 border-b pb-2">
-        <NavLink end to=""       className="hover:underline">Timeline</NavLink>
-        <NavLink to="trends"     className="hover:underline">Trends</NavLink>
-        <NavLink to="insights"   className="hover:underline">Insights</NavLink>
+    <div className="space-y-8">
+      <nav className="flex space-x-6 border-b pb-3">
+        <NavLink
+          end
+          to=""
+          className={({ isActive }) =>
+            isActive
+              ? "text-indigo-600 font-semibold"
+              : "text-gray-600 hover:text-indigo-600"
+          }
+        >
+          Timeline
+        </NavLink>
+        <NavLink
+          to="trends"
+          className={({ isActive }) =>
+            isActive
+              ? "text-indigo-600 font-semibold"
+              : "text-gray-600 hover:text-indigo-600"
+          }
+        >
+          Trends
+        </NavLink>
+        <NavLink
+          to="insights"
+          className={({ isActive }) =>
+            isActive
+              ? "text-indigo-600 font-semibold"
+              : "text-gray-600 hover:text-indigo-600"
+          }
+        >
+          Insights
+        </NavLink>
       </nav>
 
-      {/* Main: either chart or nested view */}
-      <Routes>
-        <Route
-          path="/"
-          element={<InteractiveChart data={summary} />}
-        />
-        <Route
-          path="trends"
-          element={<Trends onLoad={() => loadTrend()} data={trendData} />}
-        />
-        <Route
-          path="insights"
-          element={<Insights />}
-        />
-      </Routes>
+      <div className="space-y-6">
+        <Routes>
+          <Route path="/" element={<Timeline />} />
+          <Route path="trends" element={<Trends />} />
+          <Route path="insights" element={<Insights />} />
+        </Routes>
+      </div>
 
-      {/* Summary cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <Card title="Total Entries"    value={summary.totalEntries    ?? '–'} />
-        <Card title="Avg Mood Pre"      value={summary.avgMoodPre       ?? '–'} />
-        <Card title="Current Streak"    value={summary.currentStreak    ?? '–'} />
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+        <Card title="Total Entries" className="card">
+          <div className="value">{summary.totalEntries ?? "—"}</div>
+        </Card>
+        <Card title="Avg Mood Pre" className="card">
+          <div className="value">{summary.avgMoodPre ?? "—"}</div>
+        </Card>
+        <Card title="Current Streak" className="card">
+          <div className="value">{summary.currentStreak ?? "—"}</div>
+        </Card>
       </div>
     </div>
   );
