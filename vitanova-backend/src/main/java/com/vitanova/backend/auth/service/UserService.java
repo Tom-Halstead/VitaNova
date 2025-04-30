@@ -12,10 +12,8 @@ import java.util.Optional;
 @Service
 public class UserService {
     private final UserRepository userRepo;
-    private final UserDTO userDTO;
-    public UserService(UserRepository userRepo, UserDTO userDTO) {
+    public UserService(UserRepository userRepo) {
         this.userRepo = userRepo;
-        this.userDTO = userDTO;
     }
 
     /**

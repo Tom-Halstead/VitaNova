@@ -27,26 +27,33 @@ public class AppConfig {
         http
                 // 1) CORS for React dev server
 //                .cors(Customizer.withDefaults())
-
-                // 2) Stateless; no CSRF tokens required
-                .csrf(AbstractHttpConfigurer::disable) // Intellisense for lambda FTW
-
-                // 3) Don’t create an HTTP session; use JWTs
-                .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-
-                // 4) URL rules
-                .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/", "/index.html", "/favicon.ico", "/static/**").permitAll()
-                        .requestMatchers("/oauth2/**", "/login/oauth2/**", "/health").permitAll()
-                        .requestMatchers("/api/**").authenticated()
-                        .anyRequest().authenticated()
+                // 2) Stateless, no CSRF (we’re using JWTs + OAuth2 redirects)
+                .csrf(csrf -> csrf.disable())
+                .sessionManagement(sm -> sm
+                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
 
-                // 5) Validate incoming JWTs on /api/**
-                .oauth2ResourceServer(rs -> rs.jwt(Customizer.withDefaults()))
+                // 3) Public vs Protected
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/health", "/static/**").permitAll()
+                        .requestMatchers("/oauth2/**").permitAll()
+                        // Allow the SPA shell
+                        .requestMatchers("/dashboard", "/dashboard/**").permitAll()
+                        // Protect all API calls
+                        .requestMatchers("/api/**").authenticated()
+                        .anyRequest().denyAll()
+                )
 
-                // 6) Enable the OAuth2 login flow for /oauth2/authorization/cognito
-                .oauth2Login(Customizer.withDefaults());
+                // 4) JWT‐based Resource Server for API
+                .oauth2ResourceServer(rs -> rs
+                        .jwt(Customizer.withDefaults())
+                )
+
+                // 5) OAuth2 login → Cognito, then back here
+                .oauth2Login(login -> login
+                        .loginPage("/oauth2/authorization/cognito")          // kickoff
+                        .defaultSuccessUrl("/dashboard", /* alwaysUse */ true) // after login, go to SPA
+                );
 
         return http.build();
     }

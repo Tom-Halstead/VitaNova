@@ -1,0 +1,76 @@
+API Endpoints
+
+
+
+Auth & Profile
+
+Method	Path	Description	Request Body	Response Body
+
+POST	/api/auth/signup	Register new user	JSON { email, password, name }	{ userId, email }
+
+POST	/api/auth/login	Login via Cognito	JSON { email, password }	{ jwtToken, expiresIn }
+
+GET	/api/users/me	Get my profile	—	{ userId, name, email }
+
+PUT	/api/users/me	Update my profile	JSON { name }	{ userId, name, email }
+
+
+
+
+Journal Entries (with Moods & Photos)
+
+Method	Path	Description	Request Body (multipart/form-data)	Response Body
+
+POST	/api/entries	Create a new journal entry	• text (string)
+• entryDate (YYYY-MM-DD)
+• moodPre (1–5)
+• moodPost (1–5)
+• photos[] (file[])	{ entryId, text, entryDate, moodPre, moodPost, photos:[{photoId, url}], createdAt }
+
+GET	/api/entries	List my entries (paged)	Query params: page, size	[{ entryId, text, entryDate, moodPre, moodPost, thumbnailUrl }]
+
+GET	/api/entries/{id}	Get one entry (with its moods & photos)	—	{ entryId, text, entryDate, moodPre, moodPost, photos:[{photoId, url}], createdAt, updatedAt }
+
+PATCH	/api/entries/{id}	Update text/moods & add/remove photos in one atomic call	• optional text
+• optional entryDate
+• optional moodPre
+• optional moodPost
+• optional newPhotos[] (file[])
+• optional removePhotoIds (JSON array of UUIDs)	{ entryId, text, entryDate, moodPre, moodPost, photos:[{photoId, url}], updatedAt }
+
+DELETE	/api/entries/{id}	Delete an entry	—	204 No Content
+
+
+
+Dashboard & Analytics
+
+Method	Path	Description	Request Body	Response Body
+
+GET	/api/dashboard/summary	Total entries, avg moods, current streak	—	{ totalEntries, avgMoodPre, avgMoodPost, currentStreak }
+
+GET	/api/dashboard/mood-trend	Mood trend over time	Query ?days=30	[{ date, avgMoodPre, avgMoodPost }]
+
+
+'
+Goals & Milestones
+
+Method	Path	Description	Request Body	Response Body
+
+POST	/api/goals	Create a goal	JSON { type, targetValue, dueDate }	{ goalId, type, targetValue, currentValue, dueDate, status }
+
+GET	/api/goals	List my goals	—	[{ goalId, type, targetValue, currentValue, dueDate, status }]
+
+PUT	/api/goals/{id}	Update goal progress or status	JSON { currentValue, status }	{ goalId, type, targetValue, currentValue, dueDate, status }
+
+
+
+
+Settings & Privacy
+
+Method	Path	Description	Request Body	Response Body
+
+GET	/api/settings/export	Export all my data	—	(ZIP or JSON)
+
+DELETE	/api/settings/account	Delete my account & data	—	204 No Content
+
+PUT	/api/settings/theme	Toggle UI theme	JSON { theme }	{ theme }
