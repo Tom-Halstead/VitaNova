@@ -1,82 +1,93 @@
+// src/components/NavBar.jsx
 import React from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import ThemeSwitcher from "./ThemeSwitcher";
 import { isAuthenticated } from "../utils/authUtils";
 
 export default function NavBar() {
-  const location = useLocation();
-  if (location.pathname === "/") return null;
+  const { pathname } = useLocation();
+  if (pathname === "/") return null;
+
+  const baseLink = {
+    textDecoration: "none",
+    fontSize: "1rem",
+    padding: "0.5rem",
+    transition: "color 0.2s ease, borderBottom 0.2s ease",
+  };
+  const activeLink = {
+    ...baseLink,
+    color: "#FFFFFF",
+    borderBottom: "2px solid rgba(255,255,255,0.8)",
+    fontWeight: 600,
+  };
+  const inactiveLink = {
+    ...baseLink,
+    color: "rgba(255,255,255,0.7)",
+  };
 
   return (
-    <nav className="bg-white shadow px-6 py-4 sticky top-0 z-10">
-      <div className="max-w-7xl mx-auto flex justify-between items-center">
-        <div className="flex space-x-6">
-          <NavLink
-            to="/dashboard"
-            className={({ isActive }) =>
-              isActive
-                ? "text-indigo-600 font-semibold border-b-2 border-indigo-600"
-                : "text-gray-600 hover:text-indigo-600"
-            }
-          >
+    <header
+      style={{
+        position: "sticky",
+        top: 0,
+        zIndex: 100,
+        background: "linear-gradient(90deg, #4F46E5 0%, #6366F1 100%)",
+        boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+      }}
+    >
+      <nav
+        style={{
+          maxWidth: "1200px",
+          margin: "0 auto",
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          padding: "0.75rem 1rem",
+        }}
+      >
+        <div style={{ display: "flex", gap: "1rem" }}>
+          <NavLink to="/dashboard" style={({ isActive }) => (isActive ? activeLink : inactiveLink)}>
             Dashboard
           </NavLink>
-          <NavLink
-            to="/new-entry"
-            className={({ isActive }) =>
-              isActive
-                ? "text-indigo-600 font-semibold"
-                : "text-gray-600 hover:text-indigo-600"
-            }
-          >
+          <NavLink to="/new-entry" style={({ isActive }) => (isActive ? activeLink : inactiveLink)}>
             New Entry
           </NavLink>
-          <NavLink
-            to="/entries"
-            className={({ isActive }) =>
-              isActive
-                ? "text-indigo-600 font-semibold"
-                : "text-gray-600 hover:text-indigo-600"
-            }
-          >
+          <NavLink to="/entries" style={({ isActive }) => (isActive ? activeLink : inactiveLink)}>
             Entries
           </NavLink>
-          <NavLink
-            to="/insights-goals"
-            className={({ isActive }) =>
-              isActive
-                ? "text-indigo-600 font-semibold"
-                : "text-gray-600 hover:text-indigo-600"
-            }
-          >
-            Reflective Insights & Goals
+          <NavLink to="/insights-goals" style={({ isActive }) => (isActive ? activeLink : inactiveLink)}>
+            Insights & Goals
           </NavLink>
-          <NavLink
-            to="/settings"
-            className={({ isActive }) =>
-              isActive
-                ? "text-indigo-600 font-semibold"
-                : "text-gray-600 hover:text-indigo-600"
-            }
-          >
+          <NavLink to="/settings" style={({ isActive }) => (isActive ? activeLink : inactiveLink)}>
             Settings
           </NavLink>
         </div>
-        <div className="flex items-center space-x-4">
+        <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
           <ThemeSwitcher />
           {isAuthenticated() && (
             <button
               onClick={() => {
                 localStorage.removeItem("token");
-                window.location = "/";
+                window.location.pathname = "/";
               }}
-              className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600"
+              style={{
+                padding: "0.5rem 1rem",
+                fontSize: "0.9rem",
+                backgroundColor: "#EF4444",
+                color: "#FFF",
+                border: "none",
+                borderRadius: "0.375rem",
+                cursor: "pointer",
+                transition: "background-color 0.2s ease",
+              }}
+              onMouseEnter={e => (e.currentTarget.style.backgroundColor = "#DC2626")}
+              onMouseLeave={e => (e.currentTarget.style.backgroundColor = "#EF4444")}
             >
               Logout
             </button>
           )}
         </div>
-      </div>
-    </nav>
+      </nav>
+    </header>
   );
 }

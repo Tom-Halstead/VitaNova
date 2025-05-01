@@ -1,5 +1,7 @@
+// src/routes/AppRoutes.js
 import React from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
+
 import Home from "../pages/Home";
 import Dashboard from "../pages/Dashboard";
 import NewEntry from "../pages/NewEntry";
@@ -13,6 +15,7 @@ export default function AppRoutes() {
   return (
     <Routes>
       <Route path="/" element={<Home />} />
+
       <Route
         path="/dashboard/*"
         element={
@@ -21,6 +24,7 @@ export default function AppRoutes() {
           </ProtectedRoute>
         }
       />
+
       <Route
         path="/new-entry"
         element={
@@ -29,6 +33,7 @@ export default function AppRoutes() {
           </ProtectedRoute>
         }
       />
+
       <Route
         path="/entries"
         element={
@@ -37,6 +42,7 @@ export default function AppRoutes() {
           </ProtectedRoute>
         }
       />
+
       <Route
         path="/entries/:id"
         element={
@@ -45,6 +51,7 @@ export default function AppRoutes() {
           </ProtectedRoute>
         }
       />
+
       <Route
         path="/insights-goals"
         element={
@@ -53,6 +60,7 @@ export default function AppRoutes() {
           </ProtectedRoute>
         }
       />
+
       <Route
         path="/settings"
         element={
@@ -61,6 +69,7 @@ export default function AppRoutes() {
           </ProtectedRoute>
         }
       />
+
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );

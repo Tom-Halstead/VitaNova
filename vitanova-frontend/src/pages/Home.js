@@ -7,18 +7,53 @@ export default function Home() {
   };
 
   return (
-    <div className="home-container">
-      <h1 className="text-4xl font-bold text-indigo-600 mb-4">
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        minHeight: '100vh',
+        padding: '2rem',
+        backgroundColor: '#F3F4F6',
+      }}
+    >
+      <h1
+        style={{
+          fontSize: '2.5rem',
+          fontWeight: 700,
+          color: '#4F46E5',
+          marginBottom: '1rem',
+        }}
+      >
         Welcome to Vita Nova
       </h1>
-      <p className="text-lg text-gray-700 mb-8">
+      <p
+        style={{
+          fontSize: '1.125rem',
+          color: '#374151',
+          marginBottom: '2rem',
+          textAlign: 'center',
+          maxWidth: '480px',
+        }}
+      >
         Track your mood, journal entries, and goals effortlessly.
       </p>
-
-      {/* Full navigation out of CRA */}
       <button
         onClick={handleLogin}
-        className="btn btn-primary"
+        style={{
+          padding: '0.75rem 1.5rem',
+          fontSize: '1rem',
+          backgroundColor: '#4F46E5',
+          color: '#FFFFFF',
+          border: 'none',
+          borderRadius: '0.375rem',
+          cursor: 'pointer',
+          boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+          transition: 'background-color 0.2s ease',
+        }}
+        onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#4338CA')}
+        onMouseLeave={e => (e.currentTarget.style.backgroundColor = '#4F46E5')}
       >
         Sign In / Sign Up
       </button>

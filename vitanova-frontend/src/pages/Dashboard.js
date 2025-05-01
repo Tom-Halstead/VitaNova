@@ -1,3 +1,4 @@
+// src/pages/Dashboard.js
 import React, { useEffect, useState } from "react";
 import { Routes, Route, NavLink } from "react-router-dom";
 import { fetchSummary, fetchMoodTrend } from "../api/dashboardApi";
@@ -19,7 +20,11 @@ function Trends() {
   return <InteractiveChart data={data} />;
 }
 function Insights() {
-  return <div className="text-gray-600">Insights coming soon.</div>;
+  return (
+    <div style={{ color: "#6B7280", fontSize: "1rem" }}>
+      Insights coming soon.
+    </div>
+  );
 }
 
 export default function Dashboard() {
@@ -28,43 +33,55 @@ export default function Dashboard() {
     fetchSummary().then(setSummary);
   }, []);
 
+  const activeLinkStyle = {
+    color: "#4F46E5",
+    fontWeight: 600,
+    textDecoration: "none",
+  };
+  const inactiveLinkStyle = {
+    color: "#374151",
+    textDecoration: "none",
+    cursor: "pointer",
+  };
+
   return (
-    <div className="space-y-8">
-      <nav className="flex space-x-6 border-b pb-3">
-        <NavLink
-          end
-          to=""
-          className={({ isActive }) =>
-            isActive
-              ? "text-indigo-600 font-semibold"
-              : "text-gray-600 hover:text-indigo-600"
-          }
-        >
+    <div
+      style={{
+        minHeight: "100vh",
+        padding: "2rem",
+        backgroundColor: "#F9FAFB",
+        fontFamily: "sans-serif",
+      }}
+    >
+      {/* Navigation */}
+      <nav
+        style={{
+          display: "flex",
+          gap: "1.5rem",
+          borderBottom: "1px solid #E5E7EB",
+          paddingBottom: "0.75rem",
+          marginBottom: "2rem",
+        }}
+      >
+        <NavLink end to="" style={({ isActive }) =>
+            isActive ? activeLinkStyle : inactiveLinkStyle
+        }>
           Timeline
         </NavLink>
-        <NavLink
-          to="trends"
-          className={({ isActive }) =>
-            isActive
-              ? "text-indigo-600 font-semibold"
-              : "text-gray-600 hover:text-indigo-600"
-          }
-        >
+        <NavLink to="trends" style={({ isActive }) =>
+            isActive ? activeLinkStyle : inactiveLinkStyle
+        }>
           Trends
         </NavLink>
-        <NavLink
-          to="insights"
-          className={({ isActive }) =>
-            isActive
-              ? "text-indigo-600 font-semibold"
-              : "text-gray-600 hover:text-indigo-600"
-          }
-        >
+        <NavLink to="insights" style={({ isActive }) =>
+            isActive ? activeLinkStyle : inactiveLinkStyle
+        }>
           Insights
         </NavLink>
       </nav>
 
-      <div className="space-y-6">
+      {/* Chart / Views */}
+      <div style={{ marginBottom: "2rem" }}>
         <Routes>
           <Route path="/" element={<Timeline />} />
           <Route path="trends" element={<Trends />} />
@@ -72,15 +89,28 @@ export default function Dashboard() {
         </Routes>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-        <Card title="Total Entries" className="card">
-          <div className="value">{summary.totalEntries ?? "—"}</div>
+      {/* Summary Cards */}
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
+          gap: "1rem",
+        }}
+      >
+        <Card title="Total Entries">
+          <div style={{ fontSize: "1.5rem", fontWeight: 700, color: "#111827" }}>
+            {summary.totalEntries ?? "—"}
+          </div>
         </Card>
-        <Card title="Avg Mood Pre" className="card">
-          <div className="value">{summary.avgMoodPre ?? "—"}</div>
+        <Card title="Avg Mood (Pre)">
+          <div style={{ fontSize: "1.5rem", fontWeight: 700, color: "#111827" }}>
+            {summary.avgMoodPre ?? "—"}
+          </div>
         </Card>
-        <Card title="Current Streak" className="card">
-          <div className="value">{summary.currentStreak ?? "—"}</div>
+        <Card title="Current Streak">
+          <div style={{ fontSize: "1.5rem", fontWeight: 700, color: "#111827" }}>
+            {summary.currentStreak ?? "—"}
+          </div>
         </Card>
       </div>
     </div>

@@ -1,22 +1,23 @@
-
+// src/index.js
 import process from "process";
 import React from "react";
 import ReactDOM from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
-import AppRoutes from "./routes/AppRoutes";
+
+import App from "./App";        // ← render App, not AppRoutes
 import "./index.css";
 
-// 2) Polyfill the `process` global at runtime:
+// 1) Polyfill the `process` global at runtime:
 window.process = process;
 
-// 3) Read PUBLIC_URL (CRA injects this at build time)
+// 2) Read PUBLIC_URL (CRA injects this at build time)
 const PUBLIC_URL = process.env.PUBLIC_URL || "";
 
-// 4) Bootstrap your app:
+// 3) Bootstrap your entire app under a single router:
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
     <BrowserRouter basename={PUBLIC_URL}>
-      <AppRoutes />
+      <App />
     </BrowserRouter>
   </React.StrictMode>
 );
