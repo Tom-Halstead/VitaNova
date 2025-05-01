@@ -22,7 +22,7 @@
     "start:react": "cross-env HOST=0.0.0.0 DANGEROUSLY_DISABLE_HOST_CHECK=true NODE_OPTIONS=--openssl-legacy-provider react-scripts start",
     "start:backend": "mvn spring-boot:run -f ../path-to-your-backend/pom.xml",
     "start": "concurrently \"npm run start:react\" \"npm run start:backend\"",
-    "build": "react-scripts build",
+    "build": "cross-env NODE_OPTIONS=--openssl-legacy-provider react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },

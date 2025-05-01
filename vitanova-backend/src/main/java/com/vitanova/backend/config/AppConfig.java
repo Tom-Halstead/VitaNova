@@ -10,57 +10,56 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.web.cors.CorsConfigurationSource;
-import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-import org.springframework.web.filter.CorsFilter;
+import org.springframework.security.web.authentication.logout.LogoutHandler;
+import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 
-import java.util.List;
 
 @Configuration
 @EnableWebSecurity
 public class AppConfig {
 
 
+    /**
+     * Inject your custom CognitoLogoutHandler bean.
+     * Assume it’s already annotated @Component (or define it here as a @Bean).
+     */
+    private final CognitoLogoutHandler cognitoLogoutHandler;
+
+    public AppConfig(CognitoLogoutHandler cognitoLogoutHandler) {
+        this.cognitoLogoutHandler = cognitoLogoutHandler;
+    }
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                // 1) CORS for React dev server
-                .cors(Customizer.withDefaults())
-                // 2) Stateless, no CSRF (we’re using JWTs + OAuth2 redirects)
                 .csrf(AbstractHttpConfigurer::disable)
-                .sessionManagement(sm -> sm
-                        .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
-                )
-
-                // 3) Public vs Protected
+                .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/health", "/static/**", "/oauth2/**", "/login/oauth2/**").permitAll()
+                        .requestMatchers("/health","/static/**","/oauth2/**","/login/oauth2/**","/logout").permitAll()
                         .requestMatchers("/api/**").authenticated()
-                        .anyRequest().denyAll()
+                        .anyRequest().permitAll()
                 )
-
                 .oauth2Login(login -> login
                         .loginPage("/oauth2/authorization/cognito")
-                        // **AFTER** Cognito callback and token exchange, send user to React:
                         .defaultSuccessUrl("http://localhost:3000/dashboard", true)
-                        // On error, send back to your React home page
-                        .failureUrl("http://localhost:3000/")
+                        .failureUrl("/")
+                )
+                .logout(logout -> logout
+                        .logoutUrl("/logout")
+
+                        // 1) Clear the local Authentication & session:
+                        .addLogoutHandler(new SecurityContextLogoutHandler())
+
+                        // 2) Then redirect into Cognito’s logout endpoint:
+                        .logoutSuccessHandler(cognitoLogoutHandler)
+
+                        // (Optional) ensure session cookie is removed locally:
+                        .invalidateHttpSession(true)
+                        .deleteCookies("JSESSIONID")
                 )
                 .oauth2ResourceServer(rs -> rs.jwt(Customizer.withDefaults()));
+
         return http.build();
     }
 
-    @Bean
-    public CorsConfigurationSource corsConfigurationSource() {
-        CorsConfiguration config = new CorsConfiguration();
-        config.setAllowCredentials(true);
-        config.setAllowedOrigins(List.of("http://localhost:3000"));
-        config.setAllowedMethods(List.of("GET","POST","PUT","PATCH","DELETE","OPTIONS"));
-        config.setAllowedHeaders(List.of("*"));
-
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/api/**", config);
-        return source;
-    }
     }

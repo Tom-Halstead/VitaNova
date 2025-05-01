@@ -9,7 +9,7 @@ export default function Home() {
         Track your mood, journal entries, and goals effortlessly.
       </p>
       <a
-        href="http://localhost:8080/oauth2/authorization/cognito"
+        href="/oauth2/authorization/cognito"
         className="btn btn-primary"
         rel="noopener noreferrer"
       >
