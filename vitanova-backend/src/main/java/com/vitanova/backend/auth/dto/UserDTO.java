@@ -1,10 +1,15 @@
 package com.vitanova.backend.auth.dto;
 
 import com.vitanova.backend.auth.model.User;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.time.Instant;
 
+@Setter
+@Getter
 public class UserDTO {
+    // Getters and setters
     private Long userId;
     private String email;
     private String name;
@@ -25,44 +30,5 @@ public class UserDTO {
         dto.setCreatedAt(user.getCreatedAt());
         return dto;
     }
-    // Getters and setters
-    public Long getUserId() {
-        return userId;
-    }
 
-    public void setUserId(Long userId) {
-        this.userId = userId;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getCognitoUuid() {
-        return cognitoUuid;
-    }
-
-    public void setCognitoUuid(String cognitoUuid) {
-        this.cognitoUuid = cognitoUuid;
-    }
-
-    public Instant getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(Instant createdAt) {
-        this.createdAt = createdAt;
-    }
 }

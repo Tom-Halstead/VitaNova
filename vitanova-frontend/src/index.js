@@ -1,22 +1,22 @@
-/* src/index.js */
+
+import process from "process";
 import React from "react";
 import ReactDOM from "react-dom/client";
-import App from "./App";
+import { BrowserRouter } from "react-router-dom";
+import AppRoutes from "./routes/AppRoutes";
 import "./index.css";
-import reportWebVitals from "./reportWebVitals";
 
-const root = ReactDOM.createRoot(document.getElementById("root"));
-root.render(
+// 2) Polyfill the `process` global at runtime:
+window.process = process;
+
+// 3) Read PUBLIC_URL (CRA injects this at build time)
+const PUBLIC_URL = process.env.PUBLIC_URL || "";
+
+// 4) Bootstrap your app:
+ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
-    <App />
+    <BrowserRouter basename={PUBLIC_URL}>
+      <AppRoutes />
+    </BrowserRouter>
   </React.StrictMode>
 );
-
-// You can log performance metrics or send to analytics
-reportWebVitals();
-
-// With these in place, running `npm start` will:
-// - Serve `index.html` from public/
-// - Initialize React at src/index.js
-// - Mount <App />: sets up router, NavBar, and page components
-// - Hitting `/` shows Home.js; after Cognito login, redirection to `/dashboard/...` renders Dashboard.js and subviews
