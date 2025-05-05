@@ -1,59 +1,16 @@
-// src/pages/Dashboard.js
-import React, { useEffect, useState } from "react";
-import { Routes, Route, NavLink } from "react-router-dom";
-import { fetchSummary, fetchMoodTrend } from "../api/dashboardApi";
-import InteractiveChart from "../components/InteractiveChart";
-import Card from "../components/Card";
+import React from "react";
+import { NavLink, Outlet } from "react-router-dom";
 
-function Timeline() {
-  const [data, setData] = useState([]);
-  useEffect(() => {
-    fetchSummary().then(setData);
-  }, []);
-  return <InteractiveChart data={data} />;
-}
-function Trends() {
-  const [data, setData] = useState([]);
-  useEffect(() => {
-    fetchMoodTrend().then(setData);
-  }, []);
-  return <InteractiveChart data={data} />;
-}
-function Insights() {
-  return (
-    <div style={{ color: "#6B7280", fontSize: "1rem" }}>
-      Insights coming soon.
-    </div>
-  );
-}
+const activeStyle = {
+  color: "#4F46E5",
+  fontWeight: 600,
+  textDecoration: "none",
+};
+const inactiveStyle = { color: "#374151", textDecoration: "none" };
 
 export default function Dashboard() {
-  const [summary, setSummary] = useState({});
-  useEffect(() => {
-    fetchSummary().then(setSummary);
-  }, []);
-
-  const activeLinkStyle = {
-    color: "#4F46E5",
-    fontWeight: 600,
-    textDecoration: "none",
-  };
-  const inactiveLinkStyle = {
-    color: "#374151",
-    textDecoration: "none",
-    cursor: "pointer",
-  };
-
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        padding: "2rem",
-        backgroundColor: "#F9FAFB",
-        fontFamily: "sans-serif",
-      }}
-    >
-      {/* Navigation */}
+    <div style={{ minHeight: "100vh", background: "#F9FAFB", padding: "2rem" }}>
       <nav
         style={{
           display: "flex",
@@ -63,56 +20,27 @@ export default function Dashboard() {
           marginBottom: "2rem",
         }}
       >
-        <NavLink end to="" style={({ isActive }) =>
-            isActive ? activeLinkStyle : inactiveLinkStyle
-        }>
+        <NavLink
+          end
+          to=""
+          style={({ isActive }) => (isActive ? activeStyle : inactiveStyle)}
+        >
           Timeline
         </NavLink>
-        <NavLink to="trends" style={({ isActive }) =>
-            isActive ? activeLinkStyle : inactiveLinkStyle
-        }>
+        <NavLink
+          to="trends"
+          style={({ isActive }) => (isActive ? activeStyle : inactiveStyle)}
+        >
           Trends
         </NavLink>
-        <NavLink to="insights" style={({ isActive }) =>
-            isActive ? activeLinkStyle : inactiveLinkStyle
-        }>
+        <NavLink
+          to="insights"
+          style={({ isActive }) => (isActive ? activeStyle : inactiveStyle)}
+        >
           Insights
         </NavLink>
       </nav>
-
-      {/* Chart / Views */}
-      <div style={{ marginBottom: "2rem" }}>
-        <Routes>
-          <Route path="/" element={<Timeline />} />
-          <Route path="trends" element={<Trends />} />
-          <Route path="insights" element={<Insights />} />
-        </Routes>
-      </div>
-
-      {/* Summary Cards */}
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
-          gap: "1rem",
-        }}
-      >
-        <Card title="Total Entries">
-          <div style={{ fontSize: "1.5rem", fontWeight: 700, color: "#111827" }}>
-            {summary.totalEntries ?? "—"}
-          </div>
-        </Card>
-        <Card title="Avg Mood (Pre)">
-          <div style={{ fontSize: "1.5rem", fontWeight: 700, color: "#111827" }}>
-            {summary.avgMoodPre ?? "—"}
-          </div>
-        </Card>
-        <Card title="Current Streak">
-          <div style={{ fontSize: "1.5rem", fontWeight: 700, color: "#111827" }}>
-            {summary.currentStreak ?? "—"}
-          </div>
-        </Card>
-      </div>
+      <Outlet />
     </div>
   );
 }

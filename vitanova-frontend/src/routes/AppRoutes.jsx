@@ -1,29 +1,38 @@
-// src/routes/AppRoutes.jsx
 import React from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import Home from "../pages/Home";
 import Dashboard from "../pages/Dashboard";
+import Timeline from "../pages/DashboardItems/Timeline";
+import Trends from "../pages/DashboardItems/Trends";
+import Insights from "../pages/DashboardItems/Insights";
 import NewEntry from "../pages/NewEntry";
 import EntryList from "../pages/EntryList";
 import EntryDetail from "../pages/EntryDetail";
 import ReflectiveInsights from "../pages/ReflectiveInsights";
 import Settings from "../pages/Settings";
-import ProtectedRoute from "../routes/ProtectedRoute";
+import ProtectedRoute from "./ProtectedRoute";
 
 export default function AppRoutes() {
   return (
     <Routes>
+      {/* Public home */}
       <Route path="/" element={<Home />} />
 
+      {/* Dashboard layout with nested child views */}
       <Route
-        path="/dashboard/*"
+        path="/dashboard"
         element={
           <ProtectedRoute>
             <Dashboard />
           </ProtectedRoute>
         }
-      />
+      >
+        <Route index element={<Timeline />} />
+        <Route path="trends" element={<Trends />} />
+        <Route path="insights" element={<Insights />} />
+      </Route>
 
+      {/* Other protected routes */}
       <Route
         path="/new-entry"
         element={
@@ -32,7 +41,6 @@ export default function AppRoutes() {
           </ProtectedRoute>
         }
       />
-
       <Route
         path="/entries"
         element={
@@ -41,7 +49,6 @@ export default function AppRoutes() {
           </ProtectedRoute>
         }
       />
-
       <Route
         path="/entries/:id"
         element={
@@ -50,7 +57,6 @@ export default function AppRoutes() {
           </ProtectedRoute>
         }
       />
-
       <Route
         path="/insights-goals"
         element={
@@ -59,7 +65,6 @@ export default function AppRoutes() {
           </ProtectedRoute>
         }
       />
-
       <Route
         path="/settings"
         element={
@@ -69,6 +74,7 @@ export default function AppRoutes() {
         }
       />
 
+      {/* Catch-all */}
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );

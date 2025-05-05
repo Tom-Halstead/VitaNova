@@ -1,17 +1,21 @@
-// src/components/ProtectedRoute.jsx
-import React, { useEffect, useState } from 'react';
-import { Navigate } from 'react-router-dom';
+import React, { useEffect, useState } from "react";
+import { Navigate } from "react-router-dom";
+
+const API_BASE = process.env.REACT_APP_API_BASE || "http://localhost:8080";
 
 export default function ProtectedRoute({ children }) {
-  const [auth, setAuth] = useState('checking'); // checking | ok | fail
+  const [status, setStatus] = useState("checking");
 
   useEffect(() => {
-    fetch('/api/users/me', { credentials: 'include' })
-      .then(r => setAuth(r.ok ? 'ok' : 'fail'))
-      .catch(() => setAuth('fail'));
+    fetch(`${API_BASE}/api/users/me`, { credentials: "include" })
+      .then((r) => setStatus(r.ok ? "ok" : "fail"))
+      .catch(() => setStatus("fail"));
   }, []);
 
-  if (auth === 'checking') return <div>Loading…</div>;
-  if (auth === 'fail')     return <Navigate to="/" replace />;
+  if (status === "checking")
+    return (
+      <div style={{ textAlign: "center", marginTop: "2rem" }}>Loading…</div>
+    );
+  if (status === "fail") return <Navigate to="/" replace />;
   return children;
 }

@@ -2,6 +2,7 @@
   "name": "vitanova",
   "version": "1.0.0",
   "description": "Mental and Physical well being planner",
+  "proxy": "http://localhost:8080",
   "main": "index.js",
   "dependencies": {
     "ansi-regex": "^5.0.1",

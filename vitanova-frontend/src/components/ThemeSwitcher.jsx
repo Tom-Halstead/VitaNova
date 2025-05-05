@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { toggleTheme } from "../api/settingsApi";
+
 export default function ThemeSwitcher() {
   const [theme, setTheme] = useState("light");
   useEffect(() => {
