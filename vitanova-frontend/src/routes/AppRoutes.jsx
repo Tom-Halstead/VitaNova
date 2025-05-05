@@ -1,7 +1,6 @@
-// src/routes/AppRoutes.js
+// src/routes/AppRoutes.jsx
 import React from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
-
 import Home from "../pages/Home";
 import Dashboard from "../pages/Dashboard";
 import NewEntry from "../pages/NewEntry";
@@ -9,7 +8,7 @@ import EntryList from "../pages/EntryList";
 import EntryDetail from "../pages/EntryDetail";
 import ReflectiveInsights from "../pages/ReflectiveInsights";
 import Settings from "../pages/Settings";
-import ProtectedRoute from "../components/ProtectedRoute";
+import ProtectedRoute from "../routes/ProtectedRoute";
 
 export default function AppRoutes() {
   return (

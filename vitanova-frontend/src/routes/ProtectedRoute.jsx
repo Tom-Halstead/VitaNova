@@ -6,7 +6,7 @@ export default function ProtectedRoute({ children }) {
   const [auth, setAuth] = useState('checking'); // checking | ok | fail
 
   useEffect(() => {
-    fetch('/api/users/me', { credentials: 'include' })   // ← relative!
+    fetch('/api/users/me', { credentials: 'include' })
       .then(r => setAuth(r.ok ? 'ok' : 'fail'))
       .catch(() => setAuth('fail'));
   }, []);
