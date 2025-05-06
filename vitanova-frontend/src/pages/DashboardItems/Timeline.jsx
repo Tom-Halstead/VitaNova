@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import InteractiveChart from "../../components/InteractiveChart";
-import { fetchSummary } from "../../api/dashboardApi";
+import { fetchSummary } from "../../api/DashboardApi";
 
 export default function Timeline() {
   const [data, setData] = useState([]);

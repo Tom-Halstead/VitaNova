@@ -1,5 +1,5 @@
 import React from "react";
-import { exportData, deleteAccount } from "../api/settingsApi";
+import { exportData, deleteAccount } from "../api/SettingsApi";
 
 export default function Settings() {
   return (

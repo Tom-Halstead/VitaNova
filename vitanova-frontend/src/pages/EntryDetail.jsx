@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { getEntry } from "../api/entriesApi";
+import { getEntry } from "../api/EntriesApi";
 import MoodInput from "../components/MoodInput";
 
 export default function EntryDetail() {

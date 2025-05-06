@@ -11,7 +11,7 @@ export default function ProtectedRoute({ children }) {
       .then((r) => setStatus(r.ok ? "ok" : "fail"))
       .catch(() => setStatus("fail"));
   }, []);
-
+  console.log(status);
   if (status === "checking")
     return (
       <div style={{ textAlign: "center", marginTop: "2rem" }}>Loading…</div>

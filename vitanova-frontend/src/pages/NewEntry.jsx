@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import MoodInput from "../components/MoodInput";
 import PhotoUploader from "../components/PhotoUploader";
-import { createEntry } from "../api/entriesApi";
+import { createEntry } from "../api/EntriesApi";
 
 export default function NewEntry() {
   const [text, setText] = useState("");

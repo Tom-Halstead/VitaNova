@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { listGoals, createGoal, updateGoal } from "../api/goalsApi";
+import { listGoals, createGoal, updateGoal } from "../api/GoalsApi";
 import Card from "../components/Card";
 
 export default function ReflectiveInsights() {

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { listEntries } from "../api/entriesApi";
+import { listEntries } from "../api/EntriesApi";
 import { Link } from "react-router-dom";
 
 export default function EntryList() {
