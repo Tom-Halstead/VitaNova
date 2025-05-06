@@ -1,15 +1,24 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import MoodInput from "../../components/MoodInput";
 import PhotoUploader from "../../components/PhotoUploader";
 import { createEntry } from "../../api/EntriesApi";
 
 export default function NewEntry() {
-  // Initialize state hooks before any conditional returns
+  // form state
   const [text, setText] = useState("");
   const [date, setDate] = useState("");
   const [moodPre, setMoodPre] = useState(3);
   const [moodPost, setMoodPost] = useState(3);
   const [photos, setPhotos] = useState([]);
+  const [previews, setPreviews] = useState([]);
+
+  // generate previews when photos change
+  useEffect(() => {
+    const urls = photos.map((file) => URL.createObjectURL(file));
+    setPreviews(urls);
+    // cleanup
+    return () => urls.forEach((url) => URL.revokeObjectURL(url));
+  }, [photos]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -20,7 +29,7 @@ export default function NewEntry() {
     form.append("moodPost", moodPost);
     photos.forEach((file) => form.append("photos[]", file));
     await createEntry(form);
-    // Optionally reset form or navigate
+    // reset form
     setText("");
     setDate("");
     setMoodPre(3);
@@ -121,6 +130,31 @@ export default function NewEntry() {
           <div style={{ marginTop: "1.5rem" }}>
             <PhotoUploader onFiles={setPhotos} />
           </div>
+
+          {/* Preview uploaded photos */}
+          {previews.length > 0 && (
+            <div
+              style={{
+                display: "flex",
+                gap: "1rem",
+                flexWrap: "wrap",
+                marginTop: "1rem",
+              }}
+            >
+              {previews.map((url) => (
+                <img
+                  key={url}
+                  src={url}
+                  alt="Preview"
+                  style={{
+                    maxHeight: "100px",
+                    borderRadius: "0.375rem",
+                    boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+                  }}
+                />
+              ))}
+            </div>
+          )}
 
           <button
             type="submit"

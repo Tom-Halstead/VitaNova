@@ -7,6 +7,6 @@ export default function Timeline() {
   // useEffect(() => {
   //   fetchSummary().then(setData);
   // }, []);
-  // return<InteractiveChart data={data} />;
+  // return <InteractiveChart data={data} />;
   return <div style={{ color: "#6B7280" }}>Timeline coming soon.</div>;
 }
