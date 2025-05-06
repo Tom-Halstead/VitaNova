@@ -7,13 +7,13 @@ export default function NavBar() {
   const { pathname } = useLocation();
   if (pathname === "/") return null;
 
-  const base = {
+  const baseLink = {
     textDecoration: "none",
     padding: "0.5rem",
     transition: "color 0.2s",
+    color: "rgba(255, 255, 255, 0.9)",
   };
-  const active = { ...base, color: "#FFF", fontWeight: 600 };
-  const inactive = { ...base, color: "rgba(255,255,255,0.7)" };
+  const activeLink = { ...baseLink, color: "#FFFFFF", fontWeight: 600 };
 
   return (
     <header
@@ -21,21 +21,29 @@ export default function NavBar() {
         position: "sticky",
         top: 0,
         zIndex: 100,
-        background: "linear-gradient(90deg,#4F46E5,#6366F1)",
-        boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+        background:
+          "linear-gradient(to bottom, #7AB6F7 0%, #709FDE 50%, #7AB6F7 100%)",
+        boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)",
+        width: "100%",
       }}
     >
       <nav
         style={{
-          maxWidth: "1200px",
-          margin: "0 auto",
-          display: "flex",
-          justifyContent: "space-between",
+          display: "grid",
+          gridTemplateColumns: "repeat(12, 1fr)",
           alignItems: "center",
           padding: "0.75rem 1rem",
+          width: "100%",
         }}
       >
-        <div style={{ display: "flex", gap: "1rem" }}>
+        {/* Nav links: columns 3-7 */}
+        <div
+          style={{
+            gridColumn: "4 / 9",
+            display: "flex",
+            gap: "1rem",
+          }}
+        >
           {[
             ["dashboard", "Dashboard"],
             ["new-entry", "New Entry"],
@@ -46,32 +54,56 @@ export default function NavBar() {
             <NavLink
               key={to}
               to={`/${to}`}
-              style={({ isActive }) => (isActive ? active : inactive)}
+              style={({ isActive }) => (isActive ? activeLink : baseLink)}
             >
               {label}
             </NavLink>
           ))}
         </div>
-        <div style={{ display: "flex", alignItems: "center", gap: "3rem" }}>
-          <ThemeSwitcher />
-          {/* show logout if authenticated */}
-          {/* You may check via isAuthenticated() */}
-          <button
-            onClick={() => (window.location.href = "/logout")}
-            style={{
-              padding: "0.5rem 1rem",
-              background: "#EF4444",
-              color: "#FFF",
-              border: "none",
-              borderRadius: "0.375rem",
-              cursor: "pointer",
-              transition: "background 0.2s",
-            }}
-            onMouseEnter={(e) => (e.currentTarget.style.background = "#DC2626")}
-            onMouseLeave={(e) => (e.currentTarget.style.background = "#EF4444")}
+
+        {/* Actions: columns 9-11 */}
+        <div
+          style={{
+            gridColumn: "9 / 12",
+            justifySelf: "end",
+            display: "flex",
+            alignItems: "center",
+            gap: "2rem",
+          }}
+        >
+          <div
+            style={{ ...baseLink, cursor: "pointer" }}
+            onMouseEnter={(e) => (e.currentTarget.style.color = "#FFFFFF")}
+            onMouseLeave={(e) =>
+              (e.currentTarget.style.color = "rgba(255, 255, 255, 0.9)")
+            }
           >
-            Logout
-          </button>
+            <ThemeSwitcher />
+          </div>
+          {isAuthenticated() && (
+            <button
+              onClick={() => (window.location.href = "/logout")}
+              style={{
+                padding: "0.5rem 1rem",
+                background: "#FCA5A5",
+                color: "#FFF",
+                border: "none",
+                borderRadius: "0.375rem",
+                cursor: "pointer",
+                transition: "background 0.2s, transform 0.2s",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = "#F87171";
+                e.currentTarget.style.transform = "translateY(-1px)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = "#FCA5A5";
+                e.currentTarget.style.transform = "translateY(0)";
+              }}
+            >
+              Logout
+            </button>
+          )}
         </div>
       </nav>
     </header>

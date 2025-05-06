@@ -1,22 +1,28 @@
-import React, { useState, useEffect } from "react";
-import { toggleTheme } from "../api/SettingsApi";
+// src/components/ThemeSwitcher.jsx
+import React from "react";
+import UseDarkMode from "../components/UseDarkMode";
 
 export default function ThemeSwitcher() {
-  const [theme, setTheme] = useState("light");
-  useEffect(() => {
-    const t = document.documentElement.getAttribute("data-theme");
-    if (t) setTheme(t);
-  }, []);
-  const flip = async () => {
-    const next = theme === "light" ? "dark" : "light";
-    await toggleTheme(next);
-    document.documentElement.setAttribute("data-theme", next);
-    setTheme(next);
-  };
+  const [theme, toggle] = UseDarkMode("light");
+
   return (
     <button
-      onClick={flip}
-      className="p-2 rounded bg-gray-200 hover:bg-gray-300"
+      onClick={toggle}
+      style={{
+        padding: "0.5rem",
+        borderRadius: "0.375rem",
+        background: "rgba(255,255,255,0.1)",
+        color: "#FFF",
+        border: "none",
+        cursor: "pointer",
+        transition: "background 0.2s",
+      }}
+      onMouseEnter={(e) =>
+        (e.currentTarget.style.background = "rgba(255,255,255,0.2)")
+      }
+      onMouseLeave={(e) =>
+        (e.currentTarget.style.background = "rgba(255,255,255,0.1)")
+      }
     >
       {theme === "light" ? "🌙" : "☀️"}
     </button>
