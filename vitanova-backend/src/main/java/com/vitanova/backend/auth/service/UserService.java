@@ -4,7 +4,10 @@ package com.vitanova.backend.auth.service;
 import com.vitanova.backend.auth.dto.UserDTO;
 import com.vitanova.backend.auth.model.User;
 import com.vitanova.backend.auth.repository.UserRepository;
+import com.vitanova.backend.exceptions.UserNotFoundException;
+import com.vitanova.backend.exceptions.UserServiceException;
 import jakarta.transaction.Transactional;
+import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
 
 import java.util.Objects;
@@ -27,32 +30,56 @@ public class UserService {
             String email,
             String name
     ) {
-        User user = userRepo.findByCognitoUuid(cognitoUuid)
-                .map(existing -> {
-                    // Optional: keep profile up-to-date
-                    if (!Objects.equals(existing.getEmail(), email) ||
-                            !Objects.equals(existing.getName(),  name)) {
-                        existing.setEmail(email);
-                        existing.setName(name);
-                        return userRepo.save(existing);
-                    }
-                    return existing;
-                })
-                .orElseGet(() -> {
-                    // New user: set all the things!
-                    User newUser = new User();
-                    newUser.setCognitoUuid(cognitoUuid);
-                    newUser.setEmail(email);
-                    newUser.setName(name);
-                    return userRepo.save(newUser);
-                });
+        if (cognitoUuid == null || cognitoUuid.trim().isEmpty()) {
+            throw new IllegalArgumentException("cognitoUuid must not be null or empty");
+        }
 
-        return UserDTO.userToDto(user);
+        try {
+            User user = userRepo.findByCognitoUuid(cognitoUuid)
+                    .map(existing -> {
+                        if (!Objects.equals(existing.getEmail(), email)
+                                || !Objects.equals(existing.getName(), name)) {
+                            existing.setEmail(email);
+                            existing.setName(name);
+                            return userRepo.save(existing);
+                        }
+                        return existing;
+                    })
+                    .orElseGet(() -> {
+                        User newUser = new User();
+                        newUser.setCognitoUuid(cognitoUuid);
+                        newUser.setEmail(email);
+                        newUser.setName(name);
+                        return userRepo.save(newUser);
+                    });
+
+            return UserDTO.userToDto(user);
+
+        } catch (DataAccessException dae) {
+            throw new UserServiceException(
+                    "Unable to find or create user with Cognito UUID " + cognitoUuid, dae
+            );
+        }
     }
 
     @Transactional
     public void deleteByCognitoUuid(String cognitoUuid) {
-        userRepo.deleteByCognitoUuid(cognitoUuid);
+        if (cognitoUuid == null || cognitoUuid.trim().isEmpty()) {
+            throw new IllegalArgumentException("cognitoUuid must not be null or empty");
+        }
+
+        try {
+            int deletedCount = userRepo.deleteByCognitoUuid(cognitoUuid);
+            if (deletedCount == 0) {
+                throw new UserNotFoundException(
+                        "No user with Cognito UUID " + cognitoUuid + " was found"
+                );
+            }
+        } catch (DataAccessException dae) {
+            throw new UserServiceException(
+                    "Unable to delete user with Cognito UUID " + cognitoUuid, dae
+            );
+        }
     }
 
 
