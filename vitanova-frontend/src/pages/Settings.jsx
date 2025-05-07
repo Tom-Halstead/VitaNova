@@ -1,7 +1,28 @@
 import React from "react";
-import { exportData, deleteAccount } from "../api/SettingsApi";
+import { useNavigate } from "react-router-dom";
+import { exportData, deleteAccount } from "../api/ApiServices";
 
 export default function Settings() {
+  const navigate = useNavigate();
+
+  const handleAccountDeletion = async () => {
+    const confirmed = window.confirm(
+      "Are you sure you want to delete your account? This cannot be undone."
+    );
+    if (!confirmed) return;
+
+    try {
+      deleteAccount();
+      // Redirect to homepage after successful deletion
+      navigate("/");
+    } catch (error) {
+      console.error("Account deletion failed:", error);
+      alert(
+        "There was an error deleting your account. Please try again later."
+      );
+    }
+  };
+
   return (
     <div
       style={{
@@ -55,15 +76,7 @@ export default function Settings() {
       </button>
 
       <button
-        onClick={() => {
-          if (
-            window.confirm(
-              "Are you sure you want to delete your account? This cannot be undone."
-            )
-          ) {
-            deleteAccount();
-          }
-        }}
+        onClick={handleAccountDeletion}
         style={{
           width: "100%",
           padding: "0.75rem",

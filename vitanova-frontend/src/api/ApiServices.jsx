@@ -1,6 +1,6 @@
 // src/api/apiServices.js
 
-const API_BASE = process.env.REACT_APP_API_BASE || "http://localhost:8080";
+const API_BASE = "http://localhost:8080";
 
 // low-level request helper
 async function request(
@@ -201,7 +201,7 @@ export async function exportData() {
  * @returns {null}
  */
 export function deleteAccount() {
-  return request("/api/settings/account", { method: "DELETE" });
+  return request("/api/users/me", { method: "DELETE" });
 }
 
 /**

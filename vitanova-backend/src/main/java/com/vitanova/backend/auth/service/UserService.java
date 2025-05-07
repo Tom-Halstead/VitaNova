@@ -50,4 +50,14 @@ public class UserService {
         return UserDTO.userToDto(user);
     }
 
+    @Transactional
+    public void deleteByCognitoUuid(String cognitoUuid) {
+        userRepo.deleteByCognitoUuid(cognitoUuid);
+    }
+
+
+
+
+
+
 }
