@@ -63,7 +63,6 @@ public class UserControllerUnitTest {
                         .header("Origin", "http://localhost:3000"))
                 .andExpect(status().isOk());
 
-        System.out.println("me_ReturnsUserDto_andStatus200: ✅ returned 200 OK as expected");
     }
 
     // --- GET /me → IllegalArgumentException should bubble up as ServletException ---
@@ -85,7 +84,6 @@ public class UserControllerUnitTest {
         assertEquals("invalid input", ex.getCause().getMessage(),
                 "Exception message should match");
 
-        System.out.println("me_WhenServiceThrowsIllegalArgument: ✅ caught IllegalArgumentException cause as expected");
     }
 
     // --- GET /me → UserServiceException should bubble up as ServletException ---
@@ -107,7 +105,6 @@ public class UserControllerUnitTest {
         assertEquals("database down", ex.getCause().getMessage(),
                 "Exception message should match");
 
-        System.out.println("me_WhenServiceThrowsUserServiceException: ✅ caught UserServiceException cause as expected");
     }
 
     // --- DELETE /me happy path ---
@@ -121,7 +118,6 @@ public class UserControllerUnitTest {
                 .andExpect(cookie().maxAge("JSESSIONID", 0))
                 .andExpect(cookie().value("JSESSIONID", ""));
 
-        System.out.println("deleteMe_InvalidatesSession_andReturns204: ✅ returned 204 No Content and cleared session cookie");
     }
 
     // --- DELETE /me → UserNotFoundException → 404 Not Found ---
@@ -135,7 +131,6 @@ public class UserControllerUnitTest {
                         .with(csrf()))
                 .andExpect(status().isNotFound());
 
-        System.out.println("deleteMe_WhenUserNotFound_Returns404: ✅ returned 404 Not Found as expected");
     }
 
     // --- DELETE /me → UserServiceException should bubble up as ServletException ---
@@ -157,6 +152,5 @@ public class UserControllerUnitTest {
         assertEquals("db error", ex.getCause().getMessage(),
                 "Exception message should match");
 
-        System.out.println("deleteMe_WhenServiceException: ✅ caught UserServiceException cause as expected");
     }
 }
