@@ -16,6 +16,9 @@ public class UserDTO {
     private String cognitoUuid;
     private Instant createdAt;
 
+    public UserDTO(String email, String name) {
+    }
+
     /**
      * Converts a User entity into a UserDTO.
      * @param user the User entity
