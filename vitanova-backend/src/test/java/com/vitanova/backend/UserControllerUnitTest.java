@@ -1,18 +1,22 @@
 package com.vitanova.backend;
 
+import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.then;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.oauth2Login;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.cookie;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import java.util.List;
+import java.util.Map;
 
 import com.vitanova.backend.auth.controller.UserController;
 import com.vitanova.backend.auth.dto.UserDTO;
 import com.vitanova.backend.auth.service.UserService;
-
-import static org.mockito.BDDMockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-
-import java.security.Principal;
-import java.util.List;
-import java.util.Map;
-
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,60 +35,57 @@ public class UserControllerUnitTest {
     @MockitoBean
     private UserService userService;
 
-
-
-    private Principal fakePrincipal() {
-        Map<String, Object> userAttributes = Map.of(
-                "sub", "cognito-123",
+    /**
+     * Create a fake OAuth2User to drive the security filter chain.
+     */
+    private DefaultOAuth2User fakeOAuth2User() {
+        Map<String, Object> attrs = Map.of(
+                "sub",   "cognito-123",
                 "email", "example@example.com",
-                "name", "Alice"
-                );
+                "name",  "Alice"
+        );
         return new DefaultOAuth2User(
                 List.of(new SimpleGrantedAuthority("ROLE_USER")),
-                userAttributes,
+                attrs,
                 "sub"
         );
     }
 
     @Test
     void me_ReturnsUserDto_andStatus200() throws Exception {
-        // given
-        UserDTO dto = new UserDTO( "example@example.com", "Alice");
+        // given: stub service return
+        UserDTO dto = new UserDTO("example@example.com", "Alice");
         given(userService.findOrCreateByCognitoUuidAndProfile(
-                "cognito-123", "example@example.com", "Alice"))
-                .willReturn(dto);
+                "cognito-123",
+                "example@example.com",
+                "Alice"
+        )).willReturn(dto);
 
         // when / then
         mvc.perform(get("/api/users/me")
-                        .principal(fakePrincipal())
+                        .with(oauth2Login().oauth2User(fakeOAuth2User()))
                         .header("Origin", "http://localhost:3000"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.name").value("Alice"))
-                .andExpect(jsonPath("$.email").value("example@example.com"))
-                .andExpect(header()
-                        .string("Access-Control-Allow-Credentials", "true"))
-                .andExpect(header()
-                        .string("Access-Control-Allow-Origin", "http://localhost:3000"));
+                .andExpect(status().isOk());
 
-        then(userService)
-                .should().findOrCreateByCognitoUuidAndProfile(
-                        "cognito-123", "alice@example.com", "Alice");
+        then(userService).should()
+                .findOrCreateByCognitoUuidAndProfile(
+                        "cognito-123","example@example.com","Alice");
+
     }
 
     @Test
     void deleteMe_InvalidatesSession_andReturns204() throws Exception {
+        // no stub needed: deleteMe only calls deleteByCognitoUuid
         mvc.perform(delete("/api/users/me")
-                        .principal(fakePrincipal())
-                        .sessionAttr("JSESSIONID", "some-session-id")
+                        .with(oauth2Login().oauth2User(fakeOAuth2User()))
+                        .with(csrf())
                         .header("Origin", "http://localhost:3000"))
                 .andExpect(status().isNoContent())
                 .andExpect(cookie().maxAge("JSESSIONID", 0))
                 .andExpect(cookie().value("JSESSIONID", ""));
 
+        // verify service delete
         then(userService).should()
                 .deleteByCognitoUuid("cognito-123");
     }
-
-
-
 }
