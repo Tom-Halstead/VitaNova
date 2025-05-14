@@ -91,7 +91,7 @@ export function listEntries(page = 0, size = 10) {
 
 /**
  * Get one entry with moods & photos.
- * @param {string} id
+ * @param {string} entryId
  * @returns {{ entryId:string, text:string, entryDate:string, moodPre:number, moodPost:number, photos:{photoId:string,url:string}[], createdAt:string, updatedAt:string }}
  */
 export function getEntry(id) {
