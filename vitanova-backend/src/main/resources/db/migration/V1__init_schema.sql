@@ -15,8 +15,8 @@ CREATE TABLE entry (
   user_id     BIGINT      NOT NULL REFERENCES app_user(user_id),
   text        TEXT        NOT NULL,
   entry_date  DATE        NOT NULL,
-  mood_pre    SMALLINT    NOT NULL CHECK (mood_pre BETWEEN 1 AND 5),
-  mood_post   SMALLINT    NOT NULL CHECK (mood_post BETWEEN 1 AND 5),
+  mood_pre    INTEGER    NOT NULL CHECK (mood_pre BETWEEN 1 AND 10),
+  mood_post   INTEGER    NOT NULL CHECK (mood_post BETWEEN 1 AND 10),
   created_at  TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at  TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
