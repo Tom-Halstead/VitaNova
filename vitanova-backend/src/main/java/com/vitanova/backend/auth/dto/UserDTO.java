@@ -1,6 +1,6 @@
 package com.vitanova.backend.auth.dto;
 
-import com.vitanova.backend.auth.model.User;
+import com.vitanova.backend.auth.model.UserModel;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -22,17 +22,17 @@ public class UserDTO {
     public UserDTO(){}
 
     /**
-     * Converts a User entity into a UserDTO.
-     * @param user the User entity
+     * Converts a UserModel entity into a UserDTO.
+     * @param userModel the UserModel entity
      * @return a new UserDTO populated with fields from the entity
      */
-    public static UserDTO userToDto(User user) {
+    public static UserDTO userToDto(UserModel userModel) {
         UserDTO dto = new UserDTO();
-        dto.setUserId(user.getUserId());
-        dto.setEmail(user.getEmail());
-        dto.setName(user.getName());
-        dto.setCognitoUuid(user.getCognitoUuid());
-        dto.setCreatedAt(user.getCreatedAt());
+        dto.setUserId(userModel.getUserId());
+        dto.setEmail(userModel.getEmail());
+        dto.setName(userModel.getName());
+        dto.setCognitoUuid(userModel.getCognitoUuid());
+        dto.setCreatedAt(userModel.getCreatedAt());
         return dto;
     }
 

@@ -33,7 +33,7 @@ async function request(
 // Auth & Profile
 // ====================================
 /**
- * Register a new user.
+ * Register a new userModel.
  * @param {{ email: string, password: string, name: string }} data
  * @returns {{ userId: string, email: string }}
  */
@@ -51,7 +51,7 @@ export function login(data) {
 }
 
 /**
- * Fetch current user profile.
+ * Fetch current userModel profile.
  * @returns {{ userId: string, name: string, email: string }}
  */
 export function fetchCurrentUser() {
@@ -59,7 +59,7 @@ export function fetchCurrentUser() {
 }
 
 /**
- * Update current user profile.
+ * Update current userModel profile.
  * @param {{ name: string }} data
  * @returns {{ userId: string, name: string, email: string }}
  */

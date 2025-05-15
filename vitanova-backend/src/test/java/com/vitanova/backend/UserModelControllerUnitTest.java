@@ -29,7 +29,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 
 @WebMvcTest(UserController.class)
-public class UserControllerUnitTest {
+public class UserModelControllerUnitTest {
 
     @Autowired
     private MockMvc mvc;

@@ -1,14 +1,6 @@
 package com.vitanova.backend;
 
 
-import static org.assertj.core.api.Assertions.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-
-import com.vitanova.backend.auth.model.User;
-
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -54,7 +46,7 @@ class UserControllerIntegrationTest {
 //    @Test
 //    void deleteMe_WithOAuth2Login_ShouldRemoveUserFromDb() throws Exception {
 //        // pre-populate (only name & email needed; id is auto-generated)
-//        User entity = new User();
+//        UserModel entity = new UserModel();
 //        entity.setCognitoUuid("int-uuid");
 //        entity.setEmail("bob@int.com");
 //        entity.setName("Bob");

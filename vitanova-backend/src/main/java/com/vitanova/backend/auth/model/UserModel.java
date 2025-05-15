@@ -10,7 +10,7 @@ import java.time.Instant;
 @Getter
 @Entity
 @Table(name = "app_user")
-public class User {
+public class UserModel {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "user_id")
@@ -31,5 +31,5 @@ public class User {
             insertable = false)
     private Instant createdAt;
 
-    public User() {}
+    public UserModel() {}
 }

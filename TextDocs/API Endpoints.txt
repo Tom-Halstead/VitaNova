@@ -6,7 +6,7 @@ Auth & Profile
 
 Method	Path	Description	Request Body	Response Body
 
-POST	/api/auth/signup	Register new user	JSON { email, password, name }	{ userId, email }
+POST	/api/auth/signup	Register new userModel	JSON { email, password, name }	{ userId, email }
 
 POST	/api/auth/login	Login via Cognito	JSON { email, password }	{ jwtToken, expiresIn }
 

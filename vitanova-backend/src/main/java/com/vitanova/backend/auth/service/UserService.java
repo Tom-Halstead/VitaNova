@@ -2,7 +2,7 @@ package com.vitanova.backend.auth.service;
 
 
 import com.vitanova.backend.auth.dto.UserDTO;
-import com.vitanova.backend.auth.model.User;
+import com.vitanova.backend.auth.model.UserModel;
 import com.vitanova.backend.auth.repository.UserRepository;
 import com.vitanova.backend.exceptions.UserNotFoundException;
 import com.vitanova.backend.exceptions.UserServiceException;
@@ -11,7 +11,6 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
 
 import java.util.Objects;
-import java.util.Optional;
 
 @Service
 public class UserService {
@@ -21,7 +20,7 @@ public class UserService {
     }
 
     /**
-     * Finds a User by Cognito UUID or creates a new one if none exists,
+     * Finds a UserModel by Cognito UUID or creates a new one if none exists,
      * then returns its UserDTO representation.
      */
     @Transactional
@@ -35,7 +34,7 @@ public class UserService {
         }
 
         try {
-            User user = userRepo.findByCognitoUuid(cognitoUuid)
+            UserModel userModel = userRepo.findByCognitoUuid(cognitoUuid)
                     .map(existing -> {
                         if (!Objects.equals(existing.getEmail(), email)
                                 || !Objects.equals(existing.getName(), name)) {
@@ -46,14 +45,14 @@ public class UserService {
                         return existing;
                     })
                     .orElseGet(() -> {
-                        User newUser = new User();
-                        newUser.setCognitoUuid(cognitoUuid);
-                        newUser.setEmail(email);
-                        newUser.setName(name);
-                        return userRepo.save(newUser);
+                        UserModel newUserModel = new UserModel();
+                        newUserModel.setCognitoUuid(cognitoUuid);
+                        newUserModel.setEmail(email);
+                        newUserModel.setName(name);
+                        return userRepo.save(newUserModel);
                     });
 
-            return UserDTO.userToDto(user);
+            return UserDTO.userToDto(userModel);
 
         } catch (DataAccessException dae) {
             throw new UserServiceException(
