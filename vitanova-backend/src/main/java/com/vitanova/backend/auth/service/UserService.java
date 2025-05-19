@@ -76,7 +76,7 @@ public class UserService {
             }
         } catch (DataAccessException dae) {
             throw new UserServiceException(
-                    "Unable to delete user with Cognito UUID " + cognitoUuid, dae
+                    "Unable to delete user with Cognito UUID! " + cognitoUuid, dae
             );
         }
     }
