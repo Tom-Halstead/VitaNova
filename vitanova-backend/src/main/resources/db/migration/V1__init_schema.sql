@@ -6,7 +6,7 @@ CREATE TABLE app_user (
   email        VARCHAR(255) NOT NULL UNIQUE,
   name         VARCHAR(100),
   cognito_uuid VARCHAR(100) UNIQUE,
-  created_at   TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+  created_at   DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 -- 2. Journal Entries

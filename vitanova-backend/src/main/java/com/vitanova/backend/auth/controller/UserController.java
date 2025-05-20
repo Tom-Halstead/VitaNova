@@ -25,7 +25,8 @@ public class UserController {
     public UserDTO me(@AuthenticationPrincipal OAuth2User principal) {
         String sub   = principal.getAttribute("sub");
         String email = principal.getAttribute("email");
-        String name  = principal.getAttribute("name");
+        String name  = principal.getAttribute("given_name");
+
         return userService.findOrCreateByCognitoUuidAndProfile(sub, email, name);
     }
 

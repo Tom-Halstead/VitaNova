@@ -2,12 +2,7 @@ package com.vitanova.backend.entry.model;
 
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import org.springframework.data.annotation.Id;
-
+import lombok.*;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 
