@@ -12,9 +12,11 @@ export default function Settings() {
     if (!confirmed) return;
 
     try {
-      deleteAccount();
-      // Redirect to homepage after successful deletion
-      navigate("/");
+      deleteAccount(); // ensure you await the async deletion
+
+      // Full redirect to Cognito logout URL
+      window.location.href =
+        "https://us-east-2d1agk3shc.auth.us-east-2.amazoncognito.com/logout?client_id=2j12r8o421t03pnhhm0hjfi5qu&logout_uri=http://localhost:3000";
     } catch (error) {
       console.error("Account deletion failed:", error);
       alert(

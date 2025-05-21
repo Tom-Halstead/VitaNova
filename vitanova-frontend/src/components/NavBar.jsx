@@ -81,7 +81,11 @@ export default function NavBar() {
             </div>
             {isAuthenticated() && (
               <button
-                onClick={() => (window.location.href = "/logout")}
+                onClick={() => {
+                  // Redirect to Cognito logout endpoint with your client_id and logout_uri
+                  window.location.href =
+                    "https://us-east-2d1agk3shc.auth.us-east-2.amazoncognito.com/logout?client_id=2j12r8o421t03pnhhm0hjfi5qu&logout_uri=http://localhost:3000";
+                }}
                 style={{
                   padding: "0.5rem 1rem",
                   background: "#FCA5A5",

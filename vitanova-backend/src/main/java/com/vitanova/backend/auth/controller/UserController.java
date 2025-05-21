@@ -46,13 +46,4 @@ public class UserController {
         userService.deleteByCognitoUuid(principal.getAttribute("sub"));
     }
 
-
-    @PatchMapping("/me")
-    @CrossOrigin(origins = "http://localhost:3000", allowCredentials = "true")
-    @ResponseStatus(HttpStatus.ACCEPTED)
-    public void updateMe(@AuthenticationPrincipal OAuth2User principal) {
-       userService.findOrCreateByCognitoUuidAndProfile(principal.getAttribute("sub"), principal.getAttribute("email"), principal.getAttribute("given_name"));
-    }
-
-
 }
