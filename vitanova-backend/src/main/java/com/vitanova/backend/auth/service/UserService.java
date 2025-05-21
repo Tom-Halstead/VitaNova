@@ -19,47 +19,39 @@ public class UserService {
         this.userRepo = userRepo;
     }
 
-    /**
-     * Finds a UserModel by Cognito UUID or creates a new one if none exists,
-     * then returns its UserDTO representation.
-     */
     @Transactional
-    public UserDTO findOrCreateByCognitoUuidAndProfile(
-            String cognitoUuid,
-            String email,
-            String name
-    ) {
+    public UserDTO findOrCreateByCognitoUuidAndProfile(String cognitoUuid, String email, String name) {
+        validateCognitoUuid(cognitoUuid);
+        UserModel userModel = findOrCreateAndUpdateUser(cognitoUuid, email, name);
+        return UserDTO.userToDto(userModel);
+    }
+
+    private void validateCognitoUuid(String cognitoUuid) {
         if (cognitoUuid == null || cognitoUuid.trim().isEmpty()) {
-            throw new IllegalArgumentException("cognitoUuid must not be null or empty");
-        }
-
-        try {
-            UserModel userModel = userRepo.findByCognitoUuid(cognitoUuid)
-                    .map(existing -> {
-                        if (!Objects.equals(existing.getEmail(), email)
-                                || !Objects.equals(existing.getName(), name)) {
-                            existing.setEmail(email);
-                            existing.setName(name);
-                            return userRepo.save(existing);
-                        }
-                        return existing;
-                    })
-                    .orElseGet(() -> {
-                        UserModel newUserModel = new UserModel();
-                        newUserModel.setCognitoUuid(cognitoUuid);
-                        newUserModel.setEmail(email);
-                        newUserModel.setName(name);
-                        return userRepo.save(newUserModel);
-                    });
-
-            return UserDTO.userToDto(userModel);
-
-        } catch (DataAccessException dae) {
-            throw new UserServiceException(
-                    "Unable to find or create user with Cognito UUID " + cognitoUuid, dae
-            );
+            throw new IllegalArgumentException("AWS cognitoUuid creation error. Try again please.");
         }
     }
+
+    private UserModel findOrCreateAndUpdateUser(String cognitoUuid, String email, String name) {
+        return userRepo.findByCognitoUuid(cognitoUuid)
+                .map(existing -> {
+                    if (!Objects.equals(existing.getEmail(), email)
+                            || !Objects.equals(existing.getName(), name)) {
+                        existing.setEmail(email);
+                        existing.setName(name);
+                        return userRepo.save(existing);
+                    }
+                    return existing;
+                })
+                .orElseGet(() -> {
+                    UserModel newUser = new UserModel();
+                    newUser.setCognitoUuid(cognitoUuid);
+                    newUser.setEmail(email);
+                    newUser.setName(name);
+                    return userRepo.save(newUser);
+                });
+    }
+
 
     @Transactional
     public void deleteByCognitoUuid(String cognitoUuid) {
@@ -80,10 +72,6 @@ public class UserService {
             );
         }
     }
-
-
-
-
 
 
 }
