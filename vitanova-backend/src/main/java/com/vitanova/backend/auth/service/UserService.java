@@ -10,6 +10,7 @@ import jakarta.transaction.Transactional;
 import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
 
+import java.util.NoSuchElementException;
 import java.util.Objects;
 
 @Service
@@ -71,6 +72,12 @@ public class UserService {
                     "Unable to delete user with Cognito UUID" + cognitoUuid, dae
             );
         }
+    }
+
+    public int getUserIdByCognitoSub(String cognitoSub) {
+        return userRepo.findByCognitoUuid(cognitoSub)
+                .map(UserModel::getUserId)
+                .orElseThrow(() -> new NoSuchElementException("User not found"));
     }
 
 

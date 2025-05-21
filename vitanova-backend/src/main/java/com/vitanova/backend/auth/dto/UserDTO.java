@@ -10,7 +10,7 @@ import java.time.Instant;
 @Getter
 public class UserDTO {
     // Getters and setters
-    private Long userId;
+    private int userId;
     private String email;
     private String name;
     private String cognitoUuid;

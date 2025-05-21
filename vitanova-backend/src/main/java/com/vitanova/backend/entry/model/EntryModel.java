@@ -3,6 +3,8 @@ package com.vitanova.backend.entry.model;
 
 import jakarta.persistence.*;
 import lombok.*;
+
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 
@@ -33,7 +35,10 @@ public class EntryModel {
     @Column(name = "mood_post", nullable = false)
     private Integer moodPost;
 
-    @Column(name = "created_at", nullable = false, updatable = false)
+    @Column(name = "created_at",
+            nullable = false,
+            updatable = false,
+            insertable = false)
     private OffsetDateTime createdAt;
 
     @Column(name = "updated_at", nullable = false)

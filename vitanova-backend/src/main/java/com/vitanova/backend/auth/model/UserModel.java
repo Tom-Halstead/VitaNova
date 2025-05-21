@@ -1,20 +1,20 @@
 package com.vitanova.backend.auth.model;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 import java.time.Instant;
 
-@Setter
-@Getter
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 @Entity
 @Table(name = "app_user")
 public class UserModel {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "user_id")
-    private Long userId;
+    private int userId;
 
     @Column(name = "email", nullable = false, unique = true)
     private String email;
@@ -31,5 +31,4 @@ public class UserModel {
             insertable = false)
     private Instant createdAt;
 
-    public UserModel() {}
 }
