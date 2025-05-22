@@ -16,8 +16,8 @@ import java.time.OffsetDateTime;
 @Builder
 public class EntryDTO {
 
-    private Long entryId;
-    private Long userId;
+    private int entryId;
+    private int userId;
     private String text;
     private LocalDate entryDate;
     private Integer moodPre;

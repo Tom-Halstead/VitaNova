@@ -8,6 +8,9 @@ import com.vitanova.backend.exceptions.UserNotFoundException;
 import com.vitanova.backend.exceptions.UserServiceException;
 import jakarta.transaction.Transactional;
 import org.springframework.dao.DataAccessException;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.oauth2.core.user.OAuth2User;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
 
 import java.util.NoSuchElementException;
@@ -78,6 +81,18 @@ public class UserService {
         return userRepo.findByCognitoUuid(cognitoSub)
                 .map(UserModel::getUserId)
                 .orElseThrow(() -> new NoSuchElementException("User not found"));
+    }
+
+    /**
+     * Extract the Cognito 'sub' claim (the UUID) from the Jwt,
+     * look up the corresponding AppUser, and return its internal ID.
+     */
+    public int getCurrentUserId(OAuth2User principal) {
+        String cognitoUuid = principal.getAttribute("sub"); // 'sub' claim
+        return userRepo.findByCognitoUuid(cognitoUuid)
+                .orElseThrow(() -> new UsernameNotFoundException(
+                        "No user found for Cognito UUID: " + cognitoUuid))
+                .getUserId();
     }
 
 

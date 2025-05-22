@@ -3,10 +3,12 @@ package com.vitanova.backend.entry.controller;
 
 import com.vitanova.backend.auth.service.UserService;
 import com.vitanova.backend.entry.dto.EntryDTO;
+import com.vitanova.backend.entry.dto.EntryResponseDTO;
 import com.vitanova.backend.entry.service.EntryService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -34,18 +36,35 @@ public class EntryController {
     }
 
     @PostMapping
-    public ResponseEntity<String> createEntry(
-            @ModelAttribute EntryDTO entryDto,
-            @RequestParam("photos[]") List<MultipartFile> photos,
-            @RequestParam("userId") int userId
+    public ResponseEntity<EntryResponseDTO> createEntry(
+            @ModelAttribute EntryDTO dto,
+            @RequestParam(name = "photos[]", required = false) List<MultipartFile> photos,
+            @AuthenticationPrincipal OAuth2User principal
     ) {
         try {
-            entryService.createEntryWithPhotos(entryDto, photos, userId);
-            return ResponseEntity.ok("Entry created successfully");
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Failed to create entry: " + e.getMessage());
+            int userId = userService.getCurrentUserId(principal);
+            EntryResponseDTO created = entryService.createEntryWithPhotos(dto, photos, userId);
+            return ResponseEntity.status(HttpStatus.CREATED).body(created);
+
+        } catch (UsernameNotFoundException ex) {
+            // Token was valid but no matching user in our DB
+            return ResponseEntity
+                    .status(HttpStatus.UNAUTHORIZED)
+                    .build();
+
+        } catch (IllegalStateException ex) {
+            // Something went wrong in service (e.g. photo upload or save failed)
+            return ResponseEntity
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(null);
+
+        } catch (Exception ex) {
+            // Fallback for any other unexpected error
+            return ResponseEntity
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(null);
         }
     }
+
 
 }

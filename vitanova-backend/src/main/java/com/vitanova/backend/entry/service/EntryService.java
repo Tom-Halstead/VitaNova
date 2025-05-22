@@ -2,6 +2,8 @@ package com.vitanova.backend.entry.service;
 
 
 import com.vitanova.backend.entry.dto.EntryDTO;
+import com.vitanova.backend.entry.dto.EntryResponseDTO;
+import com.vitanova.backend.entry.dto.PhotoDTO;
 import com.vitanova.backend.entry.model.EntryModel;
 import com.vitanova.backend.entry.model.PhotoModel;
 import com.vitanova.backend.entry.repository.EntryRepository;
@@ -13,6 +15,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.time.OffsetDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 
@@ -44,9 +47,11 @@ public class EntryService {
 
 
     @Transactional
-    public void createEntryWithPhotos(EntryDTO entryDto, List<MultipartFile> photos, int userId) {
+    public EntryResponseDTO createEntryWithPhotos(EntryDTO entryDto,
+                                                  List<MultipartFile> photos,
+                                                  int userId) {
         try {
-            // Save entry to DB
+            // 1) persist the entry
             EntryModel entry = new EntryModel();
             entry.setUserId(userId);
             entry.setText(entryDto.getText());
@@ -55,15 +60,15 @@ public class EntryService {
             entry.setMoodPost(entryDto.getMoodPost());
             entry.setCreatedAt(OffsetDateTime.now());
             entry.setUpdatedAt(OffsetDateTime.now());
-
             EntryModel savedEntry = entryRepo.save(entry);
 
-            // Handle optional photos
+            // 2) handle optional photos
+            List<PhotoDTO> photoDtos = new ArrayList<>();
             if (photos != null && !photos.isEmpty()) {
                 for (MultipartFile file : photos) {
                     if (file.isEmpty()) continue;
 
-                    // uploadFile() now throws IOException
+                    // may throw IOException
                     String uploadedUrl = uploadFile(file);
 
                     PhotoModel photo = new PhotoModel();
@@ -73,23 +78,42 @@ public class EntryService {
 
                     try {
                         photoRepo.save(photo);
-                    } catch (Exception e) {
-                        throw new IllegalStateException("Failed to save photo metadata for: " + file.getOriginalFilename(), e);
+                    } catch (DataAccessException dae) {
+                        throw new IllegalStateException(
+                                "Failed to save photo metadata: " + file.getOriginalFilename(), dae);
                     }
+
+                    photoDtos.add(new PhotoDTO(photo.getPhotoId(), uploadedUrl));
                 }
             }
 
-        } catch (DataAccessException e) {
-            throw new IllegalStateException("Database error while creating journal entry", e);
-        } catch (IOException e) {
-            throw new IllegalStateException("Error occurred while uploading photo", e);
-        } catch (Exception e) {
-            throw new IllegalStateException("Unexpected error while creating journal entry", e);
+            // 3) build and return the response DTO
+            EntryResponseDTO response = new EntryResponseDTO();
+            response.setEntryId(savedEntry.getEntryId());
+            response.setText(savedEntry.getText());
+            response.setEntryDate(savedEntry.getEntryDate());
+            response.setMoodPre(savedEntry.getMoodPre());
+            response.setMoodPost(savedEntry.getMoodPost());
+            response.setCreatedAt(savedEntry.getCreatedAt());
+            response.setUpdatedAt(savedEntry.getUpdatedAt());
+            response.setPhotos(photoDtos);
+            return response;
+
+        } catch (IOException io) {
+            throw new IllegalStateException("Error uploading one of the photos", io);
+
+        } catch (DataAccessException db) {
+            throw new IllegalStateException("Database error while saving entry or photos", db);
+
+        } catch (Exception ex) {
+            throw new IllegalStateException("Unexpected error in createEntryWithPhotos", ex);
         }
     }
 
 
-    private String uploadFile(MultipartFile file) throws IOException {
+
+
+        private String uploadFile(MultipartFile file) throws IOException {
         if (file == null || file.isEmpty()) {
             throw new IOException("Cannot upload empty file.");
         }

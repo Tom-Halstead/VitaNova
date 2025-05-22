@@ -11,30 +11,42 @@ export default function NewEntry() {
   const [moodPost, setMoodPost] = useState(3);
   const [photos, setPhotos] = useState([]);
   const [previews, setPreviews] = useState([]);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState(null);
 
   // generate previews when photos change
   useEffect(() => {
     const urls = photos.map((file) => URL.createObjectURL(file));
     setPreviews(urls);
-    // cleanup
     return () => urls.forEach((url) => URL.revokeObjectURL(url));
   }, [photos]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setSaving(true);
+    setError(null);
+
     const form = new FormData();
     form.append("text", text);
     form.append("entryDate", date);
     form.append("moodPre", moodPre);
     form.append("moodPost", moodPost);
     photos.forEach((file) => form.append("photos[]", file));
-    await createEntry(form);
-    // reset form
-    setText("");
-    setDate("");
-    setMoodPre(3);
-    setMoodPost(3);
-    setPhotos([]);
+
+    try {
+      await createEntry(form);
+      // reset form on success
+      setText("");
+      setDate("");
+      setMoodPre(3);
+      setMoodPost(3);
+      setPhotos([]);
+    } catch (err) {
+      console.error(err);
+      setError("Could not save entry. Please try again.");
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -57,6 +69,19 @@ export default function NewEntry() {
       >
         New Journal Entry
       </h2>
+
+      {error && (
+        <div
+          style={{
+            color: "red",
+            textAlign: "center",
+            marginBottom: "1rem",
+            fontWeight: "bold",
+          }}
+        >
+          {error}
+        </div>
+      )}
 
       <div style={{ display: "flex", flexWrap: "wrap", gap: "2rem" }}>
         <form
@@ -86,6 +111,7 @@ export default function NewEntry() {
             }}
             onFocus={(e) => (e.currentTarget.style.borderColor = "#667EEA")}
             onBlur={(e) => (e.currentTarget.style.borderColor = "#E5E7EB")}
+            required
           />
 
           <div
@@ -110,6 +136,7 @@ export default function NewEntry() {
               }}
               onFocus={(e) => (e.currentTarget.style.borderColor = "#667EEA")}
               onBlur={(e) => (e.currentTarget.style.borderColor = "#E5E7EB")}
+              required
             />
             <div style={{ flex: "1 1 150px" }}>
               <MoodInput
@@ -131,7 +158,6 @@ export default function NewEntry() {
             <PhotoUploader onFiles={setPhotos} />
           </div>
 
-          {/* Preview uploaded photos */}
           {previews.length > 0 && (
             <div
               style={{
@@ -158,6 +184,7 @@ export default function NewEntry() {
 
           <button
             type="submit"
+            disabled={saving}
             style={{
               marginTop: "2rem",
               width: "100%",
@@ -167,20 +194,25 @@ export default function NewEntry() {
               color: "#FFFFFF",
               border: "none",
               borderRadius: "0.5rem",
-              cursor: "pointer",
+              cursor: saving ? "not-allowed" : "pointer",
               boxShadow: "0 4px 14px rgba(0,0,0,0.1)",
               transition: "transform 0.2s, box-shadow 0.2s",
+              opacity: saving ? 0.7 : 1,
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.transform = "scale(1.02)";
-              e.currentTarget.style.boxShadow = "0 6px 18px rgba(0,0,0,0.15)";
+              if (!saving) {
+                e.currentTarget.style.transform = "scale(1.02)";
+                e.currentTarget.style.boxShadow = "0 6px 18px rgba(0,0,0,0.15)";
+              }
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.transform = "scale(1)";
-              e.currentTarget.style.boxShadow = "0 4px 14px rgba(0,0,0,0.1)";
+              if (!saving) {
+                e.currentTarget.style.transform = "scale(1)";
+                e.currentTarget.style.boxShadow = "0 4px 14px rgba(0,0,0,0.1)";
+              }
             }}
           >
-            Save Entry
+            {saving ? "Saving…" : "Save Entry"}
           </button>
         </form>
 
