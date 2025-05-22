@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/users")
+@CrossOrigin(origins = "http://localhost:3000", allowCredentials = "true")
 public class UserController {
 
     private final UserService userService;
@@ -21,7 +22,6 @@ public class UserController {
     }
 
     @GetMapping("/me")
-    @CrossOrigin(origins = "http://localhost:3000", allowCredentials = "true")
     public UserDTO me(@AuthenticationPrincipal OAuth2User principal) {
         String sub   = principal.getAttribute("sub");
         String email = principal.getAttribute("email");
@@ -32,7 +32,6 @@ public class UserController {
 
 
     @DeleteMapping("/me")
-    @CrossOrigin(origins = "http://localhost:3000", allowCredentials = "true")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteMe(@AuthenticationPrincipal OAuth2User principal, HttpServletRequest request, HttpServletResponse response) {
 
