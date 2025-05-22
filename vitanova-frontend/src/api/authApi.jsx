@@ -1,3 +1,5 @@
+import { request } from "../api/ApiServices";
+
 /**
  * Register a new userModel.
  * @param {{ email: string, password: string, name: string }} data

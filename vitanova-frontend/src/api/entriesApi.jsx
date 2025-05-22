@@ -1,3 +1,5 @@
+import { request } from "../api/ApiServices";
+
 /**
  * Create a new journal entry with moods & photos.
  * @param {FormData} formData

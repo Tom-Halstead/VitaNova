@@ -1,5 +1,7 @@
 // src/api/dashboardApi.js
 
+import { request } from "../api/ApiServices";
+
 export async function fetchSummary() {
   const res = await fetch("/api/dashboard/summary", {
     credentials: "include",
