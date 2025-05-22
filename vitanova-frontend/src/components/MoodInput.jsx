@@ -1,35 +1,30 @@
 import React from "react";
 
 const emotions = [
-  { value: -8, label: "Terrible" },
-  { value: -7, label: "Very Bad" },
-  { value: -6, label: "Bad" },
-  { value: -5, label: "Disappointed" },
-  { value: -4, label: "Sad" },
-  { value: -3, label: "Upset" },
-  { value: -2, label: "Anxious" },
-  { value: -1, label: "Nervous" },
-  { value: 0, label: "Neutral" },
-  { value: 1, label: "Okay" },
-  { value: 2, label: "Content" },
-  { value: 3, label: "Pleased" },
-  { value: 4, label: "Happy" },
-  { value: 5, label: "Joyful" },
-  { value: 6, label: "Excited" },
-  { value: 7, label: "Delighted" },
-  { value: 8, label: "Ecstatic" },
-  { value: 9, label: "Overjoyed" },
-  { value: 10, label: "Blissful" },
+  { value: -8, label: "Terrible", icon: "🤮" },
+  { value: -7, label: "Very Bad", icon: "😖" },
+  { value: -6, label: "Bad", icon: "😞" },
+  { value: -5, label: "Disappointed", icon: "😔" },
+  { value: -4, label: "Sad", icon: "😢" },
+  { value: -3, label: "Upset", icon: "😟" },
+  { value: -2, label: "Anxious", icon: "😰" },
+  { value: -1, label: "Nervous", icon: "😬" },
+  { value: 0, label: "Neutral", icon: "😐" },
+  { value: 1, label: "Okay", icon: "🙂" },
+  { value: 2, label: "Content", icon: "😊" },
+  { value: 3, label: "Pleased", icon: "😌" },
+  { value: 4, label: "Happy", icon: "😃" },
+  { value: 5, label: "Joyful", icon: "😄" },
+  { value: 6, label: "Excited", icon: "🤩" },
+  { value: 7, label: "Delighted", icon: "🥳" },
+  { value: 8, label: "Ecstatic", icon: "🤯" },
+  { value: 9, label: "Overjoyed", icon: "😍" },
+  { value: 10, label: "Blissful", icon: "😇" },
 ];
 
 export default function MoodInput({ label, value, onChange }) {
   return (
-    <div
-      style={{
-        marginBottom: "1rem",
-        fontFamily: "'Lato', sans-serif",
-      }}
-    >
+    <div style={{ marginBottom: "1rem", fontFamily: "'Lato', sans-serif" }}>
       <label
         style={{
           display: "block",
@@ -42,7 +37,7 @@ export default function MoodInput({ label, value, onChange }) {
       </label>
       <select
         value={value}
-        onChange={(e) => onChange(parseFloat(e.target.value))}
+        onChange={(e) => onChange(parseInt(e.target.value, 10))}
         style={{
           width: "100%",
           padding: "0.75rem",
@@ -66,7 +61,7 @@ export default function MoodInput({ label, value, onChange }) {
       >
         {emotions.map((em) => (
           <option key={em.value} value={em.value}>
-            {em.label}
+            {em.icon} {em.label}
           </option>
         ))}
       </select>
