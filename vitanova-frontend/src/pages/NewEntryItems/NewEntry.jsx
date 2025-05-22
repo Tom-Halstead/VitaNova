@@ -3,6 +3,7 @@ import MoodInput from "../../components/MoodInput";
 import PhotoUploader from "../../components/PhotoUploader";
 import { createEntry } from "../../api/EntriesApi";
 import EntryPreview from "../../components/EntryPreview";
+import testImg from "../../utils/logo192.png";
 
 export default function NewEntry() {
   const [text, setText] = useState("");
@@ -10,7 +11,8 @@ export default function NewEntry() {
   const [moodPre, setMoodPre] = useState(3);
   const [moodPost, setMoodPost] = useState(3);
   const [photos, setPhotos] = useState([]);
-  const [previews, setPreviews] = useState([]);
+  // const [previews, setPreviews] = useState([]);
+  const [previews, setPreviews] = useState([testImg]);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState(null);
   const [showPreview, setShowPreview] = useState(false);
@@ -41,9 +43,11 @@ export default function NewEntry() {
   };
 
   useEffect(() => {
-    const urls = photos.map((f) => URL.createObjectURL(f));
-    setPreviews(urls);
-    return () => urls.forEach(URL.revokeObjectURL);
+    if (photos.length > 0) {
+      const urls = photos.map((f) => URL.createObjectURL(f));
+      setPreviews(urls);
+      return () => urls.forEach(URL.revokeObjectURL);
+    }
   }, [photos]);
 
   const handleSubmit = async (e) => {
@@ -102,9 +106,9 @@ export default function NewEntry() {
   return (
     <div
       style={{
-        minHeight: "calc(100vh - 200px)",
+        minHeight: "90vh",
         margin: "2rem auto",
-        maxWidth: "1000px",
+        maxWidth: "1200px",
         fontFamily: "'Lato', sans-serif",
         paddingBottom: "200px",
       }}
@@ -210,32 +214,21 @@ export default function NewEntry() {
             {/* Photo Uploader */}
             <div style={{ marginTop: "1.5rem" }}>
               <PhotoUploader onFiles={setPhotos} />
+              {/* File placeholder text */}
+              {photos.length > 0 && (
+                <p
+                  style={{
+                    marginTop: "0.5rem",
+                    fontSize: "0.875rem",
+                    fontStyle: "italic",
+                    color: "#4A5568",
+                  }}
+                >
+                  {photos.length} file{photos.length > 1 ? "s" : ""} selected:{" "}
+                  {photos.map((f) => f.name).join(", ")}
+                </p>
+              )}
             </div>
-
-            {/* Image Previews */}
-            {previews.length > 0 && (
-              <div
-                style={{
-                  display: "flex",
-                  gap: "1rem",
-                  flexWrap: "wrap",
-                  marginTop: "1rem",
-                }}
-              >
-                {previews.map((url, idx) => (
-                  <img
-                    key={idx}
-                    src={url}
-                    alt="Preview"
-                    style={{
-                      maxHeight: "100px",
-                      borderRadius: "0.375rem",
-                      boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
-                    }}
-                  />
-                ))}
-              </div>
-            )}
 
             {/* Submit Button */}
             <button
@@ -268,6 +261,7 @@ export default function NewEntry() {
             moodPost={moodPost}
             text={text}
             getEmoji={getEmoji}
+            photos={previews}
           />
           <button
             type="button"

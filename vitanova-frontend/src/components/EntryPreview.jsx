@@ -7,7 +7,9 @@ export default function EntryPreview({
   moodPost,
   text,
   getEmoji,
+  photos = [],
 }) {
+  // Show placeholders for each file uploaded
   return (
     <div
       style={{
@@ -47,7 +49,7 @@ export default function EntryPreview({
             color: "#374151",
           }}
         >
-          {date ? new Date(date).toLocaleDateString() : "—"}
+          {date || "—"}
         </div>
       </div>
 
@@ -73,6 +75,32 @@ export default function EntryPreview({
           {getEmoji(moodPost)}
         </span>
       </div>
+
+      {/* Photos */}
+      {photos.length > 0 && (
+        <div
+          style={{
+            display: "flex",
+            gap: "1rem",
+            flexWrap: "wrap",
+            marginBottom: "1.5rem",
+          }}
+        >
+          {photos.map((url, idx) => (
+            <img
+              key={idx}
+              src={url}
+              alt={`Entry photo ${idx + 1}`}
+              style={{
+                maxHeight: "120px",
+                borderRadius: "0.375rem",
+                boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+                objectFit: "cover",
+              }}
+            />
+          ))}
+        </div>
+      )}
 
       {/* Text */}
       <div
