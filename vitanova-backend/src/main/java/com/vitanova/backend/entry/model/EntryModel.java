@@ -18,10 +18,10 @@ public class EntryModel {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "entry_id")
-    private Long entryId;
+    private int entryId;
 
     @Column(name = "user_id", nullable = false)
-    private Long userId;
+    private int userId;
 
     @Column(name = "text", nullable = false, columnDefinition = "TEXT")
     private String text;
@@ -30,10 +30,10 @@ public class EntryModel {
     private LocalDate entryDate;
 
     @Column(name = "mood_pre", nullable = false)
-    private Integer moodPre;
+    private int moodPre;
 
     @Column(name = "mood_post", nullable = false)
-    private Integer moodPost;
+    private int moodPost;
 
     @Column(name = "created_at",
             nullable = false,
