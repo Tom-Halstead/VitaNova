@@ -42,7 +42,7 @@ public class EntryService {
     public EntryDTO getEntryForUser(int entryId, int userId) {
         return entryRepo.findByEntryIdAndUserId(entryId, userId)
                 .map(EntryDTO::fromModel)
-                .orElseThrow(() -> new NoSuchElementException("Entry not found or access denied."));
+                .orElseThrow(() -> new NoSuchElementException("Entry not found or access denied!"));
     }
 
 
