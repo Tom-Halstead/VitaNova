@@ -1,10 +1,10 @@
 package com.vitanova.backend.entry.controller;
 
-
 import com.vitanova.backend.auth.service.UserService;
 import com.vitanova.backend.entry.dto.EntryDTO;
 import com.vitanova.backend.entry.dto.EntryResponseDTO;
 import com.vitanova.backend.entry.service.EntryService;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -27,6 +27,16 @@ public class EntryController {
         this.entryService = entryService;
         this.userService = userService;
     }
+
+
+    @GetMapping
+    public Page<EntryDTO> listEntries(@RequestParam(defaultValue = "0") int page,
+                                      @RequestParam(defaultValue = "10") int size,
+                                      @AuthenticationPrincipal OAuth2User principal) {
+        String cognitoUuid = principal.getAttribute("sub");
+        return entryService.getEntriesForUser(cognitoUuid, page, size);
+    }
+
 
     @GetMapping("/{id}")
     public EntryDTO getEntry(@PathVariable int id, @AuthenticationPrincipal OAuth2User principal) {

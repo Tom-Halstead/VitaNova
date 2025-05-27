@@ -10,6 +10,10 @@ import com.vitanova.backend.entry.repository.EntryRepository;
 import com.vitanova.backend.entry.repository.PhotoRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.dao.DataAccessException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -30,12 +34,13 @@ public class EntryService {
     }
 
 
-
     @Transactional
-    public EntryDTO getEntryById(int id) {
-        return entryRepo.findById(id)
-                .map(EntryDTO::fromModel)
-                .orElseThrow(() -> new NoSuchElementException("Entry with ID " + id + " not found."));
+    public Page<EntryDTO> getEntriesForUser(String cognitoUuid, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("entryDate").descending());
+
+        return entryRepo
+                .findByCognitoUuid(cognitoUuid, pageable)
+                .map(EntryDTO::fromModel);
     }
 
     @Transactional

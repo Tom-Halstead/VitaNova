@@ -15,8 +15,13 @@ export function createEntry(formData) {
  * @param {number} size
  * @returns {Array<{ entryId:string, text:string, entryDate:string, moodPre:number, moodPost:number, thumbnailUrl:string }>}
  */
-export function listEntries(page = 0, size = 10) {
-  return request(`/api/entries?page=${page}&size=${size}`);
+export async function listEntries(page = 0, size = 10) {
+  const pageData = await request(`/api/entries?page=${page}&size=${size}`);
+
+  return {
+    entries: pageData.content,
+    total: pageData.totalElements,
+  };
 }
 
 /**
