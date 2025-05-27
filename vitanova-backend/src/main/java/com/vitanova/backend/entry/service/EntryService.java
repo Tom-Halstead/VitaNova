@@ -45,15 +45,17 @@ public class EntryService {
 
     @Transactional
     public Page<EntryDTO> getEntriesForUser(String cognitoUuid, int page, int size) {
-        // 1) look up your app user by Cognito UUID
+        // 1) Find your app’s UserModel by Cognito “sub”
         UserModel user = userRepo.findByCognitoUuid(cognitoUuid)
                 .orElseThrow(() -> new NoSuchElementException(
-                        "User not found for Cognito UUID=" + cognitoUuid));
+                        "No app user for Cognito UUID=" + cognitoUuid));
 
-        // 2) page through entries by userId
-        Pageable pageable = PageRequest.of(page, size, Sort.by("entryDate").descending());
+        // 2) Use the internal userId to page entries
+        Pageable pageable = PageRequest.of(page, size,
+                Sort.by("entryDate").descending());
+
         return entryRepo
-                .findByUserId(user.getUserId(), pageable)
+                .findByUserId(user.getUserId(), pageable)   // <— correct method here
                 .map(EntryDTO::fromModel);
     }
 
