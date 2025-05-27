@@ -1,6 +1,8 @@
 package com.vitanova.backend.entry.service;
 
 
+import com.vitanova.backend.auth.model.UserModel;
+import com.vitanova.backend.auth.repository.UserRepository;
 import com.vitanova.backend.entry.dto.EntryDTO;
 import com.vitanova.backend.entry.dto.EntryResponseDTO;
 import com.vitanova.backend.entry.dto.PhotoDTO;
@@ -9,11 +11,13 @@ import com.vitanova.backend.entry.model.PhotoModel;
 import com.vitanova.backend.entry.repository.EntryRepository;
 import com.vitanova.backend.entry.repository.PhotoRepository;
 import jakarta.transaction.Transactional;
+import org.apache.catalina.User;
 import org.springframework.dao.DataAccessException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -22,24 +26,34 @@ import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 
 @Service
 public class EntryService {
     private final EntryRepository entryRepo;
     private final PhotoRepository photoRepo;
+    private final UserRepository userRepo;
 
-    public EntryService(EntryRepository entryRepo, PhotoRepository photoRepo) {
+
+
+    public EntryService(EntryRepository entryRepo, PhotoRepository photoRepo, UserRepository userRepo) {
         this.entryRepo = entryRepo;
         this.photoRepo = photoRepo;
+        this.userRepo = userRepo;
     }
 
 
     @Transactional
     public Page<EntryDTO> getEntriesForUser(String cognitoUuid, int page, int size) {
-        Pageable pageable = PageRequest.of(page, size, Sort.by("entryDate").descending());
+        // 1) look up your app user by Cognito UUID
+        UserModel user = userRepo.findByCognitoUuid(cognitoUuid)
+                .orElseThrow(() -> new NoSuchElementException(
+                        "User not found for Cognito UUID=" + cognitoUuid));
 
+        // 2) page through entries by userId
+        Pageable pageable = PageRequest.of(page, size, Sort.by("entryDate").descending());
         return entryRepo
-                .findByCognitoUuid(cognitoUuid, pageable)
+                .findByUserId(user.getUserId(), pageable)
                 .map(EntryDTO::fromModel);
     }
 

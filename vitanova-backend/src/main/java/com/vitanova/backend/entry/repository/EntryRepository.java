@@ -9,7 +9,11 @@ import java.util.Optional;
 
 public interface EntryRepository extends JpaRepository<EntryModel, Integer> {
 
-    Page<EntryModel> findByCognitoUuid(String cognitoUuid, Pageable pageable);
+    Page<EntryModel> findByCognitoUuid(int userId, Pageable pageable);
 
     Optional<EntryModel> findByEntryIdAndUserId(int entryId, int userId);
+
+
+    Page<EntryModel> findByUserId(int userId, Pageable pageable);
+
 }

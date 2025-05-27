@@ -5,12 +5,15 @@ import lombok.*;
 
 import java.time.Instant;
 
+@Getter
+@Setter
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
 @Table(name = "app_user")
 public class UserModel {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "user_id")

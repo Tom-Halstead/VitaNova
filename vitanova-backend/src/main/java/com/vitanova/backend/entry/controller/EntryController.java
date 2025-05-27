@@ -30,9 +30,11 @@ public class EntryController {
 
 
     @GetMapping
-    public Page<EntryDTO> listEntries(@RequestParam(defaultValue = "0") int page,
-                                      @RequestParam(defaultValue = "10") int size,
-                                      @AuthenticationPrincipal OAuth2User principal) {
+    public Page<EntryDTO> listEntries(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @AuthenticationPrincipal OAuth2User principal
+    ) {
         String cognitoUuid = principal.getAttribute("sub");
         return entryService.getEntriesForUser(cognitoUuid, page, size);
     }
