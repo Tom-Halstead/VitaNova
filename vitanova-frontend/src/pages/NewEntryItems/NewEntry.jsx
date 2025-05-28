@@ -11,11 +11,11 @@ export default function NewEntry() {
   const [moodPre, setMoodPre] = useState(3);
   const [moodPost, setMoodPost] = useState(3);
   const [photos, setPhotos] = useState([]);
-  // const [previews, setPreviews] = useState([]);
   const [previews, setPreviews] = useState([testImg]);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState(null);
   const [showPreview, setShowPreview] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false); // << new
 
   const getEmoji = (value) => {
     const map = {
@@ -42,6 +42,7 @@ export default function NewEntry() {
     return map.hasOwnProperty(value) ? map[value] : "❓";
   };
 
+  // build previews when user selects files
   useEffect(() => {
     if (photos.length > 0) {
       const urls = photos.map((f) => URL.createObjectURL(f));
@@ -63,12 +64,18 @@ export default function NewEntry() {
     photos.forEach((f) => form.append("photos[]", f));
 
     try {
-      await createEntry(form);
+      createEntry(form);
+
+      // reset form
       setText("");
-      setDate("");
+      setDate(new Date().toISOString().slice(0, 10));
       setMoodPre(3);
       setMoodPost(3);
       setPhotos([]);
+
+      // show toast
+      setShowSuccess(true);
+      setTimeout(() => setShowSuccess(false), 3000);
     } catch {
       setError("Could not save entry. Please try again.");
     } finally {
@@ -76,7 +83,7 @@ export default function NewEntry() {
     }
   };
 
-  // Button style shared
+  // shared button styling
   const buttonStyle = {
     margin: "1rem auto",
     display: "block",
@@ -91,7 +98,6 @@ export default function NewEntry() {
     boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
     transition: "background 0.2s, transform 0.2s",
   };
-
   const hoverProps = (e) => {
     e.currentTarget.style.background =
       "linear-gradient(90deg, #805AD5, #6B46C1)";
@@ -111,8 +117,32 @@ export default function NewEntry() {
         maxWidth: "1200px",
         fontFamily: "'Lato', sans-serif",
         paddingBottom: "200px",
+        position: "relative",
       }}
     >
+      {/* SUCCESS TOAST */}
+      {showSuccess && (
+        <div
+          style={{
+            position: "fixed",
+            top: "6rem",
+            left: "50%",
+            transform: "translateX(-50%)",
+            background: "#48BB78",
+            color: "#FFF",
+            padding: "1rem 2rem",
+            borderRadius: "0.5rem",
+            boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+            fontFamily: "'Lato', sans-serif",
+            zIndex: 1000,
+            fontSize: "1.25rem",
+            fontWeight: "600",
+          }}
+        >
+          Entry saved successfully!
+        </div>
+      )}
+
       <h2
         style={{
           fontSize: "1.75rem",
@@ -137,122 +167,116 @@ export default function NewEntry() {
         </div>
       )}
 
-      {/* Toggle between form and preview */}
       {!showPreview ? (
-        <>
-          <form
-            onSubmit={handleSubmit}
+        <form
+          onSubmit={handleSubmit}
+          style={{
+            background: "#FFFFFF",
+            borderRadius: "0.5rem",
+            padding: "2rem",
+            boxShadow: "0 4px 12px rgba(0,0,0,0.05)",
+          }}
+        >
+          {/* Entry text */}
+          <textarea
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            placeholder="Write your journal entry..."
             style={{
-              background: "#FFFFFF",
-              borderRadius: "0.5rem",
-              padding: "2rem",
-              boxShadow: "0 4px 12px rgba(0,0,0,0.05)",
+              width: "100%",
+              minHeight: "150px",
+              border: "1px solid #E5E7EB",
+              borderRadius: "0.375rem",
+              padding: "1rem",
+              fontSize: "1rem",
+              lineHeight: 1.5,
+              resize: "vertical",
+              outline: "none",
+            }}
+            onFocus={(e) => (e.currentTarget.style.borderColor = "#667EEA")}
+            onBlur={(e) => (e.currentTarget.style.borderColor = "#E5E7EB")}
+            required
+          />
+
+          {/* Date & Mood Inputs */}
+          <div
+            style={{
+              display: "flex",
+              flexWrap: "wrap",
+              gap: "1rem",
+              marginTop: "1.5rem",
             }}
           >
-            {/* Entry text */}
-            <textarea
-              value={text}
-              onChange={(e) => setText(e.target.value)}
-              placeholder="Write your journal entry..."
+            <input
+              type="date"
+              value={date}
+              onChange={(e) => setDate(e.target.value)}
               style={{
-                width: "100%",
-                minHeight: "150px",
+                flex: "1 1 150px",
                 border: "1px solid #E5E7EB",
                 borderRadius: "0.375rem",
-                padding: "1rem",
+                padding: "0.75rem",
                 fontSize: "1rem",
-                lineHeight: "1.5",
-                resize: "vertical",
                 outline: "none",
               }}
               onFocus={(e) => (e.currentTarget.style.borderColor = "#667EEA")}
               onBlur={(e) => (e.currentTarget.style.borderColor = "#E5E7EB")}
               required
             />
-
-            {/* Date & Mood Inputs */}
-            <div
-              style={{
-                display: "flex",
-                flexWrap: "wrap",
-                gap: "1rem",
-                marginTop: "1.5rem",
-              }}
-            >
-              <input
-                type="date"
-                value={date}
-                onChange={(e) => setDate(e.target.value)}
-                style={{
-                  flex: "1 1 150px",
-                  border: "1px solid #E5E7EB",
-                  borderRadius: "0.375rem",
-                  padding: "0.75rem",
-                  fontSize: "1rem",
-                  outline: "none",
-                }}
-                onFocus={(e) => (e.currentTarget.style.borderColor = "#667EEA")}
-                onBlur={(e) => (e.currentTarget.style.borderColor = "#E5E7EB")}
-                required
+            <div style={{ flex: "1 1 150px" }}>
+              <MoodInput
+                label="Mood Before"
+                value={moodPre}
+                onChange={setMoodPre}
               />
-              <div style={{ flex: "1 1 150px" }}>
-                <MoodInput
-                  label="Mood Before"
-                  value={moodPre}
-                  onChange={setMoodPre}
-                />
-              </div>
-              <div style={{ flex: "1 1 150px" }}>
-                <MoodInput
-                  label="Mood After"
-                  value={moodPost}
-                  onChange={setMoodPost}
-                />
-              </div>
             </div>
-
-            {/* Photo Uploader */}
-            <div style={{ marginTop: "1.5rem" }}>
-              <PhotoUploader onFiles={setPhotos} />
-              {/* File placeholder text */}
-              {photos.length > 0 && (
-                <p
-                  style={{
-                    marginTop: "0.5rem",
-                    fontSize: "0.875rem",
-                    fontStyle: "italic",
-                    color: "#4A5568",
-                  }}
-                >
-                  {photos.length} file{photos.length > 1 ? "s" : ""} selected:{" "}
-                  {photos.map((f) => f.name).join(", ")}
-                </p>
-              )}
+            <div style={{ flex: "1 1 150px" }}>
+              <MoodInput
+                label="Mood After"
+                value={moodPost}
+                onChange={setMoodPost}
+              />
             </div>
+          </div>
 
-            {/* Submit Button */}
-            <button
-              type="submit"
-              disabled={saving}
-              style={buttonStyle}
-              onMouseEnter={hoverProps}
-              onMouseLeave={unhoverProps}
-            >
-              {saving ? "Saving…" : "Save Entry"}
-            </button>
+          {/* Photo Uploader */}
+          <div style={{ marginTop: "1.5rem" }}>
+            <PhotoUploader onFiles={setPhotos} />
+            {photos.length > 0 && (
+              <p
+                style={{
+                  marginTop: "0.5rem",
+                  fontSize: "0.875rem",
+                  fontStyle: "italic",
+                  color: "#4A5568",
+                }}
+              >
+                {photos.length} file{photos.length > 1 ? "s" : ""} selected:{" "}
+                {photos.map((f) => f.name).join(", ")}
+              </p>
+            )}
+          </div>
 
-            {/* Preview Toggle */}
-            <button
-              type="button"
-              onClick={() => setShowPreview(true)}
-              style={{ ...buttonStyle, marginTop: "0.5rem" }}
-              onMouseEnter={hoverProps}
-              onMouseLeave={unhoverProps}
-            >
-              Preview Entry
-            </button>
-          </form>
-        </>
+          {/* Submit & Preview Buttons */}
+          <button
+            type="submit"
+            disabled={saving}
+            style={buttonStyle}
+            onMouseEnter={hoverProps}
+            onMouseLeave={unhoverProps}
+          >
+            {saving ? "Saving…" : "Save Entry"}
+          </button>
+          <button
+            type="button"
+            onClick={() => setShowPreview(true)}
+            style={{ ...buttonStyle, marginTop: "0.5rem" }}
+            onMouseEnter={hoverProps}
+            onMouseLeave={unhoverProps}
+          >
+            Preview Entry
+          </button>
+        </form>
       ) : (
         <>
           <EntryPreview

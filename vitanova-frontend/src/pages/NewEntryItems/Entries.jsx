@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { listEntries, deleteEntry } from "../../api/EntriesApi";
 import { Link } from "react-router-dom";
+import { Trash2 } from "lucide-react";
 
 export default function Entries() {
   const [entries, setEntries] = useState([]);
@@ -142,7 +143,10 @@ export default function Entries() {
                 cursor: "pointer",
               }}
             >
-              🗑️
+              <Trash2
+                size={20}
+                className="text-gray-500 hover:text-red-600 transition-colors"
+              />
             </button>
 
             <Link
