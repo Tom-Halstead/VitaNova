@@ -78,5 +78,13 @@ public class EntryController {
         }
     }
 
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> deleteEntry(@PathVariable("id") int entryId,
+                                         @AuthenticationPrincipal OAuth2User principal) {
+        String cognitoUuid = principal.getAttribute("sub");
+        entryService.deleteEntryForUser(entryId, cognitoUuid);
+        return ResponseEntity.noContent().build();
+    }
+
 
 }

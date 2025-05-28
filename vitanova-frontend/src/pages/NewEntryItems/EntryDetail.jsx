@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { useParams, Link } from "react-router-dom";
-import { getEntry } from "../../api/EntriesApi";
+import { useParams, Link, useNavigate } from "react-router-dom";
+import { getEntry, deleteEntry } from "../../api/EntriesApi";
 
 const emotions = [
   { value: -8, label: "Terrible", icon: "🤮" },
@@ -26,13 +26,14 @@ const emotions = [
 
 export default function EntryDetail() {
   const { id } = useParams();
+  const navigate = useNavigate();
   const [entry, setEntry] = useState(null);
 
   useEffect(() => {
     getEntry(id).then(setEntry);
   }, [id]);
 
-  if (!entry)
+  if (!entry) {
     return (
       <div
         style={{
@@ -48,30 +49,16 @@ export default function EntryDetail() {
         Loading…
       </div>
     );
+  }
 
-  const photos = entry.photos || [];
-
-  // Lookup function
   const findEmotion = (value) =>
     emotions.find((e) => e.value === value) || { icon: "❓", label: "Unknown" };
 
-  const MoodDisplay = ({ label, value }) => {
-    const { icon, label: desc } = findEmotion(value);
-    return (
-      <div style={{ textAlign: "center" }}>
-        <div style={{ fontSize: "3rem" }}>{icon}</div>
-        <div
-          style={{
-            marginTop: "0.25rem",
-            fontSize: "1rem",
-            color: "#374151",
-            fontWeight: 600,
-          }}
-        >
-          {label}: {desc}
-        </div>
-      </div>
-    );
+  const photos = entry.photos || [];
+
+  const handleDelete = () => {
+    if (!window.confirm("Really delete this entry?")) return;
+    deleteEntry(id).then(() => navigate("/entries"));
   };
 
   return (
@@ -94,22 +81,44 @@ export default function EntryDetail() {
           padding: "2rem",
         }}
       >
-        <Link
-          to="/entries"
+        <div
           style={{
-            display: "inline-block",
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
             marginBottom: "1rem",
-            color: "#4F46E5",
-            textDecoration: "none",
-            fontWeight: 600,
-            transition: "color 0.2s",
-            fontFamily: "'Lato', sans-serif",
           }}
-          onMouseEnter={(e) => (e.currentTarget.style.color = "#4338CA")}
-          onMouseLeave={(e) => (e.currentTarget.style.color = "#4F46E5")}
         >
-          ← Back to all entries
-        </Link>
+          <Link
+            to="/entries"
+            style={{
+              color: "#4F46E5",
+              textDecoration: "none",
+              fontWeight: 600,
+              fontFamily: "'Lato', sans-serif",
+              transition: "color 0.2s",
+            }}
+            onMouseEnter={(e) => (e.currentTarget.style.color = "#4338CA")}
+            onMouseLeave={(e) => (e.currentTarget.style.color = "#4F46E5")}
+          >
+            ← Back to all entries
+          </Link>
+          <button
+            onClick={handleDelete}
+            style={{
+              background: "#E53E3E",
+              color: "#FFFFFF",
+              border: "none",
+              padding: "0.5rem 1rem",
+              borderRadius: "0.375rem",
+              cursor: "pointer",
+              fontFamily: "'Lato', sans-serif",
+              fontWeight: 600,
+            }}
+          >
+            Delete
+          </button>
+        </div>
 
         <h2
           style={{
@@ -145,8 +154,24 @@ export default function EntryDetail() {
             marginBottom: "2rem",
           }}
         >
-          <MoodDisplay label="Mood Before" value={entry.moodPre} />
-          <MoodDisplay label="Mood After" value={entry.moodPost} />
+          {["moodPre", "moodPost"].map((key, idx) => {
+            const { icon, label } = findEmotion(entry[key]);
+            return (
+              <div key={idx} style={{ textAlign: "center" }}>
+                <div style={{ fontSize: "3rem" }}>{icon}</div>
+                <div
+                  style={{
+                    marginTop: "0.25rem",
+                    fontSize: "1rem",
+                    color: "#374151",
+                    fontWeight: 600,
+                  }}
+                >
+                  {idx === 0 ? "Mood Before" : "Mood After"}: {label}
+                </div>
+              </div>
+            );
+          })}
         </div>
 
         {photos.length > 0 && (

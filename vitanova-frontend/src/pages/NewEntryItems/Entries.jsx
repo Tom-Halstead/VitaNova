@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { listEntries } from "../../api/EntriesApi";
+import { listEntries, deleteEntry } from "../../api/EntriesApi";
 import { Link } from "react-router-dom";
 
 export default function Entries() {
@@ -9,18 +9,30 @@ export default function Entries() {
   const [pageSize, setPageSize] = useState(10);
   const [total, setTotal] = useState(0);
 
-  useEffect(() => {
+  const loadEntries = () => {
     setLoading(true);
     listEntries(page, pageSize)
       .then(({ entries, total }) => {
         setEntries(entries);
         setTotal(total);
       })
-      .catch((err) => {
-        console.error("Failed to load entries:", err);
-      })
+      .catch((err) => console.error("Failed to load entries:", err))
       .finally(() => setLoading(false));
-  }, [page, pageSize]);
+  };
+
+  useEffect(loadEntries, [page, pageSize]);
+
+  const handleDelete = (entryId) => {
+    if (!window.confirm("Delete this entry?")) return;
+    deleteEntry(entryId).then(() => {
+      // If deleting last item on page, go back a page
+      if (entries.length === 1 && page > 0) {
+        setPage(page - 1);
+      } else {
+        loadEntries();
+      }
+    });
+  };
 
   if (loading) {
     return (
@@ -115,76 +127,96 @@ export default function Entries() {
         }}
       >
         {entries.map((e) => (
-          <Link
-            key={e.entryId}
-            to={`/entries/${e.entryId}`}
-            style={{ textDecoration: "none", color: "inherit" }}
-          >
-            <div
+          <div key={e.entryId} style={{ position: "relative" }}>
+            {/* Delete button */}
+            <button
+              onClick={() => handleDelete(e.entryId)}
+              title="Delete entry"
               style={{
-                background: "#FFFFFF",
-                border: "1px solid #E5E7EB",
-                borderRadius: "0.5rem",
-                boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
-                display: "flex",
-                flexDirection: "column",
-                justifyContent: "space-between",
-                height: "100%",
-                transition: "box-shadow 0.2s",
-                padding: "1rem",
-              }}
-              onMouseEnter={(evt) => {
-                evt.currentTarget.style.boxShadow =
-                  "0 4px 12px rgba(0,0,0,0.1)";
-              }}
-              onMouseLeave={(evt) => {
-                evt.currentTarget.style.boxShadow =
-                  "0 2px 8px rgba(0,0,0,0.05)";
+                position: "absolute",
+                top: "0.5rem",
+                right: "0.5rem",
+                background: "transparent",
+                border: "none",
+                fontSize: "1.25rem",
+                cursor: "pointer",
               }}
             >
-              <div>
-                <time
-                  dateTime={e.entryDate}
-                  style={{ fontSize: "0.875rem", color: "#6B7280" }}
-                >
-                  {new Date(e.entryDate).toLocaleDateString(undefined, {
-                    year: "numeric",
-                    month: "long",
-                    day: "numeric",
-                  })}
-                </time>
-                <p
-                  style={{
-                    margin: "0.5rem 0 0",
-                    color: "#374151",
-                    fontWeight: 500,
-                    lineHeight: 1.5,
-                  }}
-                >
-                  {e.text.length > 100 ? `${e.text.slice(0, 100)}...` : e.text}
-                </p>
+              🗑️
+            </button>
+
+            <Link
+              to={`/entries/${e.entryId}`}
+              style={{ textDecoration: "none", color: "inherit" }}
+            >
+              <div
+                style={{
+                  background: "#FFFFFF",
+                  border: "1px solid #E5E7EB",
+                  borderRadius: "0.5rem",
+                  boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
+                  display: "flex",
+                  flexDirection: "column",
+                  justifyContent: "space-between",
+                  height: "100%",
+                  transition: "box-shadow 0.2s",
+                  padding: "1rem",
+                }}
+                onMouseEnter={(evt) =>
+                  (evt.currentTarget.style.boxShadow =
+                    "0 4px 12px rgba(0,0,0,0.1)")
+                }
+                onMouseLeave={(evt) =>
+                  (evt.currentTarget.style.boxShadow =
+                    "0 2px 8px rgba(0,0,0,0.05)")
+                }
+              >
+                <div>
+                  <time
+                    dateTime={e.entryDate}
+                    style={{ fontSize: "0.875rem", color: "#6B7280" }}
+                  >
+                    {new Date(e.entryDate).toLocaleDateString(undefined, {
+                      year: "numeric",
+                      month: "long",
+                      day: "numeric",
+                    })}
+                  </time>
+                  <p
+                    style={{
+                      margin: "0.5rem 0 0",
+                      color: "#374151",
+                      fontWeight: 500,
+                      lineHeight: 1.5,
+                    }}
+                  >
+                    {e.text.length > 100
+                      ? `${e.text.slice(0, 100)}...`
+                      : e.text}
+                  </p>
+                </div>
+                <div style={{ marginTop: "1rem", textAlign: "right" }}>
+                  <span
+                    style={{
+                      fontSize: "0.875rem",
+                      color: "#4F46E5",
+                      fontWeight: 600,
+                      cursor: "pointer",
+                      transition: "color 0.2s",
+                    }}
+                    onMouseEnter={(evt) =>
+                      (evt.currentTarget.style.color = "#4338CA")
+                    }
+                    onMouseLeave={(evt) =>
+                      (evt.currentTarget.style.color = "#4F46E5")
+                    }
+                  >
+                    View →
+                  </span>
+                </div>
               </div>
-              <div style={{ marginTop: "1rem", textAlign: "right" }}>
-                <span
-                  style={{
-                    fontSize: "0.875rem",
-                    color: "#4F46E5",
-                    fontWeight: 600,
-                    cursor: "pointer",
-                    transition: "color 0.2s",
-                  }}
-                  onMouseEnter={(evt) =>
-                    (evt.currentTarget.style.color = "#4338CA")
-                  }
-                  onMouseLeave={(evt) =>
-                    (evt.currentTarget.style.color = "#4F46E5")
-                  }
-                >
-                  View →
-                </span>
-              </div>
-            </div>
-          </Link>
+            </Link>
+          </div>
         ))}
       </div>
 
@@ -194,7 +226,7 @@ export default function Entries() {
           display: "flex",
           justifyContent: "center",
           alignItems: "center",
-          margin: "2rem 0",
+          margin: "3rem 0",
           gap: "0.5rem",
         }}
       >

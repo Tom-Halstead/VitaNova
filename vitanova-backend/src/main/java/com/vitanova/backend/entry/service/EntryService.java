@@ -129,8 +129,20 @@ public class EntryService {
         } catch (Exception ex) {
             throw new IllegalStateException("Unexpected error in createEntryWithPhotos", ex);
         }
+
     }
 
+
+
+    @Transactional
+    public void deleteEntryForUser(int entryId, String cognitoUuid) {
+        var user = userRepo.findByCognitoUuid(cognitoUuid)
+                .orElseThrow(() -> new NoSuchElementException("User not found"));
+        int deleted = entryRepo.deleteByEntryIdAndUserId(entryId, user.getUserId());
+        if (deleted == 0) {
+            throw new NoSuchElementException("Entry not found or access denied.");
+        }
+    }
 
 
 
