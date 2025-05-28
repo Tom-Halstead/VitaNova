@@ -95,5 +95,15 @@ public class UserService {
                 .getUserId();
     }
 
+    /**
+     * Fetch the full UserModel by its numeric ID, or throw if not present.
+     */
+    public UserModel getUserEntityById(int userId) {
+        return userRepo.findById(userId)
+                .orElseThrow(() -> new UsernameNotFoundException(
+                        "No user found with ID: " + userId));
+    }
+
+
 
 }
