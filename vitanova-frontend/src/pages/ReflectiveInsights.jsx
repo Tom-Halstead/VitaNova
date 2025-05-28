@@ -6,19 +6,29 @@ export default function ReflectiveInsights() {
   const [newType, setNewType] = useState("");
   const [newTarget, setNewTarget] = useState(0);
   const [newDue, setNewDue] = useState("");
+  const [loading, setLoading] = useState(true);
 
+  // Load goals on mount
   useEffect(() => {
     (async () => {
-      const data = await listGoals();
-      setGoals(data);
+      try {
+        const page = await listGoals(); // await the Promise
+        setGoals(Array.isArray(page.content) ? page.content : []);
+      } catch (err) {
+        console.error("Failed to load goals:", err);
+        setGoals([]);
+      } finally {
+        setLoading(false);
+      }
     })();
   }, []);
 
   const handleCreate = async () => {
+    if (!newType.trim() || newTarget <= 0) return; // simple validation
     const created = await createGoal({
-      type: newType,
+      type: newType.trim(),
       targetValue: newTarget,
-      dueDate: newDue,
+      dueDate: newDue || null,
     });
     setGoals((prev) => [...prev, created]);
     setNewType("");
@@ -27,9 +37,12 @@ export default function ReflectiveInsights() {
   };
 
   const handleIncrement = async (id) => {
-    const g = goals.find((g) => g.goalId === id);
-    const updated = await updateGoal(id, { currentValue: g.currentValue + 1 });
-    setGoals((prev) => prev.map((x) => (x.goalId === id ? updated : x)));
+    const goal = goals.find((g) => g.goalId === id);
+    if (!goal) return;
+    const updated = await updateGoal(id, {
+      currentValue: goal.currentValue + 1,
+    });
+    setGoals((prev) => prev.map((g) => (g.goalId === id ? updated : g)));
   };
 
   return (
@@ -54,12 +67,12 @@ export default function ReflectiveInsights() {
           Reflective Insights & Goals
         </h2>
 
-        {/* ————— New Goal Form ————— */}
+        {/* New Goal Form */}
         <div
           style={{
             display: "grid",
             gridTemplateColumns: "1fr 1fr 1fr auto",
-            gap: "3rem",
+            gap: "2rem",
             background: "#FFFFFF",
             padding: "1.5rem",
             borderRadius: "0.75rem",
@@ -67,6 +80,7 @@ export default function ReflectiveInsights() {
             marginBottom: "2rem",
           }}
         >
+          {/* Goal Type */}
           <div>
             <label
               htmlFor="goal-type"
@@ -97,6 +111,7 @@ export default function ReflectiveInsights() {
             />
           </div>
 
+          {/* Target Value */}
           <div>
             <label
               htmlFor="goal-target"
@@ -127,6 +142,7 @@ export default function ReflectiveInsights() {
             />
           </div>
 
+          {/* Due Date */}
           <div>
             <label
               htmlFor="goal-due"
@@ -156,12 +172,12 @@ export default function ReflectiveInsights() {
             />
           </div>
 
+          {/* Add Button */}
           <div style={{ display: "flex", alignItems: "flex-end" }}>
             <button
               onClick={handleCreate}
               style={{
                 height: "3.3em",
-                justifySelf: "center",
                 width: "100%",
                 padding: "0.75rem",
                 background: "linear-gradient(90deg, #6366F1, #4F46E5)",
@@ -187,114 +203,126 @@ export default function ReflectiveInsights() {
           </div>
         </div>
 
-        {/* ————— Goals Grid ————— */}
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))",
-            gap: "1.5rem",
-          }}
-        >
-          {goals.map((goal) => (
-            <div
-              key={goal.goalId}
-              style={{
-                position: "relative",
-                background: "#FFFFFF",
-                borderRadius: "0.75rem",
-                padding: "1.5rem",
-                boxShadow: "0 4px 12px rgba(0,0,0,0.05)",
-                display: "flex",
-                flexDirection: "column",
-              }}
-            >
-              {/* Status badge */}
-              <span
-                style={{
-                  position: "absolute",
-                  top: "1rem",
-                  right: "1rem",
-                  background:
-                    goal.status === "COMPLETED"
-                      ? "#10B981"
-                      : goal.status === "EXPIRED"
-                      ? "#EF4444"
-                      : "#FBBF24",
-                  color: "#FFF",
-                  padding: "0.25rem 0.75rem",
-                  borderRadius: "999px",
-                  fontSize: "0.75rem",
-                  fontWeight: 600,
-                }}
-              >
-                {goal.status}
-              </span>
-
-              <h3
-                style={{
-                  margin: 0,
-                  fontSize: "1.25rem",
-                  color: "#1F2937",
-                  marginBottom: "0.5rem",
-                }}
-              >
-                {goal.type}
-              </h3>
-
-              <p
-                style={{
-                  fontSize: "1.5rem",
-                  fontWeight: 600,
-                  color: "#4F46E5",
-                  margin: "0.5rem 0",
-                }}
-              >
-                {goal.currentValue} / {goal.targetValue}
-              </p>
-
+        {/* Goals Grid */}
+        {loading ? (
+          <p style={{ textAlign: "center", color: "#6B7280" }}>
+            Loading goals…
+          </p>
+        ) : goals.length === 0 ? (
+          <p style={{ textAlign: "center", color: "#6B7280" }}>
+            No goals yet. Add one above to get started!
+          </p>
+        ) : (
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))",
+              gap: "1.5rem",
+            }}
+          >
+            {goals.map((goal) => (
               <div
+                key={goal.goalId}
                 style={{
-                  marginBottom: "1rem",
-                  color: "#6B7280",
+                  position: "relative",
+                  background: "#FFFFFF",
+                  borderRadius: "0.75rem",
+                  padding: "1.5rem",
+                  boxShadow: "0 4px 12px rgba(0,0,0,0.05)",
+                  display: "flex",
+                  flexDirection: "column",
                 }}
               >
-                <div>
-                  <strong>Created:</strong>{" "}
-                  {new Date(goal.createdAt).toLocaleDateString()}
-                </div>
-                <div>
-                  <strong>Due by:</strong>{" "}
-                  {new Date(goal.dueDate).toLocaleDateString()}
-                </div>
-              </div>
+                {/* Status badge */}
+                <span
+                  style={{
+                    position: "absolute",
+                    top: "1rem",
+                    right: "1rem",
+                    background:
+                      goal.status === "COMPLETED"
+                        ? "#10B981"
+                        : goal.status === "EXPIRED"
+                        ? "#EF4444"
+                        : "#FBBF24",
+                    color: "#FFF",
+                    padding: "0.25rem 0.75rem",
+                    borderRadius: "999px",
+                    fontSize: "0.75rem",
+                    fontWeight: 600,
+                  }}
+                >
+                  {goal.status}
+                </span>
 
-              <button
-                onClick={() => handleIncrement(goal.goalId)}
-                style={{
-                  padding: "0.5rem",
-                  background: "#E0E7FF",
-                  color: "#3730A3",
-                  border: "none",
-                  borderRadius: "0.5rem",
-                  cursor: "pointer",
-                  fontWeight: 600,
-                  alignSelf: "start",
-                  transition: "background 0.2s, transform 0.1s",
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.background = "#C7D2FE";
-                  e.currentTarget.style.transform = "scale(1.05)";
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.background = "#E0E7FF";
-                  e.currentTarget.style.transform = "scale(1)";
-                }}
-              >
-                +1 Progress
-              </button>
-            </div>
-          ))}
-        </div>
+                <h3
+                  style={{
+                    margin: 0,
+                    fontSize: "1.25rem",
+                    color: "#1F2937",
+                    marginBottom: "0.5rem",
+                  }}
+                >
+                  {goal.type}
+                </h3>
+
+                <p
+                  style={{
+                    fontSize: "1.5rem",
+                    fontWeight: 600,
+                    color: "#4F46E5",
+                    margin: "0.5rem 0",
+                  }}
+                >
+                  {goal.currentValue} / {goal.targetValue}
+                </p>
+
+                <div
+                  style={{
+                    marginBottom: "1rem",
+                    color: "#6B7280",
+                  }}
+                >
+                  <div>
+                    <strong>Created:</strong>{" "}
+                    {new Date(goal.createdAt).toLocaleDateString()}
+                  </div>
+                  <div>
+                    <strong>Due by:</strong>{" "}
+                    {goal.dueDate
+                      ? new Date(goal.dueDate).toLocaleDateString()
+                      : "–"}
+                  </div>
+                </div>
+
+                <button
+                  onClick={() => handleIncrement(goal.goalId)}
+                  style={{
+                    padding: "0.5rem",
+                    background: "#E0E7FF",
+                    color: "#3730A3",
+                    border: "none",
+                    borderRadius: "0.5rem",
+                    cursor: "pointer",
+                    fontWeight: 600,
+                    alignSelf: "start",
+                    transition: "background 0.2s, transform 0.1s",
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = "#C7D2FE";
+                    e.currentTarget.style.transform = "scale(1.05)";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = "#E0E7FF";
+                    e.currentTarget.style.transform = "scale(1)";
+                  }}
+                >
+                  +1 Progress
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
