@@ -80,7 +80,7 @@ public class UserService {
     public int getUserIdByCognitoSub(String cognitoSub) {
         return userRepo.findByCognitoUuid(cognitoSub)
                 .map(UserModel::getUserId)
-                .orElseThrow(() -> new NoSuchElementException("User not found"));
+                .orElseThrow(() -> new NoSuchElementException("User not found!"));
     }
 
     /**
