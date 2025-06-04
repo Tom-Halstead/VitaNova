@@ -277,7 +277,7 @@ export default function NewEntry() {
             display: "grid",
             gridTemplateColumns: "150px 1fr 1fr",
             gap: "1rem",
-            alignItems: "center", // vertically center all three
+            alignItems: "start", // ← changed from "center" to "start"
           }}
         >
           {/* Date Column */}
@@ -313,7 +313,7 @@ export default function NewEntry() {
           </div>
 
           {/* Mood Before */}
-          <div style={{}}>
+          <div>
             <MoodInput
               label="Mood Before"
               value={moodPre}
@@ -322,7 +322,7 @@ export default function NewEntry() {
           </div>
 
           {/* Mood After */}
-          <div style={{}}>
+          <div>
             <MoodInput
               label="Mood After"
               value={moodPost}
