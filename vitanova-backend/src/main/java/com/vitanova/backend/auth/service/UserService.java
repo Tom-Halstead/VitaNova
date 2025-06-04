@@ -60,7 +60,7 @@ public class UserService {
     @Transactional
     public void deleteByCognitoUuid(String cognitoUuid) {
         if (cognitoUuid == null || cognitoUuid.trim().isEmpty()) {
-            throw new IllegalArgumentException("cognitoUuid must not be null or empty!");
+            throw new IllegalArgumentException("cognitoUuid must not be null or empty.");
         }
 
         try {
