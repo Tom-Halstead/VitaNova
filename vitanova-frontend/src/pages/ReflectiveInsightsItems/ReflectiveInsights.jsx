@@ -1,14 +1,12 @@
 // src/pages/ReflectiveInsightsItems/ReflectiveInsights.jsx
-import React, { useEffect, useState, useMemo } from "react";
 
-// ←––– Adjusted path up two levels to reach src/api/GoalsApi.js ––→
+import React, { useEffect, useState, useMemo } from "react";
 import {
   listGoals,
   createGoal,
   updateGoal,
   deleteGoal,
 } from "../../api/GoalsApi";
-
 import TimelineBar from "../../pages/ReflectiveInsightsItems/TimelineBar";
 
 export default function ReflectiveInsights() {
@@ -18,18 +16,19 @@ export default function ReflectiveInsights() {
   const [newDue, setNewDue] = useState("");
   const [loading, setLoading] = useState(true);
 
-  // Which goal (object) is currently selected from the timeline
+  // Which completed goal is currently open in the modal
   const [selectedGoal, setSelectedGoal] = useState(null);
 
-  // For editing reflection text (only saved on explicit “Save”)
+  // If user is editing a reflection inside the modal:
   const [editingGoalId, setEditingGoalId] = useState(null);
   const [draftReflection, setDraftReflection] = useState("");
 
-  // Fetch all goals on mount
+  // 1) Fetch all goals once on mount
   useEffect(() => {
     (async () => {
       try {
         const page = await listGoals();
+        // Each “g” already has fields: { goalId, type, targetValue, currentValue, dueDate, status, createdAt, … }
         const initialized = Array.isArray(page.content)
           ? page.content.map((g) => ({
               ...g,
@@ -47,7 +46,7 @@ export default function ReflectiveInsights() {
     })();
   }, []);
 
-  // Create a new goal
+  // 2) Create a new goal
   const handleCreate = async () => {
     const numericTarget = parseInt(newTarget, 10);
     if (!newType.trim() || isNaN(numericTarget) || numericTarget <= 0) return;
@@ -70,7 +69,7 @@ export default function ReflectiveInsights() {
     }
   };
 
-  // Update slider value or auto‐complete at 100%
+  // 3) Slider change → either update progress or mark complete if it hits 100%
   const handleSliderChange = (id, percentage) => {
     const goal = goals.find((g) => g.goalId === id);
     if (!goal || goal.status === "COMPLETED") return;
@@ -81,7 +80,7 @@ export default function ReflectiveInsights() {
     if (clamped === 100) {
       handleMarkComplete(id);
     } else {
-      // Optimistic UI
+      // optimistic UI update
       setGoals((prev) =>
         prev.map((g) =>
           g.goalId === id ? { ...g, currentValue: newCurrentValue } : g
@@ -93,7 +92,7 @@ export default function ReflectiveInsights() {
     }
   };
 
-  // Mark a goal as completed
+  // 4) Mark a goal as completed
   const handleMarkComplete = (id) => {
     const goal = goals.find((g) => g.goalId === id);
     if (!goal || goal.status === "COMPLETED") return;
@@ -117,13 +116,13 @@ export default function ReflectiveInsights() {
     }).catch((err) => console.error("Failed to mark goal complete:", err));
   };
 
-  // Delete a goal (active or completed)
+  // 5) Delete a goal (active or completed)
   const handleDelete = async (id) => {
     try {
       await deleteGoal(id);
       setGoals((prev) => prev.filter((g) => g.goalId !== id));
 
-      // If we were editing or viewing that goal, clear
+      // Clear modal/edit states if the deleted goal was open
       if (editingGoalId === id) {
         setEditingGoalId(null);
         setDraftReflection("");
@@ -136,40 +135,50 @@ export default function ReflectiveInsights() {
     }
   };
 
-  // Start editing a goal’s reflection
+  // 6) Start editing reflection in the modal
   const startEditing = (id, currentText) => {
     setEditingGoalId(id);
     setDraftReflection(currentText);
   };
-
-  // Cancel editing
   const cancelEditing = () => {
     setEditingGoalId(null);
     setDraftReflection("");
   };
 
-  // Save the reflection to the database only when “Save” is clicked
+  // 7) Save reflection text (update both `goals` array and the open `selectedGoal`)
   const saveReflection = (id) => {
+    // 7a) Update the local goals state
     setGoals((prev) =>
       prev.map((g) =>
         g.goalId === id ? { ...g, reflectionText: draftReflection } : g
       )
     );
+
+    // 7b) If the modal is showing exactly this goal, update `selectedGoal` as well:
+    setSelectedGoal((prev) =>
+      prev && prev.goalId === id
+        ? { ...prev, reflectionText: draftReflection }
+        : prev
+    );
+
+    // 7c) Fire the API call
     updateGoal(id, { reflectionText: draftReflection }).catch((err) =>
       console.error("Failed to save reflection:", err)
     );
+
+    // 7d) Close editing mode
     setEditingGoalId(null);
     setDraftReflection("");
   };
 
-  // Called by TimelineBar when a marker is clicked
+  // 8) When user clicks a bubble on the timeline
   const handleSelectGoal = (goalObj) => {
     setSelectedGoal(goalObj);
-    setEditingGoalId(goalObj.goalId);
+    setEditingGoalId(null);
     setDraftReflection(goalObj.reflectionText || "");
   };
 
-  // Partition into active/expired vs. completed
+  // 9) Partition active vs. completed
   const activeGoals = goals.filter((g) => g.status !== "COMPLETED");
   const completedGoals = goals
     .filter((g) => g.status === "COMPLETED")
@@ -180,9 +189,9 @@ export default function ReflectiveInsights() {
       return dateB - dateA;
     });
 
-  // Compute earliest createdAt across all goals (for timeline start)
+  // 10) Compute earliest creation date (for timeline start)
   const earliestCreatedDate = useMemo(() => {
-    if (goals.length === 0) return new Date(); // fallback to today
+    if (goals.length === 0) return new Date();
     const dates = goals
       .map((g) => new Date(g.createdAt))
       .filter((d) => d instanceof Date && !isNaN(d));
@@ -212,7 +221,7 @@ export default function ReflectiveInsights() {
           Reflective Insights & Goals
         </h2>
 
-        {/* ===== New Goal Form ===== */}
+        {/** ─── New Goal Form ─── **/}
         <div
           style={{
             display: "grid",
@@ -349,7 +358,7 @@ export default function ReflectiveInsights() {
           </div>
         </div>
 
-        {/* ===== Active / Expired Goals Grid ===== */}
+        {/** ─── Active / Expired Goals Grid ─── **/}
         {loading ? (
           <p style={{ textAlign: "center", color: "#6B7280" }}>
             Loading goals…
@@ -559,155 +568,14 @@ export default function ReflectiveInsights() {
           </div>
         )}
 
-        {/* ===== Completed Goals Grid (same styling as active cards) ===== */}
-        {completedGoals.length > 0 && (
-          <div
-            style={{
-              marginTop: "3rem",
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))",
-              gap: "1.5rem",
-            }}
-          >
-            {completedGoals.map((g) => (
-              <div
-                key={g.goalId}
-                style={{
-                  position: "relative",
-                  background: "#FFFFFF",
-                  borderRadius: "0.75rem",
-                  padding: "1.5rem",
-                  boxShadow: "0 4px 12px rgba(0,0,0,0.05)",
-                  display: "flex",
-                  flexDirection: "column",
-                  opacity: 0.75,
-                }}
-              >
-                {/* COMPLETED badge */}
-                <span
-                  style={{
-                    position: "absolute",
-                    top: "1rem",
-                    right: "1rem",
-                    background: "#10B981",
-                    color: "#FFF",
-                    padding: "0.25rem 0.75rem",
-                    borderRadius: "999px",
-                    fontSize: "0.75rem",
-                    fontWeight: 600,
-                  }}
-                >
-                  COMPLETED
-                </span>
-
-                <h3
-                  style={{
-                    margin: 0,
-                    fontSize: "1.25rem",
-                    color: "#1F2937",
-                    marginBottom: "0.5rem",
-                  }}
-                >
-                  {g.type}
-                </h3>
-
-                <p
-                  style={{
-                    fontSize: "1.5rem",
-                    fontWeight: 600,
-                    color: "#4F46E5",
-                    margin: "0.5rem 0",
-                  }}
-                >
-                  {g.currentValue} / {g.targetValue}
-                </p>
-
-                <div
-                  style={{
-                    marginBottom: "1rem",
-                    color: "#6B7280",
-                  }}
-                >
-                  <div>
-                    <strong>Created:</strong>{" "}
-                    {new Date(g.createdAt).toLocaleDateString()}
-                  </div>
-                  <div>
-                    <strong>Completed:</strong>{" "}
-                    {g.completionDate
-                      ? new Date(g.completionDate).toLocaleDateString()
-                      : new Date(g.createdAt).toLocaleDateString()}
-                  </div>
-                </div>
-
-                {/* Reflection text (read-only) */}
-                <div>
-                  <label
-                    htmlFor={`reflection-${g.goalId}`}
-                    style={{
-                      display: "block",
-                      marginBottom: "0.25rem",
-                      fontWeight: 600,
-                      color: "#374151",
-                    }}
-                  >
-                    Reflection
-                  </label>
-                  <p
-                    id={`reflection-${g.goalId}`}
-                    style={{
-                      minHeight: "80px",
-                      padding: "0.75rem",
-                      border: "1px solid #E5E7EB",
-                      borderRadius: "0.5rem",
-                      fontFamily: "'Lato', sans-serif",
-                      fontSize: "0.875rem",
-                      color: "#374151",
-                      whiteSpace: "pre-wrap",
-                      background: "#F9FAFB",
-                    }}
-                  >
-                    {g.reflectionText || "No reflection written."}
-                  </p>
-                </div>
-
-                <button
-                  onClick={() => handleDelete(g.goalId)}
-                  style={{
-                    marginTop: "auto",
-                    padding: "0.5rem",
-                    background: "#FECACA",
-                    color: "#B91C1C",
-                    border: "none",
-                    borderRadius: "0.5rem",
-                    cursor: "pointer",
-                    fontWeight: 600,
-                    transition: "background 0.2s, transform 0.1s",
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.background = "#FCA5A5";
-                    e.currentTarget.style.transform = "scale(1.05)";
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.background = "#FECACA";
-                    e.currentTarget.style.transform = "scale(1)";
-                  }}
-                >
-                  Delete
-                </button>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {/* ===== Timeline Bar Below Completed Grid ===== */}
+        {/** ─── Timeline Bar (Completed Goals Only) ─── **/}
         <TimelineBar
           completedGoals={completedGoals}
           startDate={earliestCreatedDate}
           onSelectGoal={handleSelectGoal}
         />
 
-        {/* ===== Pop-Up Modal for Selected Goal ===== */}
+        {/** ─── Pop-Up Modal for Selected Goal ─── **/}
         {selectedGoal && (
           <div
             style={{
@@ -724,7 +592,6 @@ export default function ReflectiveInsights() {
             }}
             onClick={() => setSelectedGoal(null)}
           >
-            {/* Stop propagation so clicking inside the white card does NOT close it */}
             <div
               style={{
                 background: "#FFFFFF",
@@ -804,11 +671,10 @@ export default function ReflectiveInsights() {
                 </div>
               </div>
 
-              {/* Reflection area */}
               {editingGoalId === selectedGoal.goalId ? (
-                <div>
+                <>
                   <label
-                    htmlFor={`reflection-edit-modal`}
+                    htmlFor="reflection-edit-modal"
                     style={{
                       display: "block",
                       marginBottom: "0.25rem",
@@ -819,7 +685,7 @@ export default function ReflectiveInsights() {
                     Edit Reflection
                   </label>
                   <textarea
-                    id={`reflection-edit-modal`}
+                    id="reflection-edit-modal"
                     value={draftReflection}
                     onChange={(e) => setDraftReflection(e.target.value)}
                     placeholder="Write your reflection here..."
@@ -892,11 +758,11 @@ export default function ReflectiveInsights() {
                       Cancel
                     </button>
                   </div>
-                </div>
+                </>
               ) : (
-                <div>
+                <>
                   <label
-                    htmlFor={`reflection-display-modal`}
+                    htmlFor="reflection-display-modal"
                     style={{
                       display: "block",
                       marginBottom: "0.25rem",
@@ -907,7 +773,7 @@ export default function ReflectiveInsights() {
                     Reflection
                   </label>
                   <p
-                    id={`reflection-display-modal`}
+                    id="reflection-display-modal"
                     style={{
                       minHeight: "80px",
                       padding: "0.75rem",
@@ -951,7 +817,7 @@ export default function ReflectiveInsights() {
                   >
                     Edit Reflection
                   </button>
-                </div>
+                </>
               )}
             </div>
           </div>
