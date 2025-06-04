@@ -14,6 +14,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.util.function.Function;
 
 @Service
@@ -22,8 +23,7 @@ public class UserGoalService {
         private final UserGoalRepository userGoalRepo;
         private final UserService userService;
 
-
-
+        /** Convert entity → response DTO, including the new fields. */
         private final Function<UserGoalModel, UserGoalResponseDTO> TO_DTO = g -> {
                 UserGoalResponseDTO dto = new UserGoalResponseDTO();
                 dto.setGoalId(g.getGoalId());
@@ -33,6 +33,10 @@ public class UserGoalService {
                 dto.setDueDate(g.getDueDate());
                 dto.setStatus(g.getStatus());
                 dto.setCreatedAt(g.getCreatedAt());
+
+                // NEW FIELDS:
+                dto.setCompletionDate(g.getCompletionDate());
+                dto.setReflectionText(g.getReflectionText());
                 return dto;
         };
 
@@ -40,7 +44,9 @@ public class UserGoalService {
         public Page<UserGoalResponseDTO> listGoalsForCurrentUser(int page, int size, String cognitoSub) {
                 int userId = userService.getUserIdByCognitoSub(cognitoSub);
                 Pageable pg = PageRequest.of(page, size, Sort.by("createdAt").descending());
-                return userGoalRepo.findByUserUserId(userId, pg).map(TO_DTO);
+                return userGoalRepo
+                        .findByUserUserId(userId, pg)
+                        .map(TO_DTO);
         }
 
         @Transactional
@@ -55,6 +61,19 @@ public class UserGoalService {
                 goal.setCurrentValue(req.getCurrentValue() != null ? req.getCurrentValue() : 0);
                 goal.setDueDate(req.getDueDate());
 
+                // If the client explicitly set a reflectionText at creation, store it:
+                if (req.getReflectionText() != null) {
+                        goal.setReflectionText(req.getReflectionText());
+                }
+
+                // If they send status = "COMPLETED" at create time, record completionDate = now.
+                if ("COMPLETED".equalsIgnoreCase(req.getStatus())) {
+                        goal.setStatus("COMPLETED");
+                        goal.setCompletionDate(Instant.now());
+                        // Force currentValue = targetValue if they mark complete immediately:
+                        goal.setCurrentValue(goal.getTargetValue());
+                }
+
                 UserGoalModel saved = userGoalRepo.save(goal);
                 return TO_DTO.apply(saved);
         }
@@ -65,10 +84,41 @@ public class UserGoalService {
                 UserGoalModel goal = userGoalRepo.findById(goalId)
                         .filter(g -> g.getUser().getUserId() == userId)
                         .orElseThrow(() -> new IllegalArgumentException("No such goal"));
-                if (req.getType() != null)        goal.setType(req.getType());
-                if (req.getTargetValue() != null) goal.setTargetValue(req.getTargetValue());
-                if (req.getCurrentValue() != null)goal.setCurrentValue(req.getCurrentValue());
-                if (req.getDueDate() != null)     goal.setDueDate(req.getDueDate());
+
+                // Partial update logic (only override if non‐null in req):
+                if (req.getType() != null) {
+                        goal.setType(req.getType());
+                }
+                if (req.getTargetValue() != null) {
+                        goal.setTargetValue(req.getTargetValue());
+                }
+                if (req.getCurrentValue() != null) {
+                        goal.setCurrentValue(req.getCurrentValue());
+                }
+                if (req.getDueDate() != null) {
+                        goal.setDueDate(req.getDueDate());
+                }
+
+                // If client sent a new status:
+                if (req.getStatus() != null) {
+                        String newStatus = req.getStatus().toUpperCase();
+                        goal.setStatus(newStatus);
+                        // If marking COMPLETED → set completionDate if not already set
+                        if ("COMPLETED".equals(newStatus) && goal.getCompletionDate() == null) {
+                                goal.setCompletionDate(Instant.now());
+                                // Also ensure currentValue = targetValue
+                                goal.setCurrentValue(goal.getTargetValue());
+                        }
+                        // If they switch back from COMPLETED to ACTIVE (rare), clear completionDate:
+                        if (!"COMPLETED".equals(newStatus)) {
+                                goal.setCompletionDate(null);
+                        }
+                }
+
+                // If client sent a reflectionText, store it:
+                if (req.getReflectionText() != null) {
+                        goal.setReflectionText(req.getReflectionText());
+                }
 
                 UserGoalModel updated = userGoalRepo.save(goal);
                 return TO_DTO.apply(updated);
@@ -82,6 +132,4 @@ public class UserGoalService {
                         .orElseThrow(() -> new IllegalArgumentException("No such goal"));
                 userGoalRepo.delete(goal);
         }
-
-    }
-
+}

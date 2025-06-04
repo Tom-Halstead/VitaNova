@@ -1,14 +1,14 @@
 import React from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import Home from "../pages/Home";
-import Dashboard from "../pages/Dashboard";
+import Dashboard from "../pages/DashboardItems/Dashboard";
 import Timeline from "../pages/DashboardItems/Timeline";
 import Trends from "../pages/DashboardItems/Trends";
 import Insights from "../pages/DashboardItems/Insights";
 import NewEntry from "../pages/NewEntryItems/NewEntry";
 import EntryList from "../pages/NewEntryItems/Entries";
 import EntryDetail from "../pages/NewEntryItems/EntryDetail";
-import ReflectiveInsights from "../pages/ReflectiveInsights";
+import ReflectiveInsights from "../pages/ReflectiveInsightsItems/ReflectiveInsights";
 import Settings from "../pages/Settings";
 import ProtectedRoute from "./ProtectedRoute";
 

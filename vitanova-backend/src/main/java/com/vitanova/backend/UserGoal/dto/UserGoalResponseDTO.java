@@ -14,4 +14,6 @@ public class UserGoalResponseDTO {
     private LocalDate dueDate;
     private String status;
     private Instant createdAt;
+    private Instant completionDate;
+    private String reflectionText;
 }

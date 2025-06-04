@@ -40,6 +40,22 @@ public class UserGoalModel {
     @Column(name = "status", length = 20, nullable = false)
     private String status = "ACTIVE";
 
+    /** This column is populated by the database DEFAULT CURRENT_TIMESTAMP, not updated by application. */
     @Column(name = "created_at", updatable = false, insertable = false)
     private Instant createdAt;
+
+    // ─────────────────────────────────────────────────────────────────────────────
+    // NEW FIELDS:
+    // ─────────────────────────────────────────────────────────────────────────────
+
+    /** Free‐text reflection & insights entered by the user */
+    @Column(name = "reflection_text", columnDefinition = "TEXT")
+    private String reflectionText;
+
+    /**
+     * When the goal was marked complete.
+     * We will set this in application code (Instant.now()) whenever status → COMPLETED.
+     */
+    @Column(name = "completion_date")
+    private Instant completionDate;
 }
