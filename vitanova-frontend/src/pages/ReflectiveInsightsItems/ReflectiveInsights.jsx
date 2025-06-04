@@ -7,7 +7,8 @@ import {
   updateGoal,
   deleteGoal,
 } from "../../api/GoalsApi";
-import TimelineBar from "../../pages/ReflectiveInsightsItems/TimelineBar";
+import TimelineBar from "./TimelineBar";
+import AllGoalsTabView from "./AllGoalsTabView";
 
 export default function ReflectiveInsights() {
   const [goals, setGoals] = useState([]);
@@ -16,22 +17,24 @@ export default function ReflectiveInsights() {
   const [newDue, setNewDue] = useState("");
   const [loading, setLoading] = useState(true);
 
-  // Which completed goal is currently open in the modal
+  // Which completed goal is currently selected in the timeline pop‐up:
   const [selectedGoal, setSelectedGoal] = useState(null);
-
-  // If user is editing a reflection inside the modal:
   const [editingGoalId, setEditingGoalId] = useState(null);
   const [draftReflection, setDraftReflection] = useState("");
 
-  // 1) Fetch all goals once on mount
+  // Whether to show the “All Goals Tab View” beneath the timeline:
+  const [showAllTabs, setShowAllTabs] = useState(false);
+
+  // ─── 1) Load all goals on mount ───
   useEffect(() => {
     (async () => {
       try {
         const page = await listGoals();
-        // Each “g” already has fields: { goalId, type, targetValue, currentValue, dueDate, status, createdAt, … }
+        // Map each returned goal; if createdAt or completionDate is missing, default to now
         const initialized = Array.isArray(page.content)
           ? page.content.map((g) => ({
               ...g,
+              createdAt: g.createdAt || new Date().toISOString(),
               completionDate: g.completionDate || null,
               reflectionText: g.reflectionText || "",
             }))
@@ -46,7 +49,7 @@ export default function ReflectiveInsights() {
     })();
   }, []);
 
-  // 2) Create a new goal
+  // ─── 2) Create a new goal ───
   const handleCreate = async () => {
     const numericTarget = parseInt(newTarget, 10);
     if (!newType.trim() || isNaN(numericTarget) || numericTarget <= 0) return;
@@ -57,9 +60,17 @@ export default function ReflectiveInsights() {
         targetValue: numericTarget,
         dueDate: newDue || null,
       });
+      // If server did not return createdAt, use current timestamp
+      const createdAtISO = created.createdAt || new Date().toISOString();
+
       setGoals((prev) => [
         ...prev,
-        { ...created, completionDate: null, reflectionText: "" },
+        {
+          ...created,
+          createdAt: createdAtISO,
+          completionDate: null,
+          reflectionText: "",
+        },
       ]);
       setNewType("");
       setNewTarget("");
@@ -69,7 +80,7 @@ export default function ReflectiveInsights() {
     }
   };
 
-  // 3) Slider change → either update progress or mark complete if it hits 100%
+  // ─── 3) Slider change: update progress or mark complete at 100% ───
   const handleSliderChange = (id, percentage) => {
     const goal = goals.find((g) => g.goalId === id);
     if (!goal || goal.status === "COMPLETED") return;
@@ -80,7 +91,6 @@ export default function ReflectiveInsights() {
     if (clamped === 100) {
       handleMarkComplete(id);
     } else {
-      // optimistic UI update
       setGoals((prev) =>
         prev.map((g) =>
           g.goalId === id ? { ...g, currentValue: newCurrentValue } : g
@@ -92,12 +102,12 @@ export default function ReflectiveInsights() {
     }
   };
 
-  // 4) Mark a goal as completed
+  // ─── 4) Mark goal as completed ───
   const handleMarkComplete = (id) => {
     const goal = goals.find((g) => g.goalId === id);
     if (!goal || goal.status === "COMPLETED") return;
 
-    const completionDate = new Date().toISOString();
+    const completionDateISO = new Date().toISOString();
     setGoals((prev) =>
       prev.map((g) =>
         g.goalId === id
@@ -105,24 +115,25 @@ export default function ReflectiveInsights() {
               ...g,
               status: "COMPLETED",
               currentValue: g.targetValue,
-              completionDate,
+              completionDate: completionDateISO,
             }
           : g
       )
     );
+
     updateGoal(id, {
       status: "COMPLETED",
       currentValue: goal.targetValue,
+      completionDate: completionDateISO,
     }).catch((err) => console.error("Failed to mark goal complete:", err));
   };
 
-  // 5) Delete a goal (active or completed)
+  // ─── 5) Delete a goal ───
   const handleDelete = async (id) => {
     try {
       await deleteGoal(id);
       setGoals((prev) => prev.filter((g) => g.goalId !== id));
 
-      // Clear modal/edit states if the deleted goal was open
       if (editingGoalId === id) {
         setEditingGoalId(null);
         setDraftReflection("");
@@ -135,68 +146,60 @@ export default function ReflectiveInsights() {
     }
   };
 
-  // 6) Start editing reflection in the modal
+  // ─── 6) Reflection editing handlers ───
   const startEditing = (id, currentText) => {
     setEditingGoalId(id);
-    setDraftReflection(currentText);
+    setDraftReflection(currentText || "");
   };
   const cancelEditing = () => {
     setEditingGoalId(null);
     setDraftReflection("");
   };
-
-  // 7) Save reflection text (update both `goals` array and the open `selectedGoal`)
-  const saveReflection = (id) => {
-    // 7a) Update the local goals state
-    setGoals((prev) =>
-      prev.map((g) =>
-        g.goalId === id ? { ...g, reflectionText: draftReflection } : g
-      )
-    );
-
-    // 7b) If the modal is showing exactly this goal, update `selectedGoal` as well:
-    setSelectedGoal((prev) =>
-      prev && prev.goalId === id
-        ? { ...prev, reflectionText: draftReflection }
-        : prev
-    );
-
-    // 7c) Fire the API call
-    updateGoal(id, { reflectionText: draftReflection }).catch((err) =>
-      console.error("Failed to save reflection:", err)
-    );
-
-    // 7d) Close editing mode
-    setEditingGoalId(null);
-    setDraftReflection("");
+  const saveReflection = async (id) => {
+    try {
+      await updateGoal(id, { reflectionText: draftReflection });
+      setGoals((prev) =>
+        prev.map((g) =>
+          g.goalId === id ? { ...g, reflectionText: draftReflection } : g
+        )
+      );
+      setEditingGoalId(null);
+      setDraftReflection("");
+    } catch (err) {
+      console.error("Failed to save reflection:", err);
+    }
   };
 
-  // 8) When user clicks a bubble on the timeline
+  // ─── 7) Timeline bubble click ───
   const handleSelectGoal = (goalObj) => {
     setSelectedGoal(goalObj);
-    setEditingGoalId(null);
+    setEditingGoalId(goalObj.goalId);
     setDraftReflection(goalObj.reflectionText || "");
   };
 
-  // 9) Partition active vs. completed
+  // ─── 8) Split active vs completed ───
   const activeGoals = goals.filter((g) => g.status !== "COMPLETED");
   const completedGoals = goals
     .filter((g) => g.status === "COMPLETED")
     .slice()
     .sort((a, b) => {
-      const dateA = a.completionDate ? new Date(a.completionDate) : new Date(0);
-      const dateB = b.completionDate ? new Date(b.completionDate) : new Date(0);
-      return dateB - dateA;
+      const aDate = a.completionDate ? new Date(a.completionDate) : new Date(0);
+      const bDate = b.completionDate ? new Date(b.completionDate) : new Date(0);
+      return bDate - aDate;
     });
 
-  // 10) Compute earliest creation date (for timeline start)
+  // ─── 9) Compute earliest creation date (fallback to “now” if none) ───
   const earliestCreatedDate = useMemo(() => {
-    if (goals.length === 0) return new Date();
-    const dates = goals
+    if (goals.length === 0) {
+      return new Date();
+    }
+    const parsedDates = goals
       .map((g) => new Date(g.createdAt))
       .filter((d) => d instanceof Date && !isNaN(d));
-    if (dates.length === 0) return new Date();
-    return new Date(Math.min(...dates.map((d) => d.getTime())));
+    if (parsedDates.length === 0) {
+      return new Date();
+    }
+    return new Date(Math.min(...parsedDates.map((d) => d.getTime())));
   }, [goals]);
 
   return (
@@ -221,7 +224,7 @@ export default function ReflectiveInsights() {
           Reflective Insights & Goals
         </h2>
 
-        {/** ─── New Goal Form ─── **/}
+        {/* ─── New Goal Form ─── */}
         <div
           style={{
             display: "grid",
@@ -230,7 +233,7 @@ export default function ReflectiveInsights() {
             background: "#FFFFFF",
             padding: "1.5rem",
             borderRadius: "0.75rem",
-            boxShadow: "0 4px 12px rgba(0,0,0,0.05)",
+            boxShadow: "0 4px 12px rgba(0, 0, 0, 0.05)",
             marginBottom: "2rem",
           }}
         >
@@ -341,16 +344,18 @@ export default function ReflectiveInsights() {
                 borderRadius: "0.5rem",
                 cursor: "pointer",
                 fontWeight: 600,
-                boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+                boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
                 transition: "transform 0.2s, box-shadow 0.2s",
               }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.transform = "scale(1.03)";
-                e.currentTarget.style.boxShadow = "0 6px 18px rgba(0,0,0,0.15)";
+                e.currentTarget.style.boxShadow =
+                  "0 6px 18px rgba(0, 0, 0, 0.15)";
               }}
               onMouseLeave={(e) => {
                 e.currentTarget.style.transform = "scale(1)";
-                e.currentTarget.style.boxShadow = "0 4px 12px rgba(0,0,0,0.1)";
+                e.currentTarget.style.boxShadow =
+                  "0 4px 12px rgba(0, 0, 0, 0.1)";
               }}
             >
               Add Goal
@@ -358,7 +363,7 @@ export default function ReflectiveInsights() {
           </div>
         </div>
 
-        {/** ─── Active / Expired Goals Grid ─── **/}
+        {/* ─── Active / Expired Goals Grid ─── */}
         {loading ? (
           <p style={{ textAlign: "center", color: "#6B7280" }}>
             Loading goals…
@@ -383,7 +388,7 @@ export default function ReflectiveInsights() {
                   background: "#FFFFFF",
                   borderRadius: "0.75rem",
                   padding: "1.5rem",
-                  boxShadow: "0 4px 12px rgba(0,0,0,0.05)",
+                  boxShadow: "0 4px 12px rgba(0, 0, 0, 0.05)",
                   display: "flex",
                   flexDirection: "column",
                 }}
@@ -505,7 +510,7 @@ export default function ReflectiveInsights() {
                   />
                 </div>
 
-                {/* Buttons: Mark Complete / Delete */}
+                {/* Buttons */}
                 <div
                   style={{
                     marginTop: "1rem",
@@ -568,14 +573,46 @@ export default function ReflectiveInsights() {
           </div>
         )}
 
-        {/** ─── Timeline Bar (Completed Goals Only) ─── **/}
+        {/* ─── Two-Year Timeline Bar for Completed Goals ─── */}
         <TimelineBar
           completedGoals={completedGoals}
           startDate={earliestCreatedDate}
           onSelectGoal={handleSelectGoal}
         />
 
-        {/** ─── Pop-Up Modal for Selected Goal ─── **/}
+        {/* Toggle to show/hide AllGoalsTabView */}
+        <div style={{ textAlign: "center", marginTop: "1rem" }}>
+          <button
+            onClick={() => setShowAllTabs((prev) => !prev)}
+            style={{
+              padding: "0.6rem 1.2rem",
+              background: "#4F46E5",
+              color: "#FFF",
+              border: "none",
+              borderRadius: "0.5rem",
+              cursor: "pointer",
+              fontWeight: 600,
+              fontSize: "0.95rem",
+              boxShadow: "0 3px 10px rgba(79, 70, 229, 0.2)",
+              transition: "background 0.2s, transform 0.1s",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = "#4338CA";
+              e.currentTarget.style.transform = "scale(1.03)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = "#4F46E5";
+              e.currentTarget.style.transform = "scale(1)";
+            }}
+          >
+            {showAllTabs ? "Hide All Goals" : "Show All Goals"}
+          </button>
+        </div>
+
+        {/* ─── All Goals Tab View (conditionally rendered) ─── */}
+        {showAllTabs && <AllGoalsTabView goals={goals} />}
+
+        {/* ─── Pop-Up Modal for Selected Goal from Timeline ─── */}
         {selectedGoal && (
           <div
             style={{
@@ -584,7 +621,7 @@ export default function ReflectiveInsights() {
               left: 0,
               width: "100vw",
               height: "100vh",
-              background: "rgba(0,0,0,0.4)",
+              background: "rgba(0, 0, 0, 0.4)",
               display: "flex",
               justifyContent: "center",
               alignItems: "center",
@@ -596,7 +633,7 @@ export default function ReflectiveInsights() {
               style={{
                 background: "#FFFFFF",
                 borderRadius: "0.75rem",
-                boxShadow: "0 4px 20px rgba(0,0,0,0.2)",
+                boxShadow: "0 4px 20px rgba(0, 0, 0, 0.2)",
                 padding: "2rem",
                 maxWidth: "500px",
                 width: "90%",
@@ -651,7 +688,13 @@ export default function ReflectiveInsights() {
                 %)
               </p>
 
-              <div style={{ color: "#6B7280", marginBottom: "1rem" }}>
+              <div
+                style={{
+                  color: "#6B7280",
+                  marginBottom: "1rem",
+                  fontSize: "0.95rem",
+                }}
+              >
                 <div>
                   <strong>Created:</strong>{" "}
                   {new Date(selectedGoal.createdAt).toLocaleDateString()}
@@ -671,50 +714,135 @@ export default function ReflectiveInsights() {
                 </div>
               </div>
 
-              {editingGoalId === selectedGoal.goalId ? (
-                <>
-                  <label
-                    htmlFor="reflection-edit-modal"
-                    style={{
-                      display: "block",
-                      marginBottom: "0.25rem",
-                      fontWeight: 600,
-                      color: "#374151",
-                    }}
-                  >
-                    Edit Reflection
-                  </label>
-                  <textarea
-                    id="reflection-edit-modal"
-                    value={draftReflection}
-                    onChange={(e) => setDraftReflection(e.target.value)}
-                    placeholder="Write your reflection here..."
-                    style={{
-                      width: "100%",
-                      minHeight: "80px",
-                      padding: "0.75rem",
-                      border: "1px solid #E5E7EB",
-                      borderRadius: "0.5rem",
-                      outline: "none",
-                      fontFamily: "'Lato', sans-serif",
-                      fontSize: "0.875rem",
-                      color: "#374151",
-                      marginBottom: "1rem",
-                    }}
-                    onFocus={(e) =>
-                      (e.currentTarget.style.borderColor = "#6366F1")
-                    }
-                    onBlur={(e) =>
-                      (e.currentTarget.style.borderColor = "#E5E7EB")
-                    }
-                  />
-                  <div style={{ display: "flex", gap: "0.5rem" }}>
-                    <button
-                      onClick={() => saveReflection(selectedGoal.goalId)}
+              {selectedGoal.status === "COMPLETED" &&
+                (editingGoalId === selectedGoal.goalId ? (
+                  <>
+                    <label
+                      htmlFor={`reflection-edit-modal`}
                       style={{
-                        flex: 1,
+                        display: "block",
+                        marginBottom: "0.25rem",
+                        fontWeight: 600,
+                        color: "#374151",
+                      }}
+                    >
+                      Edit Reflection
+                    </label>
+                    <textarea
+                      id={`reflection-edit-modal`}
+                      value={draftReflection}
+                      onChange={(e) => setDraftReflection(e.target.value)}
+                      placeholder="Write your reflection here..."
+                      style={{
+                        width: "100%",
+                        minHeight: "80px",
+                        padding: "0.75rem",
+                        border: "1px solid #E5E7EB",
+                        borderRadius: "0.5rem",
+                        outline: "none",
+                        fontFamily: "'Lato', sans-serif",
+                        fontSize: "0.875rem",
+                        color: "#374151",
+                        marginBottom: "1rem",
+                      }}
+                      onFocus={(e) =>
+                        (e.currentTarget.style.borderColor = "#6366F1")
+                      }
+                      onBlur={(e) =>
+                        (e.currentTarget.style.borderColor = "#E5E7EB")
+                      }
+                    />
+                    <div style={{ display: "flex", gap: "0.5rem" }}>
+                      <button
+                        onClick={() => saveReflection(selectedGoal.goalId)}
+                        style={{
+                          flex: 1,
+                          padding: "0.5rem",
+                          background: "#4F46E5",
+                          color: "#FFF",
+                          border: "none",
+                          borderRadius: "0.5rem",
+                          cursor: "pointer",
+                          fontWeight: 600,
+                          transition: "background 0.2s, transform 0.1s",
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.background = "#4338CA";
+                          e.currentTarget.style.transform = "scale(1.05)";
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.background = "#4F46E5";
+                          e.currentTarget.style.transform = "scale(1)";
+                        }}
+                      >
+                        Save
+                      </button>
+                      <button
+                        onClick={cancelEditing}
+                        style={{
+                          flex: 1,
+                          padding: "0.5rem",
+                          background: "#E5E7EB",
+                          color: "#374151",
+                          border: "none",
+                          borderRadius: "0.5rem",
+                          cursor: "pointer",
+                          fontWeight: 600,
+                          transition: "background 0.2s, transform 0.1s",
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.background = "#D1D5DB";
+                          e.currentTarget.style.transform = "scale(1.05)";
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.background = "#E5E7EB";
+                          e.currentTarget.style.transform = "scale(1)";
+                        }}
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <label
+                      htmlFor={`reflection-display-modal`}
+                      style={{
+                        display: "block",
+                        marginBottom: "0.25rem",
+                        fontWeight: 600,
+                        color: "#374151",
+                      }}
+                    >
+                      Reflection
+                    </label>
+                    <p
+                      id={`reflection-display-modal`}
+                      style={{
+                        minHeight: "80px",
+                        padding: "0.75rem",
+                        border: "1px solid #E5E7EB",
+                        borderRadius: "0.5rem",
+                        fontFamily: "'Lato', sans-serif",
+                        fontSize: "0.875rem",
+                        color: "#374151",
+                        whiteSpace: "pre-wrap",
+                        background: "#F9FAFB",
+                        marginBottom: "1rem",
+                      }}
+                    >
+                      {selectedGoal.reflectionText || "No reflection written."}
+                    </p>
+                    <button
+                      onClick={() =>
+                        startEditing(
+                          selectedGoal.goalId,
+                          selectedGoal.reflectionText
+                        )
+                      }
+                      style={{
                         padding: "0.5rem",
-                        background: "#4F46E5",
+                        background: "#6366F1",
                         color: "#FFF",
                         border: "none",
                         borderRadius: "0.5rem",
@@ -723,102 +851,18 @@ export default function ReflectiveInsights() {
                         transition: "background 0.2s, transform 0.1s",
                       }}
                       onMouseEnter={(e) => {
-                        e.currentTarget.style.background = "#4338CA";
-                        e.currentTarget.style.transform = "scale(1.05)";
-                      }}
-                      onMouseLeave={(e) => {
                         e.currentTarget.style.background = "#4F46E5";
-                        e.currentTarget.style.transform = "scale(1)";
-                      }}
-                    >
-                      Save
-                    </button>
-                    <button
-                      onClick={cancelEditing}
-                      style={{
-                        flex: 1,
-                        padding: "0.5rem",
-                        background: "#E5E7EB",
-                        color: "#374151",
-                        border: "none",
-                        borderRadius: "0.5rem",
-                        cursor: "pointer",
-                        fontWeight: 600,
-                        transition: "background 0.2s, transform 0.1s",
-                      }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.background = "#D1D5DB";
                         e.currentTarget.style.transform = "scale(1.05)";
                       }}
                       onMouseLeave={(e) => {
-                        e.currentTarget.style.background = "#E5E7EB";
+                        e.currentTarget.style.background = "#6366F1";
                         e.currentTarget.style.transform = "scale(1)";
                       }}
                     >
-                      Cancel
+                      Edit Reflection
                     </button>
-                  </div>
-                </>
-              ) : (
-                <>
-                  <label
-                    htmlFor="reflection-display-modal"
-                    style={{
-                      display: "block",
-                      marginBottom: "0.25rem",
-                      fontWeight: 600,
-                      color: "#374151",
-                    }}
-                  >
-                    Reflection
-                  </label>
-                  <p
-                    id="reflection-display-modal"
-                    style={{
-                      minHeight: "80px",
-                      padding: "0.75rem",
-                      border: "1px solid #E5E7EB",
-                      borderRadius: "0.5rem",
-                      fontFamily: "'Lato', sans-serif",
-                      fontSize: "0.875rem",
-                      color: "#374151",
-                      whiteSpace: "pre-wrap",
-                      background: "#F9FAFB",
-                      marginBottom: "1rem",
-                    }}
-                  >
-                    {selectedGoal.reflectionText || "No reflection written."}
-                  </p>
-                  <button
-                    onClick={() =>
-                      startEditing(
-                        selectedGoal.goalId,
-                        selectedGoal.reflectionText
-                      )
-                    }
-                    style={{
-                      padding: "0.5rem",
-                      background: "#6366F1",
-                      color: "#FFF",
-                      border: "none",
-                      borderRadius: "0.5rem",
-                      cursor: "pointer",
-                      fontWeight: 600,
-                      transition: "background 0.2s, transform 0.1s",
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.background = "#4F46E5";
-                      e.currentTarget.style.transform = "scale(1.05)";
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.background = "#6366F1";
-                      e.currentTarget.style.transform = "scale(1)";
-                    }}
-                  >
-                    Edit Reflection
-                  </button>
-                </>
-              )}
+                  </>
+                ))}
             </div>
           </div>
         )}

@@ -1,4 +1,6 @@
-import React, { useState, useEffect } from "react";
+// src/pages/NewEntry.jsx
+
+import React, { useState } from "react";
 import MoodInput from "../../components/MoodInput";
 import PhotoUploader from "../../components/PhotoUploader";
 import { createEntry } from "../../api/EntriesApi";
@@ -61,37 +63,69 @@ export default function NewEntry() {
       setPhotos([]);
 
       setShowSuccess(true);
-      setTimeout(() => setShowSuccess(false), 3000);
+      setTimeout(() => setShowSuccess(false), 2500);
     } catch {
-      setError("Could not save entry. Please try again.");
+      setError("❌ Could not save entry. Please try again.");
     } finally {
       setSaving(false);
     }
   };
 
-  const buttonStyle = {
-    margin: "1rem auto",
-    display: "block",
-    padding: "0.75rem 1.5rem",
-    background: "linear-gradient(90deg, #6B46C1, #805AD5)",
+  // Shared style for the primary “Save Entry” button
+  const buttonBase = {
+    padding: "0.55rem 1.1rem",
+    background: "linear-gradient(90deg, #805AD5, #6B46C1)",
     color: "#FFF",
     border: "none",
-    borderRadius: "0.375rem",
+    borderRadius: "0.5rem",
     cursor: "pointer",
-    fontSize: "1rem",
-    fontWeight: "600",
-    boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
-    transition: "background 0.2s, transform 0.2s",
+    fontSize: "0.95rem",
+    fontWeight: 600,
+    boxShadow: "0 4px 12px rgba(0, 0, 0, 0.08)",
+    transition:
+      "transform 0.2s ease, background 0.2s ease, box-shadow 0.2s ease",
   };
-  const hoverProps = (e) => {
-    e.currentTarget.style.background =
-      "linear-gradient(90deg, #805AD5, #6B46C1)";
-    e.currentTarget.style.transform = "scale(1.03)";
-  };
-  const unhoverProps = (e) => {
+  const hoverUp = (e) => {
     e.currentTarget.style.background =
       "linear-gradient(90deg, #6B46C1, #805AD5)";
-    e.currentTarget.style.transform = "scale(1)";
+    e.currentTarget.style.transform = "translateY(-2px) scale(1.02)";
+    e.currentTarget.style.boxShadow = "0 8px 20px rgba(0, 0, 0, 0.12)";
+  };
+  const hoverDown = (e) => {
+    e.currentTarget.style.background =
+      "linear-gradient(90deg, #805AD5, #6B46C1)";
+    e.currentTarget.style.transform = "translateY(0) scale(1)";
+    e.currentTarget.style.boxShadow = "0 4px 12px rgba(0, 0, 0, 0.08)";
+  };
+
+  // Style for the smaller “Preview” button in bottom-right
+  const previewButtonStyle = {
+    position: "absolute",
+    bottom: "1rem",
+    right: "1rem",
+    padding: "0.45rem 0.9rem",
+    background: "linear-gradient(90deg, #E53E3E, #C53030)",
+    color: "#FFF",
+    border: "none",
+    borderRadius: "0.5rem",
+    cursor: "pointer",
+    fontSize: "0.85rem",
+    fontWeight: 600,
+    boxShadow: "0 3px 10px rgba(0, 0, 0, 0.08)",
+    transition:
+      "transform 0.15s ease, background 0.15s ease, box-shadow 0.15s ease",
+  };
+  const previewHoverIn = (e) => {
+    e.currentTarget.style.background =
+      "linear-gradient(90deg, #C53030, #E53E3E)";
+    e.currentTarget.style.transform = "translateY(-1px) scale(1.02)";
+    e.currentTarget.style.boxShadow = "0 6px 16px rgba(0, 0, 0, 0.12)";
+  };
+  const previewHoverOut = (e) => {
+    e.currentTarget.style.background =
+      "linear-gradient(90deg, #E53E3E, #C53030)";
+    e.currentTarget.style.transform = "translateY(0) scale(1)";
+    e.currentTarget.style.boxShadow = "0 3px 10px rgba(0, 0, 0, 0.08)";
   };
 
   if (showPreview) {
@@ -100,8 +134,10 @@ export default function NewEntry() {
         style={{
           minHeight: "90vh",
           margin: "2rem auto",
-          maxWidth: "1200px",
+          width: "95vw",
+          maxWidth: "900px",
           fontFamily: "'Lato', sans-serif",
+          padding: "1rem",
         }}
       >
         <EntryPreview
@@ -110,16 +146,30 @@ export default function NewEntry() {
           moodPost={moodPost}
           text={text}
           getEmoji={getEmoji}
-          photos={[]} // no previews here
+          photos={photos}
         />
         <button
           type="button"
           onClick={() => setShowPreview(false)}
-          style={{ ...buttonStyle, marginTop: "1rem" }}
-          onMouseEnter={hoverProps}
-          onMouseLeave={unhoverProps}
+          style={{
+            ...buttonBase,
+            background: "linear-gradient(90deg, #CBD5E0, #A0AEC0)",
+            color: "#2D3748",
+            marginTop: "1.5rem",
+            alignSelf: "center",
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background =
+              "linear-gradient(90deg, #A0AEC0, #CBD5E0)";
+            e.currentTarget.style.transform = "translateY(-1px) scale(1.02)";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background =
+              "linear-gradient(90deg, #CBD5E0, #A0AEC0)";
+            e.currentTarget.style.transform = "translateY(0) scale(1)";
+          }}
         >
-          Back to Form
+          ← Back to Form
         </button>
       </div>
     );
@@ -130,9 +180,10 @@ export default function NewEntry() {
       style={{
         minHeight: "90vh",
         margin: "2rem auto",
-        maxWidth: "1200px",
+        width: "95vw",
+        maxWidth: "900px",
         fontFamily: "'Lato', sans-serif",
-        paddingBottom: "200px",
+        padding: "1rem",
         position: "relative",
       }}
     >
@@ -140,41 +191,45 @@ export default function NewEntry() {
         <div
           style={{
             position: "fixed",
-            top: "6rem",
+            top: "4rem",
             left: "50%",
             transform: "translateX(-50%)",
             background: "#48BB78",
             color: "#FFF",
-            padding: "1rem 2rem",
+            padding: "0.75rem 1.5rem",
             borderRadius: "0.5rem",
             boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
             zIndex: 1000,
-            fontSize: "1.25rem",
-            fontWeight: "600",
+            fontSize: "1rem",
+            fontWeight: 600,
+            opacity: 0.95,
           }}
         >
-          Entry saved successfully!
+          ✅ Entry saved successfully!
         </div>
       )}
 
       <h2
         style={{
           fontSize: "1.75rem",
-          color: "#374151",
+          color: "#2D3748",
           marginBottom: "1.5rem",
           textAlign: "center",
         }}
       >
-        New Journal Entry
+        📝 New Journal Entry
       </h2>
 
       {error && (
         <div
           style={{
-            color: "red",
+            background: "#FED7D7",
+            color: "#C53030",
+            padding: "0.75rem 1rem",
+            borderRadius: "0.5rem",
             textAlign: "center",
             marginBottom: "1rem",
-            fontWeight: "bold",
+            fontWeight: 600,
           }}
         >
           {error}
@@ -184,65 +239,90 @@ export default function NewEntry() {
       <form
         onSubmit={handleSubmit}
         style={{
-          background: "#FFFFFF",
-          borderRadius: "0.5rem",
+          background: "#FFF",
+          borderRadius: "0.75rem",
           padding: "2rem",
-          boxShadow: "0 4px 12px rgba(0,0,0,0.05)",
+          boxShadow: "0 8px 24px rgba(0, 0, 0, 0.08)",
+          display: "flex",
+          flexDirection: "column",
+          gap: "1.5rem",
+          position: "relative",
         }}
       >
+        {/* Journal Textarea */}
         <textarea
           value={text}
           onChange={(e) => setText(e.target.value)}
           placeholder="Write your journal entry..."
           style={{
             width: "100%",
-            minHeight: "150px",
-            border: "1px solid #E5E7EB",
-            borderRadius: "0.375rem",
+            minHeight: "180px",
+            border: "1px solid #CBD5E0",
+            borderRadius: "0.625rem",
             padding: "1rem",
             fontSize: "1rem",
-            lineHeight: 1.5,
+            lineHeight: 1.6,
             resize: "vertical",
             outline: "none",
+            transition: "border-color 0.2s ease",
           }}
-          onFocus={(e) => (e.currentTarget.style.borderColor = "#667EEA")}
-          onBlur={(e) => (e.currentTarget.style.borderColor = "#E5E7EB")}
+          onFocus={(e) => (e.currentTarget.style.borderColor = "#805AD5")}
+          onBlur={(e) => (e.currentTarget.style.borderColor = "#CBD5E0")}
           required
         />
 
-        {/* Date & Mood Inputs */}
+        {/* ───── Grid Row: Date + Mood Inputs ───── */}
         <div
           style={{
-            display: "flex",
-            flexWrap: "wrap",
-            gap: "0.5rem",
-            marginTop: "1.5rem",
+            display: "grid",
+            gridTemplateColumns: "150px 1fr 1fr",
+            gap: "1rem",
+            alignItems: "center", // vertically center all three
           }}
         >
-          <input
-            type="date"
-            value={date}
-            onChange={(e) => setDate(e.target.value)}
-            style={{
-              flex: "0 0 100px",
-              border: "1px solid #E5E7EB",
-              borderRadius: "0.375rem",
-              padding: "0.5rem",
-              fontSize: "0.9rem",
-              outline: "none",
-            }}
-            onFocus={(e) => (e.currentTarget.style.borderColor = "#667EEA")}
-            onBlur={(e) => (e.currentTarget.style.borderColor = "#E5E7EB")}
-            required
-          />
-          <div style={{ flex: "1 1 auto" }}>
+          {/* Date Column */}
+          <div style={{ display: "flex", flexDirection: "column" }}>
+            <label
+              htmlFor="entry-date"
+              style={{
+                fontSize: "0.9rem",
+                fontWeight: 600,
+                color: "#4A5568",
+                marginBottom: "0.3rem",
+              }}
+            >
+              📅 Entry Date
+            </label>
+            <input
+              id="entry-date"
+              type="date"
+              value={date}
+              onChange={(e) => setDate(e.target.value)}
+              style={{
+                border: "1px solid #CBD5E0",
+                borderRadius: "0.5rem",
+                padding: "0.5rem",
+                fontSize: "0.95rem",
+                outline: "none",
+                transition: "border-color 0.2s ease",
+              }}
+              onFocus={(e) => (e.currentTarget.style.borderColor = "#805AD5")}
+              onBlur={(e) => (e.currentTarget.style.borderColor = "#CBD5E0")}
+              required
+            />
+          </div>
+
+          {/* Mood Before */}
+          <div style={{}}>
             <MoodInput
               label="Mood Before"
               value={moodPre}
               onChange={setMoodPre}
             />
           </div>
-          <div style={{ flex: "1 1 auto" }}>
+
+          {/* Mood After */}
+          <div style={{}}>
             <MoodInput
               label="Mood After"
               value={moodPost}
@@ -254,10 +334,10 @@ export default function NewEntry() {
         {/* Photo Uploader */}
         <div
           style={{
-            marginTop: "1.5rem",
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
+            marginTop: "1rem",
           }}
         >
           <PhotoUploader onFiles={setPhotos} />
@@ -277,23 +357,30 @@ export default function NewEntry() {
           )}
         </div>
 
+        {/* “Save Entry” button */}
         <button
           type="submit"
           disabled={saving}
-          style={buttonStyle}
-          onMouseEnter={hoverProps}
-          onMouseLeave={unhoverProps}
+          style={{
+            ...buttonBase,
+            marginTop: "1rem",
+            alignSelf: "flex-start",
+          }}
+          onMouseEnter={hoverUp}
+          onMouseLeave={hoverDown}
         >
           {saving ? "Saving…" : "Save Entry"}
         </button>
+
+        {/* “Preview” button (bottom-right of form) */}
         <button
           type="button"
           onClick={() => setShowPreview(true)}
-          style={{ ...buttonStyle, marginTop: "0.5rem" }}
-          onMouseEnter={hoverProps}
-          onMouseLeave={unhoverProps}
+          style={previewButtonStyle}
+          onMouseEnter={previewHoverIn}
+          onMouseLeave={previewHoverOut}
         >
-          Preview Entry
+          👁️ Preview
         </button>
       </form>
     </div>
