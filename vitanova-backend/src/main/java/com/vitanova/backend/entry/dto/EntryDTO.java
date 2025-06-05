@@ -25,8 +25,6 @@ public class EntryDTO {
     private Integer moodPost;
     private OffsetDateTime createdAt;
     private OffsetDateTime updatedAt;
-
-    // ── NEW FIELDS FOR ACTIVITY ──
     private String activityType;
     private Integer durationMin;
     private BigDecimal distance;
