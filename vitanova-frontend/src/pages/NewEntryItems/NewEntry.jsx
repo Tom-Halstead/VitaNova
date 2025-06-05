@@ -117,6 +117,7 @@ export default function NewEntry() {
     fontFamily: "'Lato', sans-serif",
     display: "flex",
     justifyContent: "center",
+    marginBottom: "4.5em",
   };
 
   const cardStyle = {
@@ -204,7 +205,6 @@ export default function NewEntry() {
     fontWeight: 600,
     boxShadow: "0 5px 15px rgba(0, 0, 0, 0.1)",
     transition: "transform 0.2s ease, background 0.2s ease",
-    zIndex: 10,
   };
 
   const buttonSecondaryHover = (e) => {
@@ -557,12 +557,15 @@ export default function NewEntry() {
                   onBlur={inputBlur}
                 >
                   <option value="">— Select —</option>
+                  <option value="Other">Walk</option>
+                  <option value="Other">Run</option>
                   <option value="Road Bike">Road Bike</option>
                   <option value="Treadmill">Treadmill</option>
                   <option value="Stationary Bike">Stationary Bike</option>
                   <option value="Elliptical">Elliptical</option>
                   <option value="Free Weights">Free Weights</option>
                   <option value="Yoga Mat">Yoga Mat</option>
+
                   <option value="Other">Other</option>
                 </select>
               </div>
