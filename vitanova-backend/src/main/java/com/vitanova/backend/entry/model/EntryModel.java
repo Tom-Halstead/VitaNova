@@ -4,6 +4,7 @@ package com.vitanova.backend.entry.model;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
@@ -43,5 +44,37 @@ public class EntryModel {
 
     @Column(name = "updated_at", nullable = false)
     private OffsetDateTime updatedAt;
+
+    // ── NEW ACTIVITY FIELDS (nullable) ──
+
+    @Column(name = "activity_type")
+    private String activityType;
+
+    @Column(name = "duration_min")
+    private Integer durationMin;
+
+    @Column(name = "distance")
+    private BigDecimal distance;
+
+    @Column(name = "distance_unit")
+    private String distanceUnit;
+
+    @Column(name = "calories")
+    private Integer calories;
+
+    @Column(name = "location")
+    private String location;
+
+    @Column(name = "avg_heart_rate")
+    private Integer avgHeartRate;
+
+    @Column(name = "max_heart_rate")
+    private Integer maxHeartRate;
+
+    @Column(name = "equipment")
+    private String equipment;
+
+    @Column(name = "notes", columnDefinition = "TEXT")
+    private String notes;
 
 }

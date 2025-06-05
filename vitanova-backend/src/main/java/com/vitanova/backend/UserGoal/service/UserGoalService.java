@@ -33,8 +33,6 @@ public class UserGoalService {
                 dto.setDueDate(g.getDueDate());
                 dto.setStatus(g.getStatus());
                 dto.setCreatedAt(g.getCreatedAt());
-
-                // NEW FIELDS:
                 dto.setCompletionDate(g.getCompletionDate());
                 dto.setReflectionText(g.getReflectionText());
                 return dto;

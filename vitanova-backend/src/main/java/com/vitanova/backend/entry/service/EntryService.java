@@ -11,7 +11,6 @@ import com.vitanova.backend.entry.model.PhotoModel;
 import com.vitanova.backend.entry.repository.EntryRepository;
 import com.vitanova.backend.entry.repository.PhotoRepository;
 import jakarta.transaction.Transactional;
-import org.apache.catalina.User;
 import org.springframework.dao.DataAccessException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -34,28 +33,23 @@ public class EntryService {
     private final PhotoRepository photoRepo;
     private final UserRepository userRepo;
 
-
-
     public EntryService(EntryRepository entryRepo, PhotoRepository photoRepo, UserRepository userRepo) {
         this.entryRepo = entryRepo;
         this.photoRepo = photoRepo;
         this.userRepo = userRepo;
     }
 
-
     @Transactional
     public Page<EntryDTO> getEntriesForUser(String cognitoUuid, int page, int size) {
-        // 1) Find your app’s UserModel by Cognito “sub”
         UserModel user = userRepo.findByCognitoUuid(cognitoUuid)
                 .orElseThrow(() -> new NoSuchElementException(
                         "No app user for Cognito UUID=" + cognitoUuid));
 
-        // 2) Use the internal userId to page entries
         Pageable pageable = PageRequest.of(page, size,
                 Sort.by("entryDate").descending());
 
         return entryRepo
-                .findByUserId(user.getUserId(), pageable)   // <— correct method here
+                .findByUserId(user.getUserId(), pageable)
                 .map(EntryDTO::fromModel);
     }
 
@@ -66,13 +60,12 @@ public class EntryService {
                 .orElseThrow(() -> new NoSuchElementException("Entry not found or access denied."));
     }
 
-
     @Transactional
     public EntryResponseDTO createEntryWithPhotos(EntryDTO entryDto,
                                                   List<MultipartFile> photos,
                                                   int userId) {
         try {
-            // 1) persist the entry
+            // 1) Persist the entry
             EntryModel entry = new EntryModel();
             entry.setUserId(userId);
             entry.setText(entryDto.getText());
@@ -81,15 +74,27 @@ public class EntryService {
             entry.setMoodPost(entryDto.getMoodPost());
             entry.setCreatedAt(OffsetDateTime.now());
             entry.setUpdatedAt(OffsetDateTime.now());
+
+            // ── Set the new activity fields ──
+            entry.setActivityType(entryDto.getActivityType());
+            entry.setDurationMin(entryDto.getDurationMin());
+            entry.setDistance(entryDto.getDistance());
+            entry.setDistanceUnit(entryDto.getDistanceUnit());
+            entry.setCalories(entryDto.getCalories());
+            entry.setLocation(entryDto.getLocation());
+            entry.setAvgHeartRate(entryDto.getAvgHeartRate());
+            entry.setMaxHeartRate(entryDto.getMaxHeartRate());
+            entry.setEquipment(entryDto.getEquipment());
+            entry.setNotes(entryDto.getNotes());
+
             EntryModel savedEntry = entryRepo.save(entry);
 
-            // 2) handle optional photos
+            // 2) Handle optional photos
             List<PhotoDTO> photoDtos = new ArrayList<>();
             if (photos != null && !photos.isEmpty()) {
                 for (MultipartFile file : photos) {
                     if (file.isEmpty()) continue;
 
-                    // may throw IOException
                     String uploadedUrl = uploadFile(file);
 
                     PhotoModel photo = new PhotoModel();
@@ -108,7 +113,7 @@ public class EntryService {
                 }
             }
 
-            // 3) build and return the response DTO
+            // 3) Build and return the response DTO
             EntryResponseDTO response = new EntryResponseDTO();
             response.setEntryId(savedEntry.getEntryId());
             response.setText(savedEntry.getText());
@@ -118,6 +123,19 @@ public class EntryService {
             response.setCreatedAt(savedEntry.getCreatedAt());
             response.setUpdatedAt(savedEntry.getUpdatedAt());
             response.setPhotos(photoDtos);
+
+            // ── Populate the new activity fields into the response ──
+            response.setActivityType(savedEntry.getActivityType());
+            response.setDurationMin(savedEntry.getDurationMin());
+            response.setDistance(savedEntry.getDistance());
+            response.setDistanceUnit(savedEntry.getDistanceUnit());
+            response.setCalories(savedEntry.getCalories());
+            response.setLocation(savedEntry.getLocation());
+            response.setAvgHeartRate(savedEntry.getAvgHeartRate());
+            response.setMaxHeartRate(savedEntry.getMaxHeartRate());
+            response.setEquipment(savedEntry.getEquipment());
+            response.setNotes(savedEntry.getNotes());
+
             return response;
 
         } catch (IOException io) {
@@ -129,10 +147,7 @@ public class EntryService {
         } catch (Exception ex) {
             throw new IllegalStateException("Unexpected error in createEntryWithPhotos", ex);
         }
-
     }
-
-
 
     @Transactional
     public void deleteEntryForUser(int entryId, String cognitoUuid) {
@@ -144,13 +159,10 @@ public class EntryService {
         }
     }
 
-
-
-        private String uploadFile(MultipartFile file) throws IOException {
+    private String uploadFile(MultipartFile file) throws IOException {
         if (file == null || file.isEmpty()) {
             throw new IOException("Cannot upload empty file.");
         }
         return "https://yourcdn.com/uploads/" + file.getOriginalFilename();
     }
-
 }
