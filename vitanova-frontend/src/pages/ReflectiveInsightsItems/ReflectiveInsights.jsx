@@ -5,7 +5,7 @@ import {
   updateGoal,
   deleteGoal,
 } from "../../api/GoalsApi";
-import TimelineBar from "./TimelineBar";
+import TimelineBar from "./GoalTimelineBar";
 import AllGoalsTabView from "./AllGoalsTabView";
 import NewGoalForm from "./NewGoalForm";
 import ActiveGoalsGrid from "./ActiveGoalsGrid";
@@ -148,43 +148,54 @@ export default function ReflectiveInsights() {
   return (
     <div style={styles.page}>
       <div style={styles.container}>
+        {/* Header */}
         <h2 style={styles.header}>Reflective Insights & Goals</h2>
 
-        <NewGoalForm
-          newType={newType}
-          setNewType={setNewType}
-          newTarget={newTarget}
-          setNewTarget={setNewTarget}
-          newDue={newDue}
-          setNewDue={setNewDue}
-          onCreate={handleCreate}
-        />
-
-        {loading ? (
-          <p style={styles.centerText}>Loading goals…</p>
-        ) : activeGoals.length === 0 ? (
-          <p style={styles.centerText}>
-            No active goals. Add one above to get started!
-          </p>
-        ) : (
-          <ActiveGoalsGrid
-            goals={activeGoals}
-            onSliderChange={handleSliderChange}
-            onMarkComplete={markComplete}
-            onDelete={handleDelete}
+        {/* New Goal Form */}
+        <div style={styles.section}>
+          <NewGoalForm
+            newType={newType}
+            setNewType={setNewType}
+            newTarget={newTarget}
+            setNewTarget={setNewTarget}
+            newDue={newDue}
+            setNewDue={setNewDue}
+            onCreate={handleCreate}
           />
-        )}
+        </div>
 
-        <TimelineBar
-          completedGoals={completedGoals}
-          startDate={earliestDate}
-          onSelectGoal={(g) => {
-            setSelectedGoal(g);
-            startEditing(g.goalId, g.reflectionText);
-          }}
-        />
+        {/* Active Goals */}
+        <div style={styles.section}>
+          {loading ? (
+            <p style={styles.centerText}>Loading goals…</p>
+          ) : activeGoals.length === 0 ? (
+            <p style={styles.centerText}>
+              No active goals. Add one above to get started!
+            </p>
+          ) : (
+            <ActiveGoalsGrid
+              goals={activeGoals}
+              onSliderChange={handleSliderChange}
+              onMarkComplete={markComplete}
+              onDelete={handleDelete}
+            />
+          )}
+        </div>
 
-        <div style={styles.toggle}>
+        {/* Timeline */}
+        <div style={styles.section}>
+          <TimelineBar
+            completedGoals={completedGoals}
+            startDate={earliestDate}
+            onSelectGoal={(g) => {
+              setSelectedGoal(g);
+              startEditing(g.goalId, g.reflectionText);
+            }}
+          />
+        </div>
+
+        {/* Toggle All Goals */}
+        <div style={{ ...styles.section, ...styles.toggle }}>
           <button
             onClick={() => setShowAllTabs((v) => !v)}
             style={styles.toggleBtn}
@@ -193,8 +204,10 @@ export default function ReflectiveInsights() {
           </button>
         </div>
 
+        {/* All Goals Tab View */}
         {showAllTabs && <AllGoalsTabView goals={goals} />}
 
+        {/* Modal */}
         {selectedGoal && (
           <GoalModal
             goal={selectedGoal}
@@ -212,25 +225,42 @@ export default function ReflectiveInsights() {
 }
 
 const styles = {
-  page: { minHeight: "100vh", background: "#F9FAFB", padding: "2rem 1rem" },
-  container: { maxWidth: "1200px", margin: "0 auto" },
+  page: {
+    minHeight: "100vh",
+    background: "#F9FAFB",
+    padding: "2rem 1rem",
+    marginBottom: "5em",
+  },
+  container: {
+    maxWidth: "1200px",
+    margin: "0 auto",
+  },
   header: {
     fontSize: "2rem",
     fontWeight: 600,
     color: "#1F2937",
-    marginBottom: "2rem",
     textAlign: "center",
+    marginBottom: "1.5rem",
   },
-  centerText: { textAlign: "center", color: "#6B7280" },
-  toggle: { textAlign: "center", marginTop: "1rem" },
+  section: {
+    marginBottom: "2rem",
+  },
+  centerText: {
+    textAlign: "center",
+    color: "#6B7280",
+  },
+  toggle: {
+    display: "flex",
+    justifyContent: "center",
+  },
   toggleBtn: {
-    padding: "0.6rem 1.2rem",
+    padding: "0.75rem 1.5rem",
     background: "#4F46E5",
     color: "#FFF",
     border: "none",
     borderRadius: "0.5rem",
     cursor: "pointer",
     fontWeight: 600,
-    fontSize: "0.95rem",
+    fontSize: "1rem",
   },
 };

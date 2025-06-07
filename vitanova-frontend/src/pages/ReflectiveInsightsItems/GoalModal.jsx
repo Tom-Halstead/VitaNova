@@ -47,15 +47,17 @@ export default function GoalModal({
         {goal.status === "COMPLETED" &&
           (editingId === goal.goalId ? (
             <>
-              <label htmlFor="edit" style={styles.label}>
-                Edit Reflection
-              </label>
-              <textarea
-                id="edit"
-                value={draft}
-                onChange={(e) => onStartEdit(goal.goalId, e.target.value)}
-                style={styles.textarea}
-              />
+              <div style={styles.field}>
+                <label htmlFor="edit" style={styles.label}>
+                  Edit Reflection
+                </label>
+                <textarea
+                  id="edit"
+                  value={draft}
+                  onChange={(e) => onStartEdit(goal.goalId, e.target.value)}
+                  style={styles.textarea}
+                />
+              </div>
               <div style={styles.modalButtons}>
                 <button
                   onClick={() => onSave(goal.goalId)}
@@ -70,10 +72,12 @@ export default function GoalModal({
             </>
           ) : (
             <>
-              <label style={styles.label}>Reflection</label>
-              <p style={styles.display}>
-                {goal.reflectionText || "No reflection."}
-              </p>
+              <div style={styles.field}>
+                <label style={styles.label}>Reflection</label>
+                <p style={styles.display}>
+                  {goal.reflectionText || "No reflection."}
+                </p>
+              </div>
               <button
                 onClick={() => onStartEdit(goal.goalId, goal.reflectionText)}
                 style={styles.saveBtn}
@@ -118,36 +122,41 @@ const styles = {
     fontSize: "1.25rem",
     cursor: "pointer",
   },
-  title: { margin: 0, fontSize: "1.5rem", fontWeight: 600 },
+  title: {
+    margin: 0,
+    fontSize: "1.5rem",
+    fontWeight: 600,
+    marginBottom: "1rem",
+  },
   progress: {
     fontSize: "1rem",
     fontWeight: 600,
     color: "#4F46E5",
-    margin: "1rem 0",
+    marginBottom: "1rem",
   },
   meta: {
     color: "#6B7280",
-    marginBottom: "1rem",
+    marginBottom: "1.5rem",
     fontSize: "0.95rem",
     lineHeight: 1.4,
   },
-  label: { display: "block", marginBottom: "0.25rem", fontWeight: 600 },
+  field: { marginBottom: "1rem" },
+  label: { display: "block", marginBottom: "0.5rem", fontWeight: 600 },
   textarea: {
     width: "100%",
     minHeight: "80px",
     padding: "0.75rem",
     border: "1px solid #E5E7EB",
     borderRadius: "0.5rem",
-    marginBottom: "1rem",
     resize: "vertical",
+    margin: 0,
   },
   display: {
-    minHeight: "80px",
     padding: "0.75rem",
     background: "#F9FAFB",
     border: "1px solid #E5E7EB",
     borderRadius: "0.5rem",
-    marginBottom: "1rem",
+    margin: 0,
   },
   modalButtons: { display: "flex", gap: "0.5rem" },
   saveBtn: {

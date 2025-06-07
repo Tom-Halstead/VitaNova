@@ -11,7 +11,7 @@ export default function NewGoalForm({
 }) {
   return (
     <div style={styles.form}>
-      <div>
+      <div style={styles.field}>
         <label htmlFor="goal-type" style={styles.label}>
           Goal Type
         </label>
@@ -24,7 +24,8 @@ export default function NewGoalForm({
           style={styles.input}
         />
       </div>
-      <div>
+
+      <div style={styles.field}>
         <label htmlFor="goal-target" style={styles.label}>
           Target Value
         </label>
@@ -37,7 +38,8 @@ export default function NewGoalForm({
           style={styles.input}
         />
       </div>
-      <div>
+
+      <div style={styles.field}>
         <label htmlFor="goal-due" style={styles.label}>
           Due Date
         </label>
@@ -49,8 +51,21 @@ export default function NewGoalForm({
           style={styles.input}
         />
       </div>
-      <div style={{ display: "flex", alignItems: "flex-end" }}>
-        <button onClick={onCreate} style={styles.button}>
+
+      <div style={styles.buttonContainer}>
+        <button
+          onClick={onCreate}
+          style={styles.button}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = "#4F46E5";
+            e.currentTarget.style.transform = "scale(1.02)";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background =
+              "linear-gradient(90deg, #6366F1, #4F46E5)";
+            e.currentTarget.style.transform = "scale(1)";
+          }}
+        >
           Add Goal
         </button>
       </div>
@@ -61,35 +76,49 @@ export default function NewGoalForm({
 const styles = {
   form: {
     display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
-    gap: "1.5rem",
+    gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
+    gap: "0.5rem", // very tight gap
     background: "#FFF",
-    padding: "1.5rem",
-    borderRadius: "0.75rem",
-    boxShadow: "0 4px 12px rgba(0,0,0,0.05)",
-    marginBottom: "2rem",
+    padding: "0.75rem", // smaller padding
+    borderRadius: "0.5rem",
+    boxShadow: "0 2px 6px rgba(0,0,0,0.05)",
+    marginBottom: "1rem",
+  },
+  field: {
+    display: "flex",
+    flexDirection: "column",
   },
   label: {
-    display: "block",
     marginBottom: "0.25rem",
+    fontSize: "0.9rem",
     fontWeight: 600,
     color: "#374151",
   },
   input: {
     width: "100%",
-    padding: "0.75rem",
+    maxWidth: "250px",
+    padding: "0.5rem",
+    fontSize: "0.9rem",
     border: "1px solid #E5E7EB",
-    borderRadius: "0.5rem",
+    borderRadius: "0.4rem",
     outline: "none",
+    marginRight: "0.25rem", // minimal right spacing
+  },
+  buttonContainer: {
+    display: "flex",
+    alignItems: "flex-end",
   },
   button: {
     width: "100%",
-    padding: "0.75rem",
-    background: "linear-gradient(90deg,#6366F1,#4F46E5)",
+    maxWidth: "200px",
+    padding: "0.6rem",
+    fontSize: "0.9rem",
+    background: "linear-gradient(90deg, #6366F1, #4F46E5)",
     color: "#FFF",
     border: "none",
-    borderRadius: "0.5rem",
+    borderRadius: "0.4rem",
     cursor: "pointer",
     fontWeight: 600,
+    transition: "transform 0.1s, background 0.1s",
   },
 };

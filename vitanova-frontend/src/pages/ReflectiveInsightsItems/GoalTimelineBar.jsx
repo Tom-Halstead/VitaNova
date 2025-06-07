@@ -22,7 +22,7 @@ function clamp01(x) {
  *   - startDate: Date   ← earliest goal creation
  *   - onSelectGoal: fn(goalObj) → void
  *
- * Now: endDate = latest completionDate among completedGoals (no longer a fixed 2 years).
+ * Now: endDate = latest completionDate among completedGoals.
  * Renders an axis from startDate → endDate, and places one marker per completed goal.
  * Hover → shows tooltip with exact completionDate.  Click → calls onSelectGoal(g).
  */
@@ -47,12 +47,10 @@ export default function TimelineBar({
     const compDates = completedGoals
       .map((g) => parseISO(g.completionDate))
       .filter((d) => d instanceof Date && !isNaN(d));
-    // If somehow no valid completionDate, default endDate = startDate
     const latest =
       compDates.length === 0
         ? startDate
         : new Date(Math.max(...compDates.map((d) => d.getTime())));
-    // Prevent zero‐length span
     const span = Math.max(latest.getTime() - startDate.getTime(), 1);
     return { endDate: latest, totalSpanMs: span };
   }, [completedGoals, startDate]);

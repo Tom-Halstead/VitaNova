@@ -1,3 +1,5 @@
+// src/pages/DashboardItems/Dashboard.jsx
+
 import React from "react";
 import { NavLink, Outlet } from "react-router-dom";
 
@@ -6,7 +8,10 @@ const activeStyle = {
   fontWeight: 600,
   textDecoration: "none",
 };
-const inactiveStyle = { color: "#374151", textDecoration: "none" };
+const inactiveStyle = {
+  color: "#374151",
+  textDecoration: "none",
+};
 
 export default function Dashboard() {
   return (
@@ -27,12 +32,14 @@ export default function Dashboard() {
         >
           Timeline
         </NavLink>
+
         <NavLink
           to="trends"
           style={({ isActive }) => (isActive ? activeStyle : inactiveStyle)}
         >
           Trends
         </NavLink>
+
         <NavLink
           to="insights"
           style={({ isActive }) => (isActive ? activeStyle : inactiveStyle)}
@@ -40,6 +47,8 @@ export default function Dashboard() {
           Insights
         </NavLink>
       </nav>
+
+      {/* This is where /dashboard’s child routes (Timeline, Trends, Insights) render */}
       <Outlet />
     </div>
   );

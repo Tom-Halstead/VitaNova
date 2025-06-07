@@ -38,7 +38,7 @@ export default function GoalCard({
         </div>
       </div>
 
-      <div style={{ marginTop: "1rem" }}>
+      <div style={styles.field}>
         <label htmlFor={`progress-${goal.goalId}`} style={styles.label}>
           Completion: <span style={{ color: "#4F46E5" }}>{pct}%</span>
         </label>
@@ -91,15 +91,26 @@ const styles = {
     fontSize: "0.75rem",
     fontWeight: 600,
   },
-  title: { margin: 0, fontSize: "1.25rem", color: "#1F2937" },
+  title: {
+    margin: 0,
+    fontSize: "1.25rem",
+    color: "#1F2937",
+    marginBottom: "0.5rem",
+  },
   progress: {
     fontSize: "1.5rem",
     fontWeight: 600,
     color: "#4F46E5",
-    margin: "0.5rem 0",
+    margin: "0.5rem 0 1rem",
   },
-  meta: { fontSize: "0.875rem", color: "#6B7280", lineHeight: 1.4 },
-  label: { display: "block", marginBottom: "0.25rem", fontWeight: 600 },
+  meta: {
+    fontSize: "0.875rem",
+    color: "#6B7280",
+    lineHeight: 1.4,
+    marginBottom: "1rem",
+  },
+  field: { marginBottom: "1rem" },
+  label: { display: "block", marginBottom: "0.5rem", fontWeight: 600 },
   slider: {
     width: "100%",
     height: "8px",
@@ -107,7 +118,7 @@ const styles = {
     background: "#E5E7EB",
     outline: "none",
   },
-  buttons: { marginTop: "1rem", display: "flex", gap: "0.5rem" },
+  buttons: { display: "flex", gap: "0.5rem" },
   completeBtn: {
     flex: 1,
     padding: "0.5rem",

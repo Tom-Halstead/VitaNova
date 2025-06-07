@@ -11,21 +11,24 @@ export default function Timeline() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // 1) Fetch entries and goals in parallel
     Promise.all([listEntries(0, 1000), listGoals()])
       .then(([entryResp, goalResp]) => {
-        // 2) Extract entries array (listEntries returns { entries: [...] })
+        // 1) Pull out entries
         const entries = Array.isArray(entryResp.entries)
           ? entryResp.entries
           : [];
 
-        // 3) Extract goals array (listGoals returns a plain array)
-        const goals = Array.isArray(goalResp) ? goalResp : [];
+        // 2) Pull out goals (supports paged .content or raw array)
+        const rawGoals = Array.isArray(goalResp)
+          ? goalResp
+          : Array.isArray(goalResp.content)
+          ? goalResp.content
+          : [];
 
-        // 4) Map entries → unified “event” objects
+        // 3) Map entries → events
         const entryEvents = entries.map((e) => ({
           id: e.entryId,
-          date: e.entryDate, // "YYYY-MM-DD"
+          date: e.entryDate, // placement
           type: "entry",
           title: "Journal Entry",
           detail:
@@ -34,24 +37,39 @@ export default function Timeline() {
                 ? e.text.slice(0, 30) + "…"
                 : e.text
               : "",
+          fullDetail: `📅 ${formatDate(e.entryDate)}\n${e.text || ""}`,
         }));
 
-        // 5) Map goals → unified “event” objects
-        const goalEvents = goals.map((g) => ({
-          id: g.goalId,
-          date: g.dueDate || g.due_date || "", // depending on exact field name
-          type: "goal",
-          title: `Goal: ${g.type}`,
-          detail: `Progress ${g.currentValue}/${g.targetValue}`,
-        }));
+        // 4) Map goals → events
+        const goalEvents = rawGoals
+          .map((g) => {
+            // place on completionDate (if done) or dueDate (if active)
+            const placement = g.completionDate || g.dueDate || null;
+            if (!placement) return null;
 
-        // 6) Combine & sort ascending by ISO date
-        const combined = [...entryEvents, ...goalEvents]
-          .filter((evt) => evt.date) // remove any without a date
-          .sort(
-            (a, b) =>
-              new Date(a.date + "T00:00:00Z") - new Date(b.date + "T00:00:00Z")
-          );
+            const started = g.createdAt;
+            const finished = g.completionDate;
+            return {
+              id: g.goalId,
+              date: placement,
+              type: "goal",
+              title: `Goal: ${g.type}`,
+              detail: `Progress ${g.currentValue || 0}/${g.targetValue}`,
+              fullDetail:
+                `🟢 Started: ${started ? formatDate(started) : "Unknown"}\n` +
+                `🔴 Finished: ${
+                  finished ? formatDate(finished) : "Pending"
+                }\n` +
+                `📈 Progress: ${g.currentValue || 0}/${g.targetValue}`,
+            };
+          })
+          .filter(Boolean);
+
+        // 5) Combine & sort by date ascending
+        const combined = [...entryEvents, ...goalEvents].sort(
+          (a, b) =>
+            new Date(a.date + "T00:00:00Z") - new Date(b.date + "T00:00:00Z")
+        );
 
         setEvents(combined);
       })
@@ -63,15 +81,14 @@ export default function Timeline() {
       });
   }, []);
 
-  // Format "YYYY-MM-DD" → "MMM D, YYYY" without timezone shift
-  const formatDate = (iso) => {
-    return new Date(iso + "T00:00:00Z").toLocaleDateString(undefined, {
+  // Helper to format YYYY-MM-DD → "MMM D, YYYY"
+  const formatDate = (iso) =>
+    new Date(iso + "T00:00:00Z").toLocaleDateString(undefined, {
       month: "short",
       day: "numeric",
       year: "numeric",
       timeZone: "UTC",
     });
-  };
 
   if (loading) {
     return (
@@ -92,9 +109,7 @@ export default function Timeline() {
   return (
     <div style={styles.pageWrapper}>
       <h2 style={styles.pageHeader}>🕓 Activity & Goal Timeline</h2>
-
       <div style={styles.timelineContainer}>
-        {/* Central vertical spine */}
         <div style={styles.spine} />
 
         {events.map((evt, idx) => {
@@ -107,21 +122,26 @@ export default function Timeline() {
                 flexDirection: isLeft ? "row-reverse" : "row",
               }}
             >
-              {/* Circle icon on the spine */}
+              {/* Marker */}
               <div
-                style={styles.iconCircle}
+                style={{
+                  ...styles.iconCircle,
+                  borderColor: evt.type === "entry" ? "#6366F1" : "#D53F8C",
+                }}
                 onClick={() => {
                   if (evt.type === "entry") {
                     navigate(`/entries/${evt.id}`);
                   } else {
-                    navigate(`/goals/${evt.id}`);
+                    // send to your ReflectiveInsights page with query
+                    navigate(`/insights-goals?selected=${evt.id}`);
                   }
                 }}
+                title={evt.fullDetail}
               >
                 {evt.type === "entry" ? <PenIcon /> : <FlagIcon />}
               </div>
 
-              {/* Info card */}
+              {/* Card */}
               <div
                 style={{
                   ...styles.eventCard,
@@ -131,9 +151,10 @@ export default function Timeline() {
                   if (evt.type === "entry") {
                     navigate(`/entries/${evt.id}`);
                   } else {
-                    navigate(`/goals/${evt.id}`);
+                    navigate(`/insights-goals?selected=${evt.id}`);
                   }
                 }}
+                title={evt.fullDetail}
               >
                 <div style={styles.eventDate}>{formatDate(evt.date)}</div>
                 <div style={styles.eventTitle}>{evt.title}</div>
@@ -147,7 +168,7 @@ export default function Timeline() {
   );
 }
 
-// Purple pen icon for Journal Entries
+// Icons
 function PenIcon() {
   return (
     <svg viewBox="0 0 24 24" fill="#6366F1" width="20" height="20">
@@ -156,7 +177,6 @@ function PenIcon() {
   );
 }
 
-// Pink flag icon for Goals
 function FlagIcon() {
   return (
     <svg viewBox="0 0 24 24" fill="#D53F8C" width="20" height="20">
@@ -166,12 +186,10 @@ function FlagIcon() {
 }
 
 const styles = {
-  // Page wrapper
   pageWrapper: {
     fontFamily: "'Lato', sans-serif",
     padding: "2rem 1rem",
     background: "#F7FAFC",
-    boxSizing: "border-box",
   },
   pageHeader: {
     fontSize: "1.75rem",
@@ -180,8 +198,6 @@ const styles = {
     textAlign: "center",
     marginBottom: "1.5rem",
   },
-
-  // Loading / empty states
   loadingContainer: {
     minHeight: "200px",
     display: "flex",
@@ -192,26 +208,21 @@ const styles = {
     fontSize: "1rem",
     color: "#6B7280",
   },
-
-  // Timeline container
   timelineContainer: {
     position: "relative",
     margin: "0 auto",
     maxWidth: "800px",
     padding: "2rem 0",
   },
-  // Vertical spine line
   spine: {
     position: "absolute",
-    top: "0",
-    bottom: "0",
+    top: 0,
+    bottom: 0,
     left: "50%",
     width: "4px",
-    marginLeft: "-2px",
     background: "#E5E7EB",
+    transform: "translateX(-2px)",
   },
-
-  // Wrapper for each event (alternates left/right)
   eventWrapper: {
     display: "flex",
     alignItems: "center",
@@ -219,28 +230,23 @@ const styles = {
     position: "relative",
     zIndex: 1,
   },
-
-  // Circle holding icon
   iconCircle: {
     width: "36px",
     height: "36px",
     borderRadius: "50%",
-    background: "#FFFFFF",
-    border: "3px solid #6366F1",
+    background: "#FFF",
+    border: "3px solid",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    zIndex: 2,
     cursor: "pointer",
     transition: "transform 0.2s ease",
   },
-
-  // Info card
   eventCard: {
-    background: "#FFFFFF",
+    background: "#FFF",
     borderRadius: "0.75rem",
     padding: "1rem 1.25rem",
-    boxShadow: "0 8px 24px rgba(0, 0, 0, 0.08)",
+    boxShadow: "0 8px 24px rgba(0,0,0,0.08)",
     maxWidth: "300px",
     cursor: "pointer",
     transition: "transform 0.2s ease, box-shadow 0.2s ease",
@@ -263,19 +269,17 @@ const styles = {
   },
 };
 
-// Hover effects via JS assignment:
-styles.iconCircle.onMouseEnter = (e) => {
-  e.currentTarget.style.transform = "scale(1.1)";
-};
-styles.iconCircle.onMouseLeave = (e) => {
-  e.currentTarget.style.transform = "scale(1)";
-};
+// Hover effects
+styles.iconCircle.onMouseEnter = (e) =>
+  (e.currentTarget.style.transform = "scale(1.1)");
+styles.iconCircle.onMouseLeave = (e) =>
+  (e.currentTarget.style.transform = "scale(1)");
 
 styles.eventCard.onMouseEnter = (e) => {
   e.currentTarget.style.transform = "translateY(-4px)";
-  e.currentTarget.style.boxShadow = "0 12px 36px rgba(0, 0, 0, 0.12)";
+  e.currentTarget.style.boxShadow = "0 12px 36px rgba(0,0,0,0.12)";
 };
 styles.eventCard.onMouseLeave = (e) => {
   e.currentTarget.style.transform = "translateY(0)";
-  e.currentTarget.style.boxShadow = "0 8px 24px rgba(0, 0, 0, 0.08)";
+  e.currentTarget.style.boxShadow = "0 8px 24px rgba(0,0,0,0.08)";
 };
