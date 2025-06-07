@@ -5,14 +5,28 @@ export default function GoalCard({
   onSliderChange,
   onMarkComplete,
   onDelete,
+  onViewDetail, // callback to open detail popup
 }) {
+  if (!goal) return null; // safety check
+
   const pct =
     goal.targetValue > 0
       ? Math.round((goal.currentValue / goal.targetValue) * 100)
       : 0;
 
   return (
-    <div style={styles.card}>
+    <div
+      style={styles.card}
+      onClick={onViewDetail}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.transform = "scale(1.02)";
+        e.currentTarget.style.boxShadow = "0 12px 36px rgba(0,0,0,0.12)";
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.transform = "scale(1)";
+        e.currentTarget.style.boxShadow = "0 4px 12px rgba(0,0,0,0.05)";
+      }}
+    >
       <span
         style={{
           ...styles.badge,
@@ -38,7 +52,7 @@ export default function GoalCard({
         </div>
       </div>
 
-      <div style={styles.field}>
+      <div style={{ marginTop: "1rem" }}>
         <label htmlFor={`progress-${goal.goalId}`} style={styles.label}>
           Completion: <span style={{ color: "#4F46E5" }}>{pct}%</span>
         </label>
@@ -49,21 +63,31 @@ export default function GoalCard({
           max="100"
           step="1"
           value={pct}
-          onChange={(e) =>
-            onSliderChange(goal.goalId, parseInt(e.target.value, 10))
-          }
+          onChange={(e) => {
+            e.stopPropagation();
+            onSliderChange(goal.goalId, parseInt(e.target.value, 10));
+          }}
           style={styles.slider}
         />
       </div>
 
       <div style={styles.buttons}>
         <button
-          onClick={() => onMarkComplete(goal.goalId)}
+          onClick={(e) => {
+            e.stopPropagation();
+            onMarkComplete(goal.goalId);
+          }}
           style={styles.completeBtn}
         >
           Mark Complete
         </button>
-        <button onClick={() => onDelete(goal.goalId)} style={styles.deleteBtn}>
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onDelete(goal.goalId);
+          }}
+          style={styles.deleteBtn}
+        >
           Delete
         </button>
       </div>
@@ -80,6 +104,8 @@ const styles = {
     boxShadow: "0 4px 12px rgba(0,0,0,0.05)",
     display: "flex",
     flexDirection: "column",
+    cursor: "pointer",
+    transition: "transform 0.2s, box-shadow 0.2s",
   },
   badge: {
     position: "absolute",
@@ -95,30 +121,36 @@ const styles = {
     margin: 0,
     fontSize: "1.25rem",
     color: "#1F2937",
-    marginBottom: "0.5rem",
   },
   progress: {
     fontSize: "1.5rem",
     fontWeight: 600,
     color: "#4F46E5",
-    margin: "0.5rem 0 1rem",
+    margin: "0.5rem 0",
   },
   meta: {
     fontSize: "0.875rem",
     color: "#6B7280",
     lineHeight: 1.4,
-    marginBottom: "1rem",
   },
-  field: { marginBottom: "1rem" },
-  label: { display: "block", marginBottom: "0.5rem", fontWeight: 600 },
+  label: {
+    display: "block",
+    marginBottom: "0.25rem",
+    fontWeight: 600,
+  },
   slider: {
     width: "100%",
     height: "8px",
     borderRadius: "4px",
     background: "#E5E7EB",
     outline: "none",
+    transition: "background 0.2s",
   },
-  buttons: { display: "flex", gap: "0.5rem" },
+  buttons: {
+    marginTop: "1rem",
+    display: "flex",
+    gap: "0.5rem",
+  },
   completeBtn: {
     flex: 1,
     padding: "0.5rem",

@@ -1,18 +1,18 @@
-import React from "react";
+// src/pages/ReflectiveInsightsItems/GoalModal.jsx
+
+import React, { useState } from "react";
 
 export default function GoalModal({
   goal,
-  draft,
-  editingId,
-  onSave,
-  onCancel,
-  onStartEdit,
-  onClose,
+  onSave, // (goalId, newText) => void
+  onClose, // () => void
 }) {
-  const pct =
-    goal.targetValue > 0
-      ? Math.round((goal.currentValue / goal.targetValue) * 100)
-      : 0;
+  const [isEditing, setIsEditing] = useState(false);
+  const [text, setText] = useState(goal.reflectionText || "");
+
+  const pct = goal.targetValue
+    ? Math.round((goal.currentValue / goal.targetValue) * 100)
+    : 0;
 
   return (
     <div style={styles.overlay} onClick={onClose}>
@@ -20,12 +20,10 @@ export default function GoalModal({
         <button onClick={onClose} style={styles.closeBtn}>
           ✕
         </button>
-
         <h3 style={styles.title}>{goal.type}</h3>
         <p style={styles.progress}>
           Progress: {goal.currentValue} / {goal.targetValue} ({pct}%)
         </p>
-
         <div style={styles.meta}>
           <div>
             <strong>Created:</strong>{" "}
@@ -33,59 +31,66 @@ export default function GoalModal({
           </div>
           <div>
             <strong>Completed:</strong>{" "}
-            {new Date(goal.completionDate).toLocaleDateString()}
+            {goal.completionDate
+              ? new Date(goal.completionDate).toLocaleDateString()
+              : "—"}
           </div>
           <div>
             <strong>Status:</strong> {goal.status}
           </div>
           <div>
             <strong>Due by:</strong>{" "}
-            {goal.dueDate ? new Date(goal.dueDate).toLocaleDateString() : "–"}
+            {goal.dueDate ? new Date(goal.dueDate).toLocaleDateString() : "—"}
           </div>
         </div>
 
-        {goal.status === "COMPLETED" &&
-          (editingId === goal.goalId ? (
-            <>
-              <div style={styles.field}>
-                <label htmlFor="edit" style={styles.label}>
+        {goal.status === "COMPLETED" && (
+          <>
+            {isEditing ? (
+              <>
+                <label htmlFor="reflection-edit" style={styles.label}>
                   Edit Reflection
                 </label>
                 <textarea
-                  id="edit"
-                  value={draft}
-                  onChange={(e) => onStartEdit(goal.goalId, e.target.value)}
+                  id="reflection-edit"
+                  value={text}
+                  onChange={(e) => setText(e.target.value)}
                   style={styles.textarea}
                 />
-              </div>
-              <div style={styles.modalButtons}>
-                <button
-                  onClick={() => onSave(goal.goalId)}
-                  style={styles.saveBtn}
-                >
-                  Save
-                </button>
-                <button onClick={onCancel} style={styles.cancelBtn}>
-                  Cancel
-                </button>
-              </div>
-            </>
-          ) : (
-            <>
-              <div style={styles.field}>
+                <div style={styles.buttonGroup}>
+                  <button
+                    style={styles.saveBtn}
+                    onClick={() => {
+                      onSave(goal.goalId, text);
+                      setIsEditing(false);
+                    }}
+                  >
+                    Save
+                  </button>
+                  <button
+                    style={styles.cancelBtn}
+                    onClick={() => setIsEditing(false)}
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </>
+            ) : (
+              <>
                 <label style={styles.label}>Reflection</label>
                 <p style={styles.display}>
-                  {goal.reflectionText || "No reflection."}
+                  {goal.reflectionText || "No reflection written."}
                 </p>
-              </div>
-              <button
-                onClick={() => onStartEdit(goal.goalId, goal.reflectionText)}
-                style={styles.saveBtn}
-              >
-                Edit Reflection
-              </button>
-            </>
-          ))}
+                <button
+                  style={styles.editBtn}
+                  onClick={() => setIsEditing(true)}
+                >
+                  Edit
+                </button>
+              </>
+            )}
+          </>
+        )}
       </div>
     </div>
   );
@@ -96,22 +101,22 @@ const styles = {
     position: "fixed",
     top: 0,
     left: 0,
-    width: "100vw",
-    height: "100vh",
+    right: 0,
+    bottom: 0,
     background: "rgba(0,0,0,0.4)",
     display: "flex",
-    justifyContent: "center",
     alignItems: "center",
+    justifyContent: "center",
     zIndex: 9999,
   },
   modal: {
     background: "#FFF",
-    borderRadius: "0.75rem",
-    boxShadow: "0 4px 20px rgba(0,0,0,0.2)",
+    borderRadius: "8px",
     padding: "2rem",
     maxWidth: "500px",
     width: "90%",
     position: "relative",
+    boxSizing: "border-box",
   },
   closeBtn: {
     position: "absolute",
@@ -125,8 +130,8 @@ const styles = {
   title: {
     margin: 0,
     fontSize: "1.5rem",
-    fontWeight: 600,
-    marginBottom: "1rem",
+    color: "#2D3748",
+    marginBottom: "0.5rem",
   },
   progress: {
     fontSize: "1rem",
@@ -135,37 +140,55 @@ const styles = {
     marginBottom: "1rem",
   },
   meta: {
+    fontSize: "0.95rem",
     color: "#6B7280",
     marginBottom: "1.5rem",
-    fontSize: "0.95rem",
     lineHeight: 1.4,
   },
-  field: { marginBottom: "1rem" },
-  label: { display: "block", marginBottom: "0.5rem", fontWeight: 600 },
+  label: {
+    display: "block",
+    marginBottom: "0.5rem",
+    fontWeight: 600,
+  },
   textarea: {
     width: "100%",
     minHeight: "80px",
     padding: "0.75rem",
     border: "1px solid #E5E7EB",
-    borderRadius: "0.5rem",
+    borderRadius: "4px",
     resize: "vertical",
-    margin: 0,
+    marginBottom: "1rem",
+    fontFamily: "'Lato', sans-serif",
   },
   display: {
+    minHeight: "80px",
     padding: "0.75rem",
     background: "#F9FAFB",
     border: "1px solid #E5E7EB",
-    borderRadius: "0.5rem",
-    margin: 0,
+    borderRadius: "4px",
+    marginBottom: "1rem",
+    fontFamily: "'Lato', sans-serif",
   },
-  modalButtons: { display: "flex", gap: "0.5rem" },
+  editBtn: {
+    padding: "0.5rem 1rem",
+    background: "#6366F1",
+    color: "#FFF",
+    border: "none",
+    borderRadius: "4px",
+    cursor: "pointer",
+    fontWeight: 600,
+  },
+  buttonGroup: {
+    display: "flex",
+    gap: "0.5rem",
+  },
   saveBtn: {
     flex: 1,
     padding: "0.5rem",
     background: "#4F46E5",
     color: "#FFF",
     border: "none",
-    borderRadius: "0.5rem",
+    borderRadius: "4px",
     cursor: "pointer",
     fontWeight: 600,
   },
@@ -175,7 +198,7 @@ const styles = {
     background: "#E5E7EB",
     color: "#374151",
     border: "none",
-    borderRadius: "0.5rem",
+    borderRadius: "4px",
     cursor: "pointer",
     fontWeight: 600,
   },

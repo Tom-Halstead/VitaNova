@@ -1,32 +1,24 @@
-// src/pages/Timeline.jsx
-
 import React, { useEffect, useState } from "react";
 import { listEntries } from "../../api/EntriesApi";
 import { listGoals } from "../../api/GoalsApi";
-import TimelineEvent from "./TimelineEvent";
+import TimelineEvent from "../DashboardItems/TimelineEvent";
+import GoalModal from "../ReflectiveInsightsItems/GoalModal";
+import EntryModal from "../NewEntryItems/EntryModal";
 import { useNavigate } from "react-router-dom";
 
 export default function Timeline() {
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [selectedEvent, setSelectedEvent] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
     Promise.all([listEntries(0, 1000), listGoals()])
       .then(([entryResp, goalResp]) => {
-        // 1) Pull out entries
+        // 1) Build entry events
         const entries = Array.isArray(entryResp.entries)
           ? entryResp.entries
           : [];
-
-        // 2) Pull out goals (supports paged .content or raw array)
-        const rawGoals = Array.isArray(goalResp)
-          ? goalResp
-          : Array.isArray(goalResp.content)
-          ? goalResp.content
-          : [];
-
-        // 3) Map entries → events
         const entryEvents = entries.map((e) => ({
           id: e.entryId,
           sortDate: new Date(e.entryDate),
@@ -40,20 +32,26 @@ export default function Timeline() {
                 : e.text
               : "",
           fullDetail: `📅 ${formatDate(e.entryDate)}\n${e.text || ""}`,
+          rawEntry: e,
         }));
 
-        // 4) Map goals → events
+        // 2) Build goal events
+        const rawGoals = Array.isArray(goalResp)
+          ? goalResp
+          : Array.isArray(goalResp.content)
+          ? goalResp.content
+          : [];
         const goalEvents = rawGoals
           .map((g) => {
-            const placement = g.completionDate || g.dueDate;
-            if (!placement) return null;
+            const when = g.completionDate || g.dueDate;
+            if (!when) return null;
             return {
               id: g.goalId,
-              sortDate: new Date(placement),
-              displayDate: formatDate(placement),
+              sortDate: new Date(when),
+              displayDate: formatDate(when),
               type: "goal",
               title: `Goal: ${g.type}`,
-              detail: `Progress ${g.currentValue || 0}/${g.targetValue}`,
+              detail: `Progress ${g.currentValue}/${g.targetValue}`,
               fullDetail:
                 `🟢 Started: ${
                   g.createdAt ? formatDate(g.createdAt) : "Unknown"
@@ -61,22 +59,23 @@ export default function Timeline() {
                 `🔴 Finished: ${
                   g.completionDate ? formatDate(g.completionDate) : "Pending"
                 }\n` +
-                `📈 Progress: ${g.currentValue || 0}/${g.targetValue}`,
+                `📈 Progress: ${g.currentValue}/${g.targetValue}`,
+              rawGoal: g,
             };
           })
           .filter(Boolean);
 
-        // 5) Combine & sort by date ascending
-        const combined = [...entryEvents, ...goalEvents].sort(
-          (a, b) => a.sortDate - b.sortDate
+        // 3) Combine & sort
+        setEvents(
+          [...entryEvents, ...goalEvents].sort(
+            (a, b) => a.sortDate - b.sortDate
+          )
         );
-        setEvents(combined);
       })
       .catch((err) => console.error("Failed to load timeline data:", err))
       .finally(() => setLoading(false));
   }, []);
 
-  // Helper to format ISO or YYYY-MM-DD
   const formatDate = (iso) => {
     const d = new Date(iso);
     if (isNaN(d)) return iso;
@@ -94,7 +93,6 @@ export default function Timeline() {
       </div>
     );
   }
-
   if (!events.length) {
     return (
       <div style={styles.loadingContainer}>
@@ -113,14 +111,34 @@ export default function Timeline() {
             key={`${evt.type}-${evt.id}-${idx}`}
             evt={evt}
             idx={idx}
+            onSelect={() => setSelectedEvent(evt)}
           />
         ))}
       </div>
+
+      {/* Goal reflection popup */}
+      {selectedEvent?.type === "goal" && (
+        <GoalModal
+          goal={selectedEvent.rawGoal}
+          onSave={(id, text) => {
+            /* you can wire save back to parent if needed */
+            setSelectedEvent(null);
+          }}
+          onClose={() => setSelectedEvent(null)}
+        />
+      )}
+
+      {/* Entry preview popup */}
+      {selectedEvent?.type === "entry" && (
+        <EntryModal
+          entry={selectedEvent.rawEntry}
+          onClose={() => setSelectedEvent(null)}
+        />
+      )}
     </div>
   );
 }
 
-// Styles for Timeline.jsx
 const styles = {
   pageWrapper: {
     fontFamily: "'Lato', sans-serif",

@@ -10,6 +10,7 @@ import AllGoalsTabView from "./AllGoalsTabView";
 import NewGoalForm from "./NewGoalForm";
 import ActiveGoalsGrid from "./ActiveGoalsGrid";
 import GoalModal from "./GoalModal";
+import { useNavigate } from "react-router-dom";
 
 export default function ReflectiveInsights() {
   const [goals, setGoals] = useState([]);
@@ -23,7 +24,9 @@ export default function ReflectiveInsights() {
   const [draftReflection, setDraftReflection] = useState("");
   const [showAllTabs, setShowAllTabs] = useState(false);
 
-  // load
+  const navigate = useNavigate();
+
+  // Load goals
   useEffect(() => {
     (async () => {
       try {
@@ -46,7 +49,7 @@ export default function ReflectiveInsights() {
     })();
   }, []);
 
-  // create
+  // Create new goal
   const handleCreate = async () => {
     const num = parseInt(newTarget, 10);
     if (!newType.trim() || isNaN(num) || num <= 0) return;
@@ -69,7 +72,7 @@ export default function ReflectiveInsights() {
     setNewDue("");
   };
 
-  // progress
+  // Progress change
   const handleSliderChange = (id, pct) => {
     const g = goals.find((x) => x.goalId === id);
     if (!g || g.status === "COMPLETED") return;
@@ -105,7 +108,7 @@ export default function ReflectiveInsights() {
     }).catch(() => {});
   };
 
-  // delete
+  // Delete
   const handleDelete = async (id) => {
     await deleteGoal(id);
     setGoals((prev) => prev.filter((x) => x.goalId !== id));
@@ -113,7 +116,7 @@ export default function ReflectiveInsights() {
     if (selectedGoal?.goalId === id) setSelectedGoal(null);
   };
 
-  // reflection
+  // Reflection CRUD
   const startEditing = (id, text) => {
     setEditingGoalId(id);
     setDraftReflection(text || "");
@@ -122,17 +125,16 @@ export default function ReflectiveInsights() {
     setEditingGoalId(null);
     setDraftReflection("");
   };
-  const saveReflection = async (id) => {
-    await updateGoal(id, { reflectionText: draftReflection });
+  const saveReflection = async (id, text) => {
+    await updateGoal(id, { reflectionText: text });
     setGoals((prev) =>
-      prev.map((x) =>
-        x.goalId === id ? { ...x, reflectionText: draftReflection } : x
-      )
+      prev.map((x) => (x.goalId === id ? { ...x, reflectionText: text } : x))
     );
     setEditingGoalId(null);
     setDraftReflection("");
   };
 
+  // Split active / completed
   const activeGoals = goals.filter((g) => g.status !== "COMPLETED");
   const completedGoals = goals
     .filter((g) => g.status === "COMPLETED")
@@ -140,6 +142,7 @@ export default function ReflectiveInsights() {
       (a, b) =>
         new Date(b.completionDate || 0) - new Date(a.completionDate || 0)
     );
+
   const earliestDate = useMemo(() => {
     const ds = goals.map((g) => new Date(g.createdAt)).filter((d) => !isNaN(d));
     return ds.length ? new Date(Math.min(...ds)) : new Date();
@@ -148,8 +151,7 @@ export default function ReflectiveInsights() {
   return (
     <div style={styles.page}>
       <div style={styles.container}>
-        {/* Header */}
-        <h2 style={styles.header}>Goal Creation</h2>
+        <h2 style={styles.header}>Reflective Insights & Goals</h2>
 
         {/* New Goal Form */}
         <div style={styles.section}>
@@ -164,7 +166,7 @@ export default function ReflectiveInsights() {
           />
         </div>
 
-        {/* Active Goals */}
+        {/* Active Goals Grid */}
         <div style={styles.section}>
           {loading ? (
             <p style={styles.centerText}>Loading goals…</p>
@@ -178,19 +180,21 @@ export default function ReflectiveInsights() {
               onSliderChange={handleSliderChange}
               onMarkComplete={markComplete}
               onDelete={handleDelete}
+              onViewDetail={(goal) =>
+                navigate(`/insights-goals?selected=${goal.goalId}`)
+              }
             />
           )}
         </div>
 
-        {/* Timeline */}
+        {/* Completed Timeline */}
         <div style={styles.section}>
           <TimelineBar
             completedGoals={completedGoals}
             startDate={earliestDate}
-            onSelectGoal={(g) => {
-              setSelectedGoal(g);
-              startEditing(g.goalId, g.reflectionText);
-            }}
+            onSelectGoal={(g) =>
+              navigate(`/insights-goals?selected=${g.goalId}`)
+            }
           />
         </div>
 
@@ -203,19 +207,13 @@ export default function ReflectiveInsights() {
             {showAllTabs ? "Hide All Goals" : "Show All Goals"}
           </button>
         </div>
-
-        {/* All Goals Tab View */}
         {showAllTabs && <AllGoalsTabView goals={goals} />}
 
-        {/* Modal */}
+        {/* Popup Reflection Modal */}
         {selectedGoal && (
           <GoalModal
             goal={selectedGoal}
-            draft={draftReflection}
-            editingId={editingGoalId}
             onSave={saveReflection}
-            onCancel={cancelEditing}
-            onStartEdit={startEditing}
             onClose={() => setSelectedGoal(null)}
           />
         )}
@@ -231,10 +229,7 @@ const styles = {
     padding: "2rem 1rem",
     marginBottom: "5em",
   },
-  container: {
-    maxWidth: "1200px",
-    margin: "0 auto",
-  },
+  container: { maxWidth: "1200px", margin: "0 auto" },
   header: {
     fontSize: "2rem",
     fontWeight: 600,
@@ -242,17 +237,9 @@ const styles = {
     textAlign: "center",
     marginBottom: "1.5rem",
   },
-  section: {
-    marginBottom: "2rem",
-  },
-  centerText: {
-    textAlign: "center",
-    color: "#6B7280",
-  },
-  toggle: {
-    display: "flex",
-    justifyContent: "center",
-  },
+  section: { marginBottom: "2rem" },
+  centerText: { textAlign: "center", color: "#6B7280" },
+  toggle: { display: "flex", justifyContent: "center" },
   toggleBtn: {
     padding: "0.75rem 1.5rem",
     background: "#4F46E5",

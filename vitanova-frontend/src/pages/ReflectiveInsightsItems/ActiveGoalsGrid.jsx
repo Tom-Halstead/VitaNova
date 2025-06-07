@@ -6,18 +6,24 @@ export default function ActiveGoalsGrid({
   onSliderChange,
   onMarkComplete,
   onDelete,
+  onViewDetail, // callback to open goal detail popup
 }) {
+  if (!Array.isArray(goals)) return null;
+
   return (
     <div style={styles.grid}>
-      {goals.map((g) => (
-        <GoalCard
-          key={g.goalId}
-          goal={g}
-          onSliderChange={onSliderChange}
-          onMarkComplete={onMarkComplete}
-          onDelete={onDelete}
-        />
-      ))}
+      {goals
+        .filter(Boolean) // drop any undefined/null entries
+        .map((g) => (
+          <GoalCard
+            key={g.goalId}
+            goal={g}
+            onSliderChange={onSliderChange}
+            onMarkComplete={onMarkComplete}
+            onDelete={onDelete}
+            onViewDetail={() => onViewDetail(g)}
+          />
+        ))}
     </div>
   );
 }
