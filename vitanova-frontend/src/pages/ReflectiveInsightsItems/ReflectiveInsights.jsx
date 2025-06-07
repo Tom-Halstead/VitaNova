@@ -149,7 +149,7 @@ export default function ReflectiveInsights() {
     <div style={styles.page}>
       <div style={styles.container}>
         {/* Header */}
-        <h2 style={styles.header}>Reflective Insights & Goals</h2>
+        <h2 style={styles.header}>Goal Creation</h2>
 
         {/* New Goal Form */}
         <div style={styles.section}>

@@ -117,7 +117,7 @@ export default function NavBar() {
             ["dashboard", "Dashboard"],
             ["new-entry", "New Entry"],
             ["entries", "Entries"],
-            ["insights-goals", "Insights & Goals"],
+            ["insights-goals", "Goals"],
             ["settings", "Settings"],
           ].map(([to, label]) => (
             <NavLink
