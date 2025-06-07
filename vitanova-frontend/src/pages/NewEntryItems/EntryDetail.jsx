@@ -1,5 +1,3 @@
-// src/pages/EntryDetail.jsx
-
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { getEntry, deleteEntry } from "../../api/EntriesApi";
@@ -53,6 +51,26 @@ export default function EntryDetail() {
     day: "numeric",
     timeZone: "UTC",
   });
+
+  // Determine if any activity fields exist
+  const hasActivity =
+    entry.activityType ||
+    entry.durationMin ||
+    entry.distance ||
+    entry.calories ||
+    entry.location ||
+    entry.avgHeartRate ||
+    entry.maxHeartRate ||
+    entry.equipment ||
+    entry.notes;
+
+  // Helper to render activity fields
+  const renderField = (label, value) => (
+    <div style={detailStyles.activityRow}>
+      <div style={detailStyles.activityLabel}>{label}</div>
+      <div style={detailStyles.activityValue}>{value}</div>
+    </div>
+  );
 
   const photos = entry.photos || [];
 
@@ -112,6 +130,44 @@ export default function EntryDetail() {
           </div>
         </div>
 
+        {/* Activity Details */}
+        {hasActivity && (
+          <div style={detailStyles.section}>
+            <h3 style={detailStyles.sectionHeader}>🔥 Activity Details</h3>
+            <div style={detailStyles.activitySection}>
+              {entry.activityType && renderField("🏃 Type", entry.activityType)}
+              {entry.durationMin &&
+                renderField("⏱ Duration", `${entry.durationMin} min`)}
+              {entry.distance &&
+                renderField(
+                  "📏 Distance",
+                  `${entry.distance} ${entry.distanceUnit}`
+                )}
+              {entry.calories &&
+                renderField("🔥 Calories", `${entry.calories} kcal`)}
+              {entry.location && renderField("📍 Location", entry.location)}
+              {(entry.avgHeartRate || entry.maxHeartRate) &&
+                renderField(
+                  "❤️ Heart Rate",
+                  `${
+                    entry.avgHeartRate ? `Avg ${entry.avgHeartRate} bpm` : ""
+                  }${entry.avgHeartRate && entry.maxHeartRate ? " / " : ""}${
+                    entry.maxHeartRate ? `Max ${entry.maxHeartRate} bpm` : ""
+                  }`
+                )}
+              {entry.equipment && renderField("🛠️ Equipment", entry.equipment)}
+            </div>
+            {entry.notes && (
+              <div style={{ marginTop: "2rem" }}>
+                <h4 style={detailStyles.subHeader}>🗒️ Notes</h4>
+                <div style={detailStyles.notesCard}>
+                  <p style={detailStyles.notesText}>{entry.notes}</p>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
         {/* Photos */}
         {photos.length > 0 && (
           <div style={detailStyles.section}>
@@ -143,7 +199,6 @@ const detailStyles = {
     fontSize: "1.25rem",
     color: "#6B7280",
   },
-
   pageWrapper: {
     minHeight: "100vh",
     padding: "2rem",
@@ -160,7 +215,6 @@ const detailStyles = {
     padding: "2rem",
     boxSizing: "border-box",
   },
-
   topBar: {
     display: "flex",
     justifyContent: "space-between",
@@ -188,14 +242,12 @@ const detailStyles = {
     fontWeight: 600,
     transition: "background 0.2s ease",
   },
-
   title: {
     fontSize: "2rem",
     fontWeight: 600,
     color: "#374151",
     marginBottom: "1.5rem",
   },
-
   section: {
     marginBottom: "2.5rem",
   },
@@ -220,7 +272,6 @@ const detailStyles = {
     color: "#4A5568",
     whiteSpace: "pre-wrap",
   },
-
   moodGrid: {
     display: "grid",
     gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
@@ -242,7 +293,49 @@ const detailStyles = {
     fontWeight: 600,
     color: "#374151",
   },
-
+  // Activity
+  activitySection: {
+    background: "#FFFFFF",
+    borderRadius: "0.5rem",
+    padding: "1rem",
+    boxShadow: "0 5px 15px rgba(0, 0, 0, 0.04)",
+  },
+  activityRow: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    padding: "0.75rem 1rem",
+    borderRadius: "0.5rem",
+    background: "#FAFAFF",
+    marginBottom: "0.75rem",
+  },
+  activityLabel: {
+    fontSize: "1rem",
+    fontWeight: 600,
+    color: "#374151",
+  },
+  activityValue: {
+    fontSize: "1rem",
+    color: "#4A5568",
+  },
+  subHeader: {
+    fontSize: "1.1rem",
+    fontWeight: 600,
+    color: "#374151",
+    marginBottom: "0.5rem",
+  },
+  notesCard: {
+    background: "#FFF8E1",
+    borderRadius: "0.5rem",
+    padding: "0.75rem 1rem",
+    boxShadow: "0 5px 15px rgba(0, 0, 0, 0.04)",
+  },
+  notesText: {
+    fontSize: "1rem",
+    lineHeight: 1.6,
+    color: "#4A5568",
+    whiteSpace: "pre-wrap",
+  },
   photosGrid: {
     display: "grid",
     gridTemplateColumns: "repeat(auto-fill, minmax(120px, 1fr))",
