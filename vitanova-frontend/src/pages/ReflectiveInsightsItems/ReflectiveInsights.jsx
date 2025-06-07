@@ -1,5 +1,3 @@
-// src/pages/ReflectiveInsightsItems/ReflectiveInsights.jsx
-
 import React, { useEffect, useState, useMemo } from "react";
 import {
   listGoals,
@@ -9,6 +7,9 @@ import {
 } from "../../api/GoalsApi";
 import TimelineBar from "./TimelineBar";
 import AllGoalsTabView from "./AllGoalsTabView";
+import NewGoalForm from "./NewGoalForm";
+import ActiveGoalsGrid from "./ActiveGoalsGrid";
+import GoalModal from "./GoalModal";
 
 export default function ReflectiveInsights() {
   const [goals, setGoals] = useState([]);
@@ -17,31 +18,27 @@ export default function ReflectiveInsights() {
   const [newDue, setNewDue] = useState("");
   const [loading, setLoading] = useState(true);
 
-  // Which completed goal is currently selected in the timeline pop‐up:
   const [selectedGoal, setSelectedGoal] = useState(null);
   const [editingGoalId, setEditingGoalId] = useState(null);
   const [draftReflection, setDraftReflection] = useState("");
-
-  // Whether to show the “All Goals Tab View” beneath the timeline:
   const [showAllTabs, setShowAllTabs] = useState(false);
 
-  // ─── 1) Load all goals on mount ───
+  // load
   useEffect(() => {
     (async () => {
       try {
         const page = await listGoals();
-        // Map each returned goal; if createdAt or completionDate is missing, default to now
-        const initialized = Array.isArray(page.content)
-          ? page.content.map((g) => ({
-              ...g,
-              createdAt: g.createdAt || new Date().toISOString(),
-              completionDate: g.completionDate || null,
-              reflectionText: g.reflectionText || "",
-            }))
-          : [];
-        setGoals(initialized);
-      } catch (err) {
-        console.error("Failed to load goals:", err);
+        setGoals(
+          Array.isArray(page.content)
+            ? page.content.map((g) => ({
+                ...g,
+                createdAt: g.createdAt || new Date().toISOString(),
+                completionDate: g.completionDate || null,
+                reflectionText: g.reflectionText || "",
+              }))
+            : []
+        );
+      } catch {
         setGoals([]);
       } finally {
         setLoading(false);
@@ -49,824 +46,191 @@ export default function ReflectiveInsights() {
     })();
   }, []);
 
-  // ─── 2) Create a new goal ───
+  // create
   const handleCreate = async () => {
-    const numericTarget = parseInt(newTarget, 10);
-    if (!newType.trim() || isNaN(numericTarget) || numericTarget <= 0) return;
-
-    try {
-      const created = await createGoal({
-        type: newType.trim(),
-        targetValue: numericTarget,
-        dueDate: newDue || null,
-      });
-      // If server did not return createdAt, use current timestamp
-      const createdAtISO = created.createdAt || new Date().toISOString();
-
-      setGoals((prev) => [
-        ...prev,
-        {
-          ...created,
-          createdAt: createdAtISO,
-          completionDate: null,
-          reflectionText: "",
-        },
-      ]);
-      setNewType("");
-      setNewTarget("");
-      setNewDue("");
-    } catch (err) {
-      console.error("Failed to create goal:", err);
-    }
+    const num = parseInt(newTarget, 10);
+    if (!newType.trim() || isNaN(num) || num <= 0) return;
+    const created = await createGoal({
+      type: newType.trim(),
+      targetValue: num,
+      dueDate: newDue || null,
+    });
+    setGoals((prev) => [
+      ...prev,
+      {
+        ...created,
+        createdAt: created.createdAt || new Date().toISOString(),
+        completionDate: null,
+        reflectionText: "",
+      },
+    ]);
+    setNewType("");
+    setNewTarget("");
+    setNewDue("");
   };
 
-  // ─── 3) Slider change: update progress or mark complete at 100% ───
-  const handleSliderChange = (id, percentage) => {
-    const goal = goals.find((g) => g.goalId === id);
-    if (!goal || goal.status === "COMPLETED") return;
-
-    const clamped = Math.min(Math.max(percentage, 0), 100);
-    const newCurrentValue = Math.round((goal.targetValue * clamped) / 100);
-
-    if (clamped === 100) {
-      handleMarkComplete(id);
-    } else {
+  // progress
+  const handleSliderChange = (id, pct) => {
+    const g = goals.find((x) => x.goalId === id);
+    if (!g || g.status === "COMPLETED") return;
+    const clamped = Math.min(Math.max(pct, 0), 100);
+    const newVal = Math.round((g.targetValue * clamped) / 100);
+    if (clamped === 100) markComplete(id);
+    else {
       setGoals((prev) =>
-        prev.map((g) =>
-          g.goalId === id ? { ...g, currentValue: newCurrentValue } : g
-        )
+        prev.map((x) => (x.goalId === id ? { ...x, currentValue: newVal } : x))
       );
-      updateGoal(id, { currentValue: newCurrentValue }).catch((err) =>
-        console.error("Failed to update goal progress:", err)
-      );
+      updateGoal(id, { currentValue: newVal }).catch(() => {});
     }
   };
-
-  // ─── 4) Mark goal as completed ───
-  const handleMarkComplete = (id) => {
-    const goal = goals.find((g) => g.goalId === id);
-    if (!goal || goal.status === "COMPLETED") return;
-
-    const completionDateISO = new Date().toISOString();
+  const markComplete = (id) => {
+    const now = new Date().toISOString();
     setGoals((prev) =>
-      prev.map((g) =>
-        g.goalId === id
+      prev.map((x) =>
+        x.goalId === id
           ? {
-              ...g,
+              ...x,
               status: "COMPLETED",
-              currentValue: g.targetValue,
-              completionDate: completionDateISO,
+              currentValue: x.targetValue,
+              completionDate: now,
             }
-          : g
+          : x
       )
     );
-
+    const g = goals.find((x) => x.goalId === id);
     updateGoal(id, {
       status: "COMPLETED",
-      currentValue: goal.targetValue,
-      completionDate: completionDateISO,
-    }).catch((err) => console.error("Failed to mark goal complete:", err));
+      currentValue: g.targetValue,
+      completionDate: now,
+    }).catch(() => {});
   };
 
-  // ─── 5) Delete a goal ───
+  // delete
   const handleDelete = async (id) => {
-    try {
-      await deleteGoal(id);
-      setGoals((prev) => prev.filter((g) => g.goalId !== id));
-
-      if (editingGoalId === id) {
-        setEditingGoalId(null);
-        setDraftReflection("");
-      }
-      if (selectedGoal && selectedGoal.goalId === id) {
-        setSelectedGoal(null);
-      }
-    } catch (err) {
-      console.error("Failed to delete goal:", err);
-    }
+    await deleteGoal(id);
+    setGoals((prev) => prev.filter((x) => x.goalId !== id));
+    if (editingGoalId === id) setEditingGoalId(null);
+    if (selectedGoal?.goalId === id) setSelectedGoal(null);
   };
 
-  // ─── 6) Reflection editing handlers ───
-  const startEditing = (id, currentText) => {
+  // reflection
+  const startEditing = (id, text) => {
     setEditingGoalId(id);
-    setDraftReflection(currentText || "");
+    setDraftReflection(text || "");
   };
   const cancelEditing = () => {
     setEditingGoalId(null);
     setDraftReflection("");
   };
   const saveReflection = async (id) => {
-    try {
-      await updateGoal(id, { reflectionText: draftReflection });
-      setGoals((prev) =>
-        prev.map((g) =>
-          g.goalId === id ? { ...g, reflectionText: draftReflection } : g
-        )
-      );
-      setEditingGoalId(null);
-      setDraftReflection("");
-    } catch (err) {
-      console.error("Failed to save reflection:", err);
-    }
+    await updateGoal(id, { reflectionText: draftReflection });
+    setGoals((prev) =>
+      prev.map((x) =>
+        x.goalId === id ? { ...x, reflectionText: draftReflection } : x
+      )
+    );
+    setEditingGoalId(null);
+    setDraftReflection("");
   };
 
-  // ─── 7) Timeline bubble click ───
-  const handleSelectGoal = (goalObj) => {
-    setSelectedGoal(goalObj);
-    setEditingGoalId(goalObj.goalId);
-    setDraftReflection(goalObj.reflectionText || "");
-  };
-
-  // ─── 8) Split active vs completed ───
   const activeGoals = goals.filter((g) => g.status !== "COMPLETED");
   const completedGoals = goals
     .filter((g) => g.status === "COMPLETED")
-    .slice()
-    .sort((a, b) => {
-      const aDate = a.completionDate ? new Date(a.completionDate) : new Date(0);
-      const bDate = b.completionDate ? new Date(b.completionDate) : new Date(0);
-      return bDate - aDate;
-    });
-
-  // ─── 9) Compute earliest creation date (fallback to “now” if none) ───
-  const earliestCreatedDate = useMemo(() => {
-    if (goals.length === 0) {
-      return new Date();
-    }
-    const parsedDates = goals
-      .map((g) => new Date(g.createdAt))
-      .filter((d) => d instanceof Date && !isNaN(d));
-    if (parsedDates.length === 0) {
-      return new Date();
-    }
-    return new Date(Math.min(...parsedDates.map((d) => d.getTime())));
+    .sort(
+      (a, b) =>
+        new Date(b.completionDate || 0) - new Date(a.completionDate || 0)
+    );
+  const earliestDate = useMemo(() => {
+    const ds = goals.map((g) => new Date(g.createdAt)).filter((d) => !isNaN(d));
+    return ds.length ? new Date(Math.min(...ds)) : new Date();
   }, [goals]);
 
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        background: "#F9FAFB",
-        padding: "3rem 1rem",
-        fontFamily: "'Lato', sans-serif",
-      }}
-    >
-      <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
-        <h2
-          style={{
-            fontSize: "2rem",
-            fontWeight: 600,
-            color: "#1F2937",
-            marginBottom: "2rem",
-            textAlign: "center",
-          }}
-        >
-          Reflective Insights & Goals
-        </h2>
+    <div style={styles.page}>
+      <div style={styles.container}>
+        <h2 style={styles.header}>Reflective Insights & Goals</h2>
 
-        {/* ─── New Goal Form ─── */}
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "1fr 1fr 1fr auto",
-            gap: "2rem",
-            background: "#FFFFFF",
-            padding: "1.5rem",
-            borderRadius: "0.75rem",
-            boxShadow: "0 4px 12px rgba(0, 0, 0, 0.05)",
-            marginBottom: "2rem",
-          }}
-        >
-          <div>
-            <label
-              htmlFor="goal-type"
-              style={{
-                display: "block",
-                marginBottom: "0.25rem",
-                fontWeight: 600,
-                color: "#374151",
-              }}
-            >
-              Goal Type
-            </label>
-            <input
-              id="goal-type"
-              type="text"
-              placeholder="e.g. Read Books"
-              value={newType}
-              onChange={(e) => setNewType(e.target.value)}
-              style={{
-                width: "100%",
-                padding: "0.75rem",
-                border: "1px solid #E5E7EB",
-                borderRadius: "0.5rem",
-                outline: "none",
-              }}
-              onFocus={(e) => (e.currentTarget.style.borderColor = "#6366F1")}
-              onBlur={(e) => (e.currentTarget.style.borderColor = "#E5E7EB")}
-            />
-          </div>
+        <NewGoalForm
+          newType={newType}
+          setNewType={setNewType}
+          newTarget={newTarget}
+          setNewTarget={setNewTarget}
+          newDue={newDue}
+          setNewDue={setNewDue}
+          onCreate={handleCreate}
+        />
 
-          <div>
-            <label
-              htmlFor="goal-target"
-              style={{
-                display: "block",
-                marginBottom: "0.25rem",
-                fontWeight: 600,
-                color: "#374151",
-              }}
-            >
-              Target Value
-            </label>
-            <input
-              id="goal-target"
-              type="number"
-              placeholder="100"
-              value={newTarget}
-              onChange={(e) => setNewTarget(e.target.value)}
-              style={{
-                width: "100%",
-                padding: "0.75rem",
-                border: "1px solid #E5E7EB",
-                borderRadius: "0.5rem",
-                outline: "none",
-              }}
-              onFocus={(e) => (e.currentTarget.style.borderColor = "#6366F1")}
-              onBlur={(e) => (e.currentTarget.style.borderColor = "#E5E7EB")}
-            />
-          </div>
-
-          <div>
-            <label
-              htmlFor="goal-due"
-              style={{
-                display: "block",
-                marginBottom: "0.25rem",
-                fontWeight: 600,
-                color: "#374151",
-              }}
-            >
-              Due Date
-            </label>
-            <input
-              id="goal-due"
-              type="date"
-              value={newDue}
-              onChange={(e) => setNewDue(e.target.value)}
-              style={{
-                width: "100%",
-                padding: "0.75rem",
-                border: "1px solid #E5E7EB",
-                borderRadius: "0.5rem",
-                outline: "none",
-              }}
-              onFocus={(e) => (e.currentTarget.style.borderColor = "#6366F1")}
-              onBlur={(e) => (e.currentTarget.style.borderColor = "#E5E7EB")}
-            />
-          </div>
-
-          <div style={{ display: "flex", alignItems: "flex-end" }}>
-            <button
-              onClick={handleCreate}
-              onKeyUp={(event) => {
-                if (event.key === "Enter") {
-                  handleCreate();
-                }
-              }}
-              style={{
-                height: "3.3em",
-                width: "100%",
-                padding: "0.75rem",
-                background: "linear-gradient(90deg, #6366F1, #4F46E5)",
-                color: "#FFF",
-                border: "none",
-                borderRadius: "0.5rem",
-                cursor: "pointer",
-                fontWeight: 600,
-                boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
-                transition: "transform 0.2s, box-shadow 0.2s",
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.transform = "scale(1.03)";
-                e.currentTarget.style.boxShadow =
-                  "0 6px 18px rgba(0, 0, 0, 0.15)";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.transform = "scale(1)";
-                e.currentTarget.style.boxShadow =
-                  "0 4px 12px rgba(0, 0, 0, 0.1)";
-              }}
-            >
-              Add Goal
-            </button>
-          </div>
-        </div>
-
-        {/* ─── Active / Expired Goals Grid ─── */}
         {loading ? (
-          <p style={{ textAlign: "center", color: "#6B7280" }}>
-            Loading goals…
-          </p>
+          <p style={styles.centerText}>Loading goals…</p>
         ) : activeGoals.length === 0 ? (
-          <p style={{ textAlign: "center", color: "#6B7280" }}>
+          <p style={styles.centerText}>
             No active goals. Add one above to get started!
           </p>
         ) : (
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))",
-              gap: "1.5rem",
-            }}
-          >
-            {activeGoals.map((goal) => (
-              <div
-                key={goal.goalId}
-                style={{
-                  position: "relative",
-                  background: "#FFFFFF",
-                  borderRadius: "0.75rem",
-                  padding: "1.5rem",
-                  boxShadow: "0 4px 12px rgba(0, 0, 0, 0.05)",
-                  display: "flex",
-                  flexDirection: "column",
-                }}
-              >
-                {/* Status badge */}
-                <span
-                  style={{
-                    position: "absolute",
-                    top: "1rem",
-                    right: "1rem",
-                    background:
-                      goal.status === "EXPIRED" ? "#EF4444" : "#FBBF24",
-                    color: "#FFF",
-                    padding: "0.25rem 0.75rem",
-                    borderRadius: "999px",
-                    fontSize: "0.75rem",
-                    fontWeight: 600,
-                  }}
-                >
-                  {goal.status}
-                </span>
-
-                <h3
-                  style={{
-                    margin: 0,
-                    fontSize: "1.25rem",
-                    color: "#1F2937",
-                    marginBottom: "0.5rem",
-                  }}
-                >
-                  {goal.type}
-                </h3>
-
-                <p
-                  style={{
-                    fontSize: "1.5rem",
-                    fontWeight: 600,
-                    color: "#4F46E5",
-                    margin: "0.5rem 0",
-                  }}
-                >
-                  {goal.currentValue} / {goal.targetValue}
-                </p>
-
-                <div
-                  style={{
-                    marginBottom: "1rem",
-                    color: "#6B7280",
-                  }}
-                >
-                  <div>
-                    <strong>Created:</strong>{" "}
-                    {new Date(goal.createdAt).toLocaleDateString()}
-                  </div>
-                  <div>
-                    <strong>Due by:</strong>{" "}
-                    {goal.dueDate
-                      ? new Date(goal.dueDate).toLocaleDateString()
-                      : "–"}
-                  </div>
-                </div>
-
-                {/* Slider */}
-                <div style={{ marginTop: "1rem" }}>
-                  <label
-                    htmlFor={`progress-${goal.goalId}`}
-                    style={{
-                      display: "block",
-                      marginBottom: "0.25rem",
-                      fontWeight: 600,
-                      color: "#374151",
-                    }}
-                  >
-                    Completion:{" "}
-                    <span style={{ color: "#4F46E5" }}>
-                      {goal.targetValue > 0
-                        ? Math.round(
-                            (goal.currentValue / goal.targetValue) * 100
-                          )
-                        : 0}
-                      %
-                    </span>
-                  </label>
-
-                  <input
-                    id={`progress-${goal.goalId}`}
-                    type="range"
-                    min="0"
-                    max="100"
-                    step="1"
-                    value={
-                      goal.targetValue > 0
-                        ? Math.round(
-                            (goal.currentValue / goal.targetValue) * 100
-                          )
-                        : 0
-                    }
-                    onChange={(e) =>
-                      handleSliderChange(
-                        goal.goalId,
-                        parseInt(e.target.value, 10)
-                      )
-                    }
-                    style={{
-                      width: "100%",
-                      appearance: "none",
-                      height: "8px",
-                      borderRadius: "4px",
-                      background: "#E5E7EB",
-                      outline: "none",
-                      transition: "background 0.2s",
-                    }}
-                    onMouseOver={(e) =>
-                      (e.currentTarget.style.background = "#C7D2FE")
-                    }
-                    onMouseOut={(e) =>
-                      (e.currentTarget.style.background = "#E5E7EB")
-                    }
-                  />
-                </div>
-
-                {/* Buttons */}
-                <div
-                  style={{
-                    marginTop: "1rem",
-                    display: "flex",
-                    gap: "0.5rem",
-                  }}
-                >
-                  <button
-                    onClick={() => handleMarkComplete(goal.goalId)}
-                    style={{
-                      padding: "0.5rem",
-                      background: "#10B981",
-                      color: "#FFF",
-                      border: "none",
-                      borderRadius: "0.5rem",
-                      cursor: "pointer",
-                      fontWeight: 600,
-                      flex: 1,
-                      transition: "background 0.2s, transform 0.1s",
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.background = "#059669";
-                      e.currentTarget.style.transform = "scale(1.05)";
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.background = "#10B981";
-                      e.currentTarget.style.transform = "scale(1)";
-                    }}
-                  >
-                    Mark Complete
-                  </button>
-
-                  <button
-                    onClick={() => handleDelete(goal.goalId)}
-                    style={{
-                      padding: "0.5rem",
-                      background: "#FECACA",
-                      color: "#B91C1C",
-                      border: "none",
-                      borderRadius: "0.5rem",
-                      cursor: "pointer",
-                      fontWeight: 600,
-                      flex: 1,
-                      transition: "background 0.2s, transform 0.1s",
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.background = "#FCA5A5";
-                      e.currentTarget.style.transform = "scale(1.05)";
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.background = "#FECACA";
-                      e.currentTarget.style.transform = "scale(1)";
-                    }}
-                  >
-                    Delete
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
+          <ActiveGoalsGrid
+            goals={activeGoals}
+            onSliderChange={handleSliderChange}
+            onMarkComplete={markComplete}
+            onDelete={handleDelete}
+          />
         )}
 
-        {/* ─── Two-Year Timeline Bar for Completed Goals ─── */}
         <TimelineBar
           completedGoals={completedGoals}
-          startDate={earliestCreatedDate}
-          onSelectGoal={handleSelectGoal}
+          startDate={earliestDate}
+          onSelectGoal={(g) => {
+            setSelectedGoal(g);
+            startEditing(g.goalId, g.reflectionText);
+          }}
         />
 
-        {/* Toggle to show/hide AllGoalsTabView */}
-        <div style={{ textAlign: "center", marginTop: "1rem" }}>
+        <div style={styles.toggle}>
           <button
-            onClick={() => setShowAllTabs((prev) => !prev)}
-            style={{
-              padding: "0.6rem 1.2rem",
-              background: "#4F46E5",
-              color: "#FFF",
-              border: "none",
-              borderRadius: "0.5rem",
-              cursor: "pointer",
-              fontWeight: 600,
-              fontSize: "0.95rem",
-              boxShadow: "0 3px 10px rgba(79, 70, 229, 0.2)",
-              transition: "background 0.2s, transform 0.1s",
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.background = "#4338CA";
-              e.currentTarget.style.transform = "scale(1.03)";
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.background = "#4F46E5";
-              e.currentTarget.style.transform = "scale(1)";
-            }}
+            onClick={() => setShowAllTabs((v) => !v)}
+            style={styles.toggleBtn}
           >
             {showAllTabs ? "Hide All Goals" : "Show All Goals"}
           </button>
         </div>
 
-        {/* ─── All Goals Tab View (conditionally rendered) ─── */}
         {showAllTabs && <AllGoalsTabView goals={goals} />}
 
-        {/* ─── Pop-Up Modal for Selected Goal from Timeline ─── */}
         {selectedGoal && (
-          <div
-            style={{
-              position: "fixed",
-              top: 0,
-              left: 0,
-              width: "100vw",
-              height: "100vh",
-              background: "rgba(0, 0, 0, 0.4)",
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-              zIndex: 9999,
-            }}
-            onClick={() => setSelectedGoal(null)}
-          >
-            <div
-              style={{
-                background: "#FFFFFF",
-                borderRadius: "0.75rem",
-                boxShadow: "0 4px 20px rgba(0, 0, 0, 0.2)",
-                padding: "2rem",
-                maxWidth: "500px",
-                width: "90%",
-                position: "relative",
-              }}
-              onClick={(e) => e.stopPropagation()}
-            >
-              <button
-                onClick={() => setSelectedGoal(null)}
-                style={{
-                  position: "absolute",
-                  top: "1rem",
-                  right: "1rem",
-                  background: "transparent",
-                  border: "none",
-                  fontSize: "1.25rem",
-                  color: "#6B7280",
-                  cursor: "pointer",
-                }}
-              >
-                ✕
-              </button>
-
-              <h3
-                style={{
-                  margin: 0,
-                  fontSize: "1.5rem",
-                  fontWeight: 600,
-                  color: "#1F2937",
-                  marginBottom: "1rem",
-                }}
-              >
-                {selectedGoal.type}
-              </h3>
-
-              <p
-                style={{
-                  fontSize: "1rem",
-                  fontWeight: 600,
-                  color: "#4F46E5",
-                  marginBottom: "1rem",
-                }}
-              >
-                Progress: {selectedGoal.currentValue} /{" "}
-                {selectedGoal.targetValue} (
-                {selectedGoal.targetValue > 0
-                  ? Math.round(
-                      (selectedGoal.currentValue / selectedGoal.targetValue) *
-                        100
-                    )
-                  : 0}
-                %)
-              </p>
-
-              <div
-                style={{
-                  color: "#6B7280",
-                  marginBottom: "1rem",
-                  fontSize: "0.95rem",
-                }}
-              >
-                <div>
-                  <strong>Created:</strong>{" "}
-                  {new Date(selectedGoal.createdAt).toLocaleDateString()}
-                </div>
-                <div>
-                  <strong>Completed:</strong>{" "}
-                  {new Date(selectedGoal.completionDate).toLocaleDateString()}
-                </div>
-                <div>
-                  <strong>Status:</strong> {selectedGoal.status}
-                </div>
-                <div>
-                  <strong>Due by:</strong>{" "}
-                  {selectedGoal.dueDate
-                    ? new Date(selectedGoal.dueDate).toLocaleDateString()
-                    : "–"}
-                </div>
-              </div>
-
-              {selectedGoal.status === "COMPLETED" &&
-                (editingGoalId === selectedGoal.goalId ? (
-                  <>
-                    <label
-                      htmlFor={`reflection-edit-modal`}
-                      style={{
-                        display: "block",
-                        marginBottom: "0.25rem",
-                        fontWeight: 600,
-                        color: "#374151",
-                      }}
-                    >
-                      Edit Reflection
-                    </label>
-                    <textarea
-                      id={`reflection-edit-modal`}
-                      value={draftReflection}
-                      onChange={(e) => setDraftReflection(e.target.value)}
-                      placeholder="Write your reflection here..."
-                      style={{
-                        width: "100%",
-                        minHeight: "80px",
-                        padding: "0.75rem",
-                        border: "1px solid #E5E7EB",
-                        borderRadius: "0.5rem",
-                        outline: "none",
-                        fontFamily: "'Lato', sans-serif",
-                        fontSize: "0.875rem",
-                        color: "#374151",
-                        marginBottom: "1rem",
-                      }}
-                      onFocus={(e) =>
-                        (e.currentTarget.style.borderColor = "#6366F1")
-                      }
-                      onBlur={(e) =>
-                        (e.currentTarget.style.borderColor = "#E5E7EB")
-                      }
-                    />
-                    <div style={{ display: "flex", gap: "0.5rem" }}>
-                      <button
-                        onClick={() => saveReflection(selectedGoal.goalId)}
-                        style={{
-                          flex: 1,
-                          padding: "0.5rem",
-                          background: "#4F46E5",
-                          color: "#FFF",
-                          border: "none",
-                          borderRadius: "0.5rem",
-                          cursor: "pointer",
-                          fontWeight: 600,
-                          transition: "background 0.2s, transform 0.1s",
-                        }}
-                        onMouseEnter={(e) => {
-                          e.currentTarget.style.background = "#4338CA";
-                          e.currentTarget.style.transform = "scale(1.05)";
-                        }}
-                        onMouseLeave={(e) => {
-                          e.currentTarget.style.background = "#4F46E5";
-                          e.currentTarget.style.transform = "scale(1)";
-                        }}
-                      >
-                        Save
-                      </button>
-                      <button
-                        onClick={cancelEditing}
-                        style={{
-                          flex: 1,
-                          padding: "0.5rem",
-                          background: "#E5E7EB",
-                          color: "#374151",
-                          border: "none",
-                          borderRadius: "0.5rem",
-                          cursor: "pointer",
-                          fontWeight: 600,
-                          transition: "background 0.2s, transform 0.1s",
-                        }}
-                        onMouseEnter={(e) => {
-                          e.currentTarget.style.background = "#D1D5DB";
-                          e.currentTarget.style.transform = "scale(1.05)";
-                        }}
-                        onMouseLeave={(e) => {
-                          e.currentTarget.style.background = "#E5E7EB";
-                          e.currentTarget.style.transform = "scale(1)";
-                        }}
-                      >
-                        Cancel
-                      </button>
-                    </div>
-                  </>
-                ) : (
-                  <>
-                    <label
-                      htmlFor={`reflection-display-modal`}
-                      style={{
-                        display: "block",
-                        marginBottom: "0.25rem",
-                        fontWeight: 600,
-                        color: "#374151",
-                      }}
-                    >
-                      Reflection
-                    </label>
-                    <p
-                      id={`reflection-display-modal`}
-                      style={{
-                        minHeight: "80px",
-                        padding: "0.75rem",
-                        border: "1px solid #E5E7EB",
-                        borderRadius: "0.5rem",
-                        fontFamily: "'Lato', sans-serif",
-                        fontSize: "0.875rem",
-                        color: "#374151",
-                        whiteSpace: "pre-wrap",
-                        background: "#F9FAFB",
-                        marginBottom: "1rem",
-                      }}
-                    >
-                      {selectedGoal.reflectionText || "No reflection written."}
-                    </p>
-                    <button
-                      onClick={() =>
-                        startEditing(
-                          selectedGoal.goalId,
-                          selectedGoal.reflectionText
-                        )
-                      }
-                      style={{
-                        padding: "0.5rem",
-                        background: "#6366F1",
-                        color: "#FFF",
-                        border: "none",
-                        borderRadius: "0.5rem",
-                        cursor: "pointer",
-                        fontWeight: 600,
-                        transition: "background 0.2s, transform 0.1s",
-                      }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.background = "#4F46E5";
-                        e.currentTarget.style.transform = "scale(1.05)";
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.background = "#6366F1";
-                        e.currentTarget.style.transform = "scale(1)";
-                      }}
-                    >
-                      Edit Reflection
-                    </button>
-                  </>
-                ))}
-            </div>
-          </div>
+          <GoalModal
+            goal={selectedGoal}
+            draft={draftReflection}
+            editingId={editingGoalId}
+            onSave={saveReflection}
+            onCancel={cancelEditing}
+            onStartEdit={startEditing}
+            onClose={() => setSelectedGoal(null)}
+          />
         )}
       </div>
     </div>
   );
 }
+
+const styles = {
+  page: { minHeight: "100vh", background: "#F9FAFB", padding: "2rem 1rem" },
+  container: { maxWidth: "1200px", margin: "0 auto" },
+  header: {
+    fontSize: "2rem",
+    fontWeight: 600,
+    color: "#1F2937",
+    marginBottom: "2rem",
+    textAlign: "center",
+  },
+  centerText: { textAlign: "center", color: "#6B7280" },
+  toggle: { textAlign: "center", marginTop: "1rem" },
+  toggleBtn: {
+    padding: "0.6rem 1.2rem",
+    background: "#4F46E5",
+    color: "#FFF",
+    border: "none",
+    borderRadius: "0.5rem",
+    cursor: "pointer",
+    fontWeight: 600,
+    fontSize: "0.95rem",
+  },
+};
