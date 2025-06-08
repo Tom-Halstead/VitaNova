@@ -1,10 +1,10 @@
 // File: src/pages/NewEntry.jsx
 import React, { useState } from "react";
-import MoodInput from "../../components/MoodInput";
+import MoodInput from "./MoodInput";
 import PhotoUploader from "../../components/PhotoUploader";
 import { createEntry } from "../../api/EntriesApi";
-import EntryPreview from "../../components/EntryPreview";
 
+import EntryPreview from "./EntryPreview";
 import JournalSection from "./JournalSection";
 import ActivityDetails from "./ActivityDetails";
 import ActionsSection from "./ActionsSection";

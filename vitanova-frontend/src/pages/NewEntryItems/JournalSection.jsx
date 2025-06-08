@@ -1,6 +1,6 @@
 // File: src/pages/JournalSection.jsx
 import React from "react";
-import MoodInput from "../../components/MoodInput";
+import MoodInput from "./MoodInput";
 
 export default function JournalSection({
   text,
