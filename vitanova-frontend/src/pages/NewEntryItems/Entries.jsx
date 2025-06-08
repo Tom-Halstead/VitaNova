@@ -1,5 +1,4 @@
 // src/pages/Entries.jsx
-
 import React, { useEffect, useState } from "react";
 import { listEntries, deleteEntry } from "../../api/EntriesApi";
 import { Link } from "react-router-dom";
@@ -12,7 +11,6 @@ export default function Entries() {
   const [pageSize, setPageSize] = useState(10);
   const [total, setTotal] = useState(0);
 
-  // Fetch entries with pagination
   const loadEntries = () => {
     setLoading(true);
     listEntries(page, pageSize)
@@ -29,21 +27,15 @@ export default function Entries() {
   const handleDelete = (entryId) => {
     if (!window.confirm("Delete this entry?")) return;
     deleteEntry(entryId).then(() => {
-      // If deleting the last item on a non‐zero page, step back
-      if (entries.length === 1 && page > 0) {
-        setPage(page - 1);
-      } else {
-        loadEntries();
-      }
+      if (entries.length === 1 && page > 0) setPage(page - 1);
+      else loadEntries();
     });
   };
 
-  // While loading
   if (loading) {
     return <div style={styles.loadingContainer}>Loading entries…</div>;
   }
 
-  // If no entries exist
   if (entries.length === 0) {
     return (
       <div style={styles.loadingContainer}>
@@ -55,11 +47,12 @@ export default function Entries() {
   const totalPages = Math.ceil(total / pageSize);
 
   return (
-    <div style={styles.pageContainer}>
+    <div style={{ ...styles.pageContainer, background: "var(--bg-alt)" }}>
       <div style={styles.innerWrapper}>
-        <h2 style={styles.pageTitle}>Your Entries</h2>
+        <h2 style={{ ...styles.pageTitle, color: "var(--text)" }}>
+          Your Entries
+        </h2>
 
-        {/* ── Page Size Selector ── */}
         <div style={styles.pageSizeContainer}>
           <label style={styles.pageSizeLabel}>
             Show
@@ -69,9 +62,10 @@ export default function Entries() {
                 setPage(0);
                 setPageSize(+e.target.value);
               }}
-              style={styles.pageSizeSelect}
-              onFocus={(e) => (e.currentTarget.style.borderColor = "#6366F1")}
-              onBlur={(e) => (e.currentTarget.style.borderColor = "#E5E7EB")}
+              style={{
+                ...styles.pageSizeSelect,
+                borderColor: "var(--border)",
+              }}
             >
               {[5, 10, 20, 50].map((n) => (
                 <option key={n} value={n}>
@@ -83,10 +77,8 @@ export default function Entries() {
           </label>
         </div>
 
-        {/* ── Entries Grid ── */}
         <div style={styles.entriesGrid}>
           {entries.map((e) => {
-            // Format date as YYYY-MM-DD without timezone shift
             const displayDate = new Date(
               e.entryDate + "T00:00:00Z"
             ).toLocaleDateString(undefined, {
@@ -96,18 +88,15 @@ export default function Entries() {
               timeZone: "UTC",
             });
 
-            // Build a short activity summary (optional fields)
             const activityParts = [];
             if (e.activityType) activityParts.push(e.activityType);
             if (e.durationMin) activityParts.push(`${e.durationMin} min`);
             if (e.distance)
               activityParts.push(`${e.distance}${e.distanceUnit}`);
-            // Only show first three parts
             const activitySummary = activityParts.slice(0, 3).join(" · ");
 
             return (
               <div key={e.entryId} style={styles.entryWrapper}>
-                {/* Delete button */}
                 <button
                   onClick={() => handleDelete(e.entryId)}
                   title="Delete entry"
@@ -115,7 +104,7 @@ export default function Entries() {
                 >
                   <Trash2
                     size={18}
-                    className="text-gray-400 hover:text-red-600 transition-colors"
+                    className="text-gray-400 hover:text-red-600"
                   />
                 </button>
 
@@ -123,8 +112,10 @@ export default function Entries() {
                   <div
                     style={{
                       ...styles.entryCard,
+                      background: "var(--bg)",
+                      border: "1px solid var(--border)",
                       borderLeft: e.activityType
-                        ? "4px solid #6366F1"
+                        ? "4px solid var(--primary)"
                         : "4px solid transparent",
                     }}
                     onMouseEnter={(evt) =>
@@ -136,11 +127,17 @@ export default function Entries() {
                         "0 4px 12px rgba(0, 0, 0, 0.05)")
                     }
                   >
-                    <time dateTime={e.entryDate} style={styles.entryDate}>
+                    <time
+                      dateTime={e.entryDate}
+                      style={{
+                        ...styles.entryDate,
+                        color: "var(--text-light)",
+                      }}
+                    >
                       {displayDate}
                     </time>
 
-                    <p style={styles.entrySnippet}>
+                    <p style={{ ...styles.entrySnippet, color: "var(--text)" }}>
                       {e.text.length > 100
                         ? `${e.text.slice(0, 100)}…`
                         : e.text}
@@ -154,7 +151,7 @@ export default function Entries() {
                       <span
                         style={styles.viewMoreText}
                         onMouseEnter={(evt) =>
-                          (evt.currentTarget.style.color = "#4F46E5")
+                          (evt.currentTarget.style.color = "var(--primary)")
                         }
                         onMouseLeave={(evt) =>
                           (evt.currentTarget.style.color = "#6366F1")
@@ -170,7 +167,6 @@ export default function Entries() {
           })}
         </div>
 
-        {/* ── Pagination ── */}
         <div style={styles.paginationContainer}>
           <button
             onClick={() => setPage((p) => Math.max(0, p - 1))}
@@ -178,18 +174,9 @@ export default function Entries() {
             style={{
               ...styles.pageButton,
               ...(page === 0 ? styles.pageButtonDisabled : {}),
-            }}
-            onMouseEnter={(e) => {
-              if (page > 0) {
-                e.currentTarget.style.background = "#F3F4F6";
-                e.currentTarget.style.color = "#1F2937";
-              }
-            }}
-            onMouseLeave={(e) => {
-              if (page > 0) {
-                e.currentTarget.style.background = "#FFFFFF";
-                e.currentTarget.style.color = "#374151";
-              }
+              border: "1px solid var(--border)",
+              background: "var(--bg)",
+              color: "var(--text)",
             }}
           >
             ← Prev
@@ -202,18 +189,9 @@ export default function Entries() {
               style={{
                 ...styles.pageButton,
                 ...(i === page ? styles.pageButtonActive : {}),
-              }}
-              onMouseEnter={(e) => {
-                if (i !== page) {
-                  e.currentTarget.style.background = "#F3F4F6";
-                  e.currentTarget.style.color = "#1F2937";
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (i !== page) {
-                  e.currentTarget.style.background = "#FFFFFF";
-                  e.currentTarget.style.color = "#374151";
-                }
+                border: "1px solid var(--border)",
+                background: i === page ? "var(--primary)" : "var(--bg)",
+                color: i === page ? "#FFF" : "var(--text)",
               }}
             >
               {i + 1}
@@ -226,18 +204,9 @@ export default function Entries() {
             style={{
               ...styles.pageButton,
               ...(page === totalPages - 1 ? styles.pageButtonDisabled : {}),
-            }}
-            onMouseEnter={(e) => {
-              if (page < totalPages - 1) {
-                e.currentTarget.style.background = "#F3F4F6";
-                e.currentTarget.style.color = "#1F2937";
-              }
-            }}
-            onMouseLeave={(e) => {
-              if (page < totalPages - 1) {
-                e.currentTarget.style.background = "#FFFFFF";
-                e.currentTarget.style.color = "#374151";
-              }
+              border: "1px solid var(--border)",
+              background: "var(--bg)",
+              color: "var(--text)",
             }}
           >
             Next →
@@ -255,15 +224,13 @@ const styles = {
     justifyContent: "center",
     alignItems: "center",
     fontFamily: "'Lato', sans-serif",
-    color: "#6B7280",
+    color: "var(--text-light)",
     fontSize: "1.1rem",
   },
 
   pageContainer: {
-    background: "#F9FAFB",
     minHeight: "100vh",
     padding: "3rem 1rem",
-    fontFamily: "'Lato', sans-serif",
     boxSizing: "border-box",
   },
   innerWrapper: {
@@ -273,7 +240,6 @@ const styles = {
   pageTitle: {
     fontSize: "1.75rem",
     fontWeight: 600,
-    color: "#1F2937",
     textAlign: "center",
     marginBottom: "2rem",
   },
@@ -285,14 +251,13 @@ const styles = {
   },
   pageSizeLabel: {
     fontSize: "0.9rem",
-    color: "#4B5563",
+    color: "var(--text-light)",
     display: "flex",
     alignItems: "center",
   },
   pageSizeSelect: {
     margin: "0 0.5rem",
     padding: "0.3rem 0.6rem",
-    border: "1px solid #E5E7EB",
     borderRadius: "0.5rem",
     fontFamily: "'Lato', sans-serif",
     fontSize: "0.9rem",
@@ -322,8 +287,6 @@ const styles = {
     color: "inherit",
   },
   entryCard: {
-    background: "#FFFFFF",
-    border: "1px solid #E5E7EB",
     borderRadius: "0.75rem",
     boxShadow: "0 4px 12px rgba(0, 0, 0, 0.05)",
     display: "flex",
@@ -336,12 +299,10 @@ const styles = {
   },
   entryDate: {
     fontSize: "0.875rem",
-    color: "#6B7280",
     fontWeight: 500,
   },
   entrySnippet: {
     margin: "0.75rem 0 0",
-    color: "#374151",
     fontWeight: 500,
     lineHeight: 1.5,
     fontSize: "1rem",
@@ -363,7 +324,6 @@ const styles = {
   },
   viewMoreText: {
     fontSize: "0.9rem",
-    color: "#6366F1",
     fontWeight: 600,
     cursor: "pointer",
     transition: "color 0.2s ease",
@@ -379,10 +339,7 @@ const styles = {
   },
   pageButton: {
     padding: "0.5rem 0.75rem",
-    border: "1px solid #E5E7EB",
     borderRadius: "0.5rem",
-    background: "#FFFFFF",
-    color: "#374151",
     fontSize: "0.9rem",
     cursor: "pointer",
     transition: "background 0.2s ease, color 0.2s ease",
@@ -392,8 +349,6 @@ const styles = {
     opacity: 0.5,
   },
   pageButtonActive: {
-    background: "#6366F1",
-    color: "#FFFFFF",
     boxShadow: "0 4px 12px rgba(0, 0, 0, 0.06)",
   },
 };

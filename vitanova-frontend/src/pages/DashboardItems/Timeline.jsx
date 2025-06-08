@@ -1,3 +1,4 @@
+// File: src/pages/Timeline.jsx
 import React, { useEffect, useState } from "react";
 import { listEntries } from "../../api/EntriesApi";
 import { listGoals } from "../../api/GoalsApi";
@@ -15,7 +16,6 @@ export default function Timeline() {
   useEffect(() => {
     Promise.all([listEntries(0, 1000), listGoals()])
       .then(([entryResp, goalResp]) => {
-        // 1) Build entry events
         const entries = Array.isArray(entryResp.entries)
           ? entryResp.entries
           : [];
@@ -35,7 +35,6 @@ export default function Timeline() {
           rawEntry: e,
         }));
 
-        // 2) Build goal events
         const rawGoals = Array.isArray(goalResp)
           ? goalResp
           : Array.isArray(goalResp.content)
@@ -65,7 +64,6 @@ export default function Timeline() {
           })
           .filter(Boolean);
 
-        // 3) Combine & sort
         setEvents(
           [...entryEvents, ...goalEvents].sort(
             (a, b) => a.sortDate - b.sortDate
@@ -116,19 +114,14 @@ export default function Timeline() {
         ))}
       </div>
 
-      {/* Goal reflection popup */}
       {selectedEvent?.type === "goal" && (
         <GoalModal
           goal={selectedEvent.rawGoal}
-          onSave={(id, text) => {
-            /* you can wire save back to parent if needed */
-            setSelectedEvent(null);
-          }}
+          onSave={() => setSelectedEvent(null)}
           onClose={() => setSelectedEvent(null)}
         />
       )}
 
-      {/* Entry preview popup */}
       {selectedEvent?.type === "entry" && (
         <EntryModal
           entry={selectedEvent.rawEntry}
@@ -143,12 +136,12 @@ const styles = {
   pageWrapper: {
     fontFamily: "'Lato', sans-serif",
     padding: "2rem 1rem",
-    background: "#F7FAFC",
+    background: "var(--bg-alt)",
   },
   pageHeader: {
     fontSize: "1.75rem",
     fontWeight: 600,
-    color: "#1F2937",
+    color: "var(--text)",
     textAlign: "center",
     marginBottom: "1.5rem",
   },
@@ -160,7 +153,7 @@ const styles = {
   },
   loadingText: {
     fontSize: "1rem",
-    color: "#6B7280",
+    color: "var(--text-light)",
   },
   timelineContainer: {
     position: "relative",
@@ -174,7 +167,7 @@ const styles = {
     bottom: 0,
     left: "50%",
     width: "4px",
-    background: "#E5E7EB",
+    background: "var(--border)",
     transform: "translateX(-2px)",
   },
 };

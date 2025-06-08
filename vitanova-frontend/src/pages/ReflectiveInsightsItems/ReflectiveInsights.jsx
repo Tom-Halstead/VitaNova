@@ -1,5 +1,4 @@
 // src/pages/ReflectiveInsightsItems/ReflectiveInsights.jsx
-
 import React, { useEffect, useState, useMemo } from "react";
 import {
   listGoals,
@@ -17,20 +16,16 @@ export default function ReflectiveInsights() {
   const [goals, setGoals] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Popup state
   const [selectedGoal, setSelectedGoal] = useState(null);
   const [editingGoalId, setEditingGoalId] = useState(null);
   const [draftReflection, setDraftReflection] = useState("");
 
-  // “Show All Goals” toggle
   const [showAllTabs, setShowAllTabs] = useState(false);
 
-  // New-goal form state
   const [newType, setNewType] = useState("");
   const [newTarget, setNewTarget] = useState("");
   const [newDue, setNewDue] = useState("");
 
-  // Load
   useEffect(() => {
     (async () => {
       try {
@@ -52,7 +47,6 @@ export default function ReflectiveInsights() {
     })();
   }, []);
 
-  // Create
   const handleCreate = async () => {
     const num = parseInt(newTarget, 10);
     if (!newType.trim() || isNaN(num) || num <= 0) return;
@@ -75,15 +69,13 @@ export default function ReflectiveInsights() {
     setNewDue("");
   };
 
-  // Progress
   const handleSliderChange = (id, pct) => {
     const g = goals.find((x) => x.goalId === id);
     if (!g || g.status === "COMPLETED") return;
     const clamped = Math.min(Math.max(pct, 0), 100);
     const newVal = Math.round((g.targetValue * clamped) / 100);
-    if (clamped === 100) {
-      markComplete(id);
-    } else {
+    if (clamped === 100) markComplete(id);
+    else {
       setGoals((prev) =>
         prev.map((x) => (x.goalId === id ? { ...x, currentValue: newVal } : x))
       );
@@ -112,7 +104,6 @@ export default function ReflectiveInsights() {
     }).catch(() => {});
   };
 
-  // Delete
   const handleDelete = async (id) => {
     await deleteGoal(id);
     setGoals((prev) => prev.filter((x) => x.goalId !== id));
@@ -120,7 +111,6 @@ export default function ReflectiveInsights() {
     if (selectedGoal?.goalId === id) setSelectedGoal(null);
   };
 
-  // Reflection editing
   const startEditing = (id, text) => {
     setEditingGoalId(id);
     setDraftReflection(text || "");
@@ -141,7 +131,6 @@ export default function ReflectiveInsights() {
     setSelectedGoal(null);
   };
 
-  // Split active / completed
   const activeGoals = goals.filter((g) => g.status !== "COMPLETED");
   const completedGoals = goals
     .filter((g) => g.status === "COMPLETED")
@@ -150,7 +139,6 @@ export default function ReflectiveInsights() {
         new Date(b.completionDate || 0) - new Date(a.completionDate || 0)
     );
 
-  // Earliest created date
   const earliestDate = useMemo(() => {
     const dates = goals
       .map((g) => new Date(g.createdAt))
@@ -161,11 +149,26 @@ export default function ReflectiveInsights() {
   }, [goals]);
 
   return (
-    <div style={styles.page}>
-      <div style={styles.container}>
-        <h2 style={styles.header}>Reflective Insights & Goals</h2>
+    <div
+      style={{
+        minHeight: "100vh",
+        background: "var(--bg-alt)",
+        padding: "2rem 1rem",
+      }}
+    >
+      <div style={{ maxWidth: 1200, margin: "0 auto 5em auto" }}>
+        <h2
+          style={{
+            fontSize: "2rem",
+            fontWeight: 600,
+            textAlign: "center",
+            marginBottom: "1.5rem",
+            color: "var(--text)",
+          }}
+        >
+          Reflective Insights & Goals
+        </h2>
 
-        {/* New Goal */}
         <NewGoalForm
           newType={newType}
           setNewType={setNewType}
@@ -176,11 +179,14 @@ export default function ReflectiveInsights() {
           onCreate={handleCreate}
         />
 
-        {/* Active Goals */}
         {loading ? (
-          <p style={styles.centerText}>Loading goals…</p>
+          <p style={{ textAlign: "center", color: "var(--text-light)" }}>
+            Loading goals…
+          </p>
         ) : activeGoals.length === 0 ? (
-          <p style={styles.centerText}>No active goals.</p>
+          <p style={{ textAlign: "center", color: "var(--text-light)" }}>
+            No active goals.
+          </p>
         ) : (
           <ActiveGoalsGrid
             goals={activeGoals}
@@ -194,8 +200,7 @@ export default function ReflectiveInsights() {
           />
         )}
 
-        {/* Timeline of Completed */}
-        <div style={styles.section}>
+        <div style={{ marginBottom: "2em" }}>
           <TimelineBar
             completedGoals={completedGoals}
             startDate={earliestDate}
@@ -206,20 +211,32 @@ export default function ReflectiveInsights() {
           />
         </div>
 
-        {/* Toggle All Goals */}
-        <div style={{ ...styles.section, ...styles.toggle }}>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            marginBottom: "2em",
+          }}
+        >
           <button
             onClick={() => setShowAllTabs((v) => !v)}
-            style={styles.toggleBtn}
+            style={{
+              padding: "0.75rem 1.5rem",
+              background: "var(--primary)",
+              color: "#FFF",
+              border: "none",
+              borderRadius: "0.5rem",
+              cursor: "pointer",
+              fontWeight: 600,
+              fontSize: "1rem",
+            }}
           >
             {showAllTabs ? "Hide All Goals" : "Show All Goals"}
           </button>
         </div>
 
-        {/* All Goals Tab View */}
         {showAllTabs && <AllGoalsTabView goals={goals} />}
 
-        {/* Goal Modal */}
         {selectedGoal && (
           <GoalModal
             goal={selectedGoal}
@@ -235,42 +252,3 @@ export default function ReflectiveInsights() {
     </div>
   );
 }
-
-const styles = {
-  page: {
-    minHeight: "100vh",
-    background: "#F9FAFB",
-    padding: "2rem 1rem",
-  },
-  container: {
-    maxWidth: "1200px",
-    margin: "0 auto 5em auto",
-  },
-  header: {
-    fontSize: "2rem",
-    fontWeight: 600,
-    textAlign: "center",
-    marginBottom: "1.5rem",
-  },
-  centerText: {
-    textAlign: "center",
-    color: "#6B7280",
-  },
-  section: {
-    marginBottom: "2em",
-  },
-  toggle: {
-    display: "flex",
-    justifyContent: "center",
-  },
-  toggleBtn: {
-    padding: "0.75rem 1.5rem",
-    background: "#4F46E5",
-    color: "#FFF",
-    border: "none",
-    borderRadius: "0.5rem",
-    cursor: "pointer",
-    fontWeight: 600,
-    fontSize: "1rem",
-  },
-};

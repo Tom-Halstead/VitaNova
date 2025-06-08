@@ -1,3 +1,4 @@
+// File: src/components/ActivityDetails.jsx
 import React from "react";
 import PhotoUploader from "../../components/PhotoUploader";
 
@@ -10,16 +11,34 @@ export default function ActivityDetails({
   const label = {
     fontSize: "0.95rem",
     fontWeight: 500,
-    color: "#4A5568",
+    color: "var(--text-light)",
     marginBottom: "0.3rem",
   };
   const input = {
-    border: "1px solid #CBD5E0",
+    border: "1px solid var(--border)",
     borderRadius: "0.5rem",
     padding: "0.75rem 0.9rem",
     width: "100%",
     fontSize: "1rem",
+    color: "var(--text)",
+    background: "var(--bg)",
     boxSizing: "border-box",
+  };
+  const titleStyle = {
+    fontSize: "1.3rem",
+    fontWeight: 600,
+    color: "var(--text)",
+  };
+  const subtitleStyle = {
+    fontWeight: 400,
+    fontSize: "0.9rem",
+    color: "var(--text-light)",
+  };
+  const summaryStyle = {
+    fontSize: "1rem",
+    fontWeight: 500,
+    color: "var(--text-light)",
+    cursor: "pointer",
   };
 
   const upd = (key) => (e) =>
@@ -27,11 +46,8 @@ export default function ActivityDetails({
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-      <h3 style={{ fontSize: "1.3rem", fontWeight: 600, color: "#2D3748" }}>
-        🔥 Activity Details{" "}
-        <span style={{ fontWeight: 400, fontSize: "0.9rem", color: "#718096" }}>
-          (optional)
-        </span>
+      <h3 style={{ ...titleStyle }}>
+        🔥 Activity Details <span style={{ ...subtitleStyle }}>(optional)</span>
       </h3>
 
       <div
@@ -41,6 +57,7 @@ export default function ActivityDetails({
           gap: "1rem",
         }}
       >
+        {/* Activity Type */}
         <div style={{ display: "flex", flexDirection: "column" }}>
           <label htmlFor="activity-type" style={label}>
             Activity Type
@@ -69,6 +86,7 @@ export default function ActivityDetails({
           </select>
         </div>
 
+        {/* Duration */}
         <div style={{ display: "flex", flexDirection: "column" }}>
           <label htmlFor="duration-min" style={label}>
             Duration (min)
@@ -83,6 +101,7 @@ export default function ActivityDetails({
           />
         </div>
 
+        {/* Distance */}
         <div style={{ display: "flex", flexDirection: "column" }}>
           <label style={label}>Distance</label>
           <div style={{ display: "flex", gap: "0.5rem" }}>
@@ -107,6 +126,7 @@ export default function ActivityDetails({
           </div>
         </div>
 
+        {/* Calories */}
         <div style={{ display: "flex", flexDirection: "column" }}>
           <label htmlFor="calories" style={label}>
             Calories Burned
@@ -130,6 +150,7 @@ export default function ActivityDetails({
           />
         </div>
 
+        {/* Location */}
         <div style={{ display: "flex", flexDirection: "column" }}>
           <label htmlFor="location" style={label}>
             Location / Route
@@ -144,6 +165,7 @@ export default function ActivityDetails({
           />
         </div>
 
+        {/* Equipment */}
         <div style={{ display: "flex", flexDirection: "column" }}>
           <label htmlFor="equipment" style={label}>
             Equipment
@@ -172,6 +194,7 @@ export default function ActivityDetails({
           </select>
         </div>
 
+        {/* Heart Rates */}
         <div
           style={{
             display: "grid",
@@ -210,16 +233,7 @@ export default function ActivityDetails({
 
       {/* Comments & Photos */}
       <details style={{ marginTop: "1rem", marginBottom: "1rem" }}>
-        <summary
-          style={{
-            fontSize: "1rem",
-            fontWeight: 500,
-            color: "#4A5568",
-            cursor: "pointer",
-          }}
-        >
-          🗒️ Additional Comments
-        </summary>
+        <summary style={summaryStyle}>🗒️ Additional Comments</summary>
         <textarea
           value={activity.notes}
           onChange={upd("notes")}
@@ -234,18 +248,10 @@ export default function ActivityDetails({
       </details>
 
       <div style={{ marginTop: "1rem" }}>
-        <h3 style={{ fontSize: "1.3rem", fontWeight: 600, color: "#2D3748" }}>
-          📸 Photos
-        </h3>
+        <h3 style={titleStyle}>📸 Photos</h3>
         <PhotoUploader onFiles={setPhotos} />
         {photos.length > 0 && (
-          <p
-            style={{
-              marginTop: "0.5rem",
-              fontSize: "0.9rem",
-              color: "#4A5568",
-            }}
-          >
+          <p style={label}>
             {photos.length} file{photos.length > 1 ? "s" : ""} selected
           </p>
         )}

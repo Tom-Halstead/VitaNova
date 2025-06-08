@@ -1,3 +1,4 @@
+// File: src/pages/JournalSection.jsx
 import React from "react";
 import MoodInput from "../../components/MoodInput";
 
@@ -11,29 +12,34 @@ export default function JournalSection({
   moodPost,
   setMoodPost,
 }) {
-  const label = {
+  const labelStyle = {
     fontSize: "0.95rem",
     fontWeight: 500,
-    color: "#4A5568",
+    color: "var(--text-light)",
     marginBottom: "0.3rem",
   };
-  const input = {
-    border: "1px solid #CBD5E0",
+  const inputStyle = {
+    border: "1px solid var(--border)",
     borderRadius: "0.5rem",
     padding: "0.75rem 0.9rem",
     width: "100%",
     fontSize: "1rem",
+    color: "var(--text)",
+    background: "var(--bg)",
     boxSizing: "border-box",
+  };
+  const titleStyle = {
+    fontSize: "1.3rem",
+    fontWeight: 600,
+    color: "var(--text)",
   };
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-      <h3 style={{ fontSize: "1.3rem", fontWeight: 600, color: "#2D3748" }}>
-        🖋 Journal Entry
-      </h3>
+      <h3 style={titleStyle}>🖋 Journal Entry</h3>
 
       <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
-        <label htmlFor="entry-text" style={label}>
+        <label htmlFor="entry-text" style={labelStyle}>
           Your Thoughts
         </label>
         <textarea
@@ -41,7 +47,7 @@ export default function JournalSection({
           value={text}
           onChange={(e) => setText(e.target.value)}
           placeholder="Write your journal entry..."
-          style={{ ...input, minHeight: "140px", resize: "vertical" }}
+          style={{ ...inputStyle, minHeight: "140px", resize: "vertical" }}
           required
         />
       </div>
@@ -54,7 +60,7 @@ export default function JournalSection({
         }}
       >
         <div style={{ display: "flex", flexDirection: "column" }}>
-          <label htmlFor="entry-date" style={label}>
+          <label htmlFor="entry-date" style={labelStyle}>
             📅 Entry Date
           </label>
           <input
@@ -62,12 +68,26 @@ export default function JournalSection({
             type="date"
             value={date}
             onChange={(e) => setDate(e.target.value)}
-            style={input}
+            style={inputStyle}
             required
           />
         </div>
-        <MoodInput label="Mood Before" value={moodPre} onChange={setMoodPre} />
-        <MoodInput label="Mood After" value={moodPost} onChange={setMoodPost} />
+
+        <MoodInput
+          label="Mood Before"
+          value={moodPre}
+          onChange={setMoodPre}
+          labelColor="var(--text-light)"
+          iconColor="var(--text)"
+        />
+
+        <MoodInput
+          label="Mood After"
+          value={moodPost}
+          onChange={setMoodPost}
+          labelColor="var(--text-light)"
+          iconColor="var(--text)"
+        />
       </div>
     </div>
   );

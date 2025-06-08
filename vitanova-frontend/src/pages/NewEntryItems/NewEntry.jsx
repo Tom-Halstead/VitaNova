@@ -1,3 +1,4 @@
+// File: src/pages/NewEntry.jsx
 import React, { useState } from "react";
 import MoodInput from "../../components/MoodInput";
 import PhotoUploader from "../../components/PhotoUploader";
@@ -105,7 +106,8 @@ export default function NewEntry() {
   // shared styles
   const container = {
     minHeight: "100vh",
-    background: "#F7FAFC",
+    background: "var(--bg-alt)",
+    color: "var(--text)",
     padding: "1.5rem",
     display: "flex",
     justifyContent: "center",
@@ -113,7 +115,8 @@ export default function NewEntry() {
   };
   const card = {
     position: "relative",
-    background: "#FFF",
+    background: "var(--bg)",
+    color: "var(--text)",
     borderRadius: "0.75rem",
     padding: "2rem",
     boxShadow: "0 10px 30px rgba(0,0,0,0.05)",
@@ -124,7 +127,7 @@ export default function NewEntry() {
   const title = {
     fontSize: "1.3rem",
     fontWeight: 600,
-    color: "#2D3748",
+    color: "var(--text)",
     marginBottom: "1rem",
     textAlign: "center",
   };
@@ -133,7 +136,7 @@ export default function NewEntry() {
     return (
       <div style={container}>
         <div style={card}>
-          <h2 style={{ ...title }}>📋 Preview</h2>
+          <h2 style={title}>📋 Preview</h2>
           <EntryPreview
             date={date}
             moodPre={moodPre}
@@ -149,8 +152,8 @@ export default function NewEntry() {
               marginTop: "1.5rem",
               width: "100%",
               padding: "0.75rem",
-              background: "#CBD5E0",
-              color: "#2D3748",
+              background: "var(--border)",
+              color: "var(--text)",
               border: "none",
               borderRadius: "0.5rem",
               cursor: "pointer",
@@ -173,8 +176,8 @@ export default function NewEntry() {
               top: "1.5rem",
               left: "50%",
               transform: "translateX(-50%)",
-              background: "#48BB78",
-              color: "#FFF",
+              background: "var(--success-bg)",
+              color: "var(--success-text)",
               padding: "0.75rem 1.5rem",
               borderRadius: "0.5rem",
               boxShadow: "0 5px 15px rgba(0,0,0,0.1)",
@@ -190,8 +193,8 @@ export default function NewEntry() {
         {error && (
           <div
             style={{
-              background: "#FED7D7",
-              color: "#C53030",
+              background: "var(--error-bg)",
+              color: "var(--error-text)",
               padding: "0.75rem 1rem",
               borderRadius: "0.5rem",
               textAlign: "center",

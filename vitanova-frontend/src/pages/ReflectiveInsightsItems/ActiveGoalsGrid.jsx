@@ -1,3 +1,4 @@
+// File: src/components/ActiveGoalsGrid.jsx
 import React from "react";
 import GoalCard from "./GoalCard";
 
@@ -6,24 +7,22 @@ export default function ActiveGoalsGrid({
   onSliderChange,
   onMarkComplete,
   onDelete,
-  onViewDetail, // callback to open goal detail popup
+  onViewDetail,
 }) {
   if (!Array.isArray(goals)) return null;
 
   return (
     <div style={styles.grid}>
-      {goals
-        .filter(Boolean) // drop any undefined/null entries
-        .map((g) => (
-          <GoalCard
-            key={g.goalId}
-            goal={g}
-            onSliderChange={onSliderChange}
-            onMarkComplete={onMarkComplete}
-            onDelete={onDelete}
-            onViewDetail={() => onViewDetail(g)}
-          />
-        ))}
+      {goals.filter(Boolean).map((g) => (
+        <GoalCard
+          key={g.goalId}
+          goal={g}
+          onSliderChange={onSliderChange}
+          onMarkComplete={onMarkComplete}
+          onDelete={onDelete}
+          onViewDetail={() => onViewDetail(g)}
+        />
+      ))}
     </div>
   );
 }

@@ -1,3 +1,4 @@
+// File: src/components/GoalCard.jsx
 import React from "react";
 
 export default function GoalCard({
@@ -5,14 +6,13 @@ export default function GoalCard({
   onSliderChange,
   onMarkComplete,
   onDelete,
-  onViewDetail, // callback to open detail popup
+  onViewDetail,
 }) {
-  if (!goal) return null; // safety check
+  if (!goal) return null;
 
-  const pct =
-    goal.targetValue > 0
-      ? Math.round((goal.currentValue / goal.targetValue) * 100)
-      : 0;
+  const pct = goal.targetValue
+    ? Math.round((goal.currentValue / goal.targetValue) * 100)
+    : 0;
 
   return (
     <div
@@ -30,7 +30,12 @@ export default function GoalCard({
       <span
         style={{
           ...styles.badge,
-          background: goal.status === "EXPIRED" ? "#EF4444" : "#FBBF24",
+          background:
+            goal.status === "EXPIRED" ? "var(--error-bg)" : "var(--success-bg)",
+          color:
+            goal.status === "EXPIRED"
+              ? "var(--error-text)"
+              : "var(--success-text)",
         }}
       >
         {goal.status}
@@ -54,7 +59,7 @@ export default function GoalCard({
 
       <div style={{ marginTop: "1rem" }}>
         <label htmlFor={`progress-${goal.goalId}`} style={styles.label}>
-          Completion: <span style={{ color: "#4F46E5" }}>{pct}%</span>
+          Completion: <span style={{ color: "var(--primary)" }}>{pct}%</span>
         </label>
         <input
           id={`progress-${goal.goalId}`}
@@ -65,7 +70,7 @@ export default function GoalCard({
           value={pct}
           onChange={(e) => {
             e.stopPropagation();
-            onSliderChange(goal.goalId, parseInt(e.target.value, 10));
+            onSliderChange(goal.goalId, +e.target.value);
           }}
           style={styles.slider}
         />
@@ -98,7 +103,7 @@ export default function GoalCard({
 const styles = {
   card: {
     position: "relative",
-    background: "#FFF",
+    background: "var(--bg)",
     borderRadius: "0.75rem",
     padding: "1.5rem",
     boxShadow: "0 4px 12px rgba(0,0,0,0.05)",
@@ -111,7 +116,6 @@ const styles = {
     position: "absolute",
     top: "1rem",
     right: "1rem",
-    color: "#FFF",
     padding: "0.25rem 0.75rem",
     borderRadius: "999px",
     fontSize: "0.75rem",
@@ -120,29 +124,30 @@ const styles = {
   title: {
     margin: 0,
     fontSize: "1.25rem",
-    color: "#1F2937",
+    color: "var(--text)",
   },
   progress: {
     fontSize: "1.5rem",
     fontWeight: 600,
-    color: "#4F46E5",
+    color: "var(--primary)",
     margin: "0.5rem 0",
   },
   meta: {
     fontSize: "0.875rem",
-    color: "#6B7280",
+    color: "var(--text-light)",
     lineHeight: 1.4,
   },
   label: {
     display: "block",
     marginBottom: "0.25rem",
     fontWeight: 600,
+    color: "var(--text)",
   },
   slider: {
     width: "100%",
     height: "8px",
     borderRadius: "4px",
-    background: "#E5E7EB",
+    background: "var(--border)",
     outline: "none",
     transition: "background 0.2s",
   },
@@ -154,8 +159,8 @@ const styles = {
   completeBtn: {
     flex: 1,
     padding: "0.5rem",
-    background: "#10B981",
-    color: "#FFF",
+    background: "var(--success-bg)",
+    color: "var(--success-text)",
     border: "none",
     borderRadius: "0.5rem",
     cursor: "pointer",
@@ -164,8 +169,8 @@ const styles = {
   deleteBtn: {
     flex: 1,
     padding: "0.5rem",
-    background: "#FECACA",
-    color: "#B91C1C",
+    background: "var(--error-bg)",
+    color: "var(--error-text)",
     border: "none",
     borderRadius: "0.5rem",
     cursor: "pointer",

@@ -1,3 +1,4 @@
+// File: src/pages/ReflectiveInsightsItems/NewGoalForm.jsx
 import React from "react";
 
 export default function NewGoalForm({
@@ -57,12 +58,9 @@ export default function NewGoalForm({
           onClick={onCreate}
           style={styles.button}
           onMouseEnter={(e) => {
-            e.currentTarget.style.background = "#4F46E5";
             e.currentTarget.style.transform = "scale(1.02)";
           }}
           onMouseLeave={(e) => {
-            e.currentTarget.style.background =
-              "linear-gradient(90deg, #6366F1, #4F46E5)";
             e.currentTarget.style.transform = "scale(1)";
           }}
         >
@@ -77,9 +75,9 @@ const styles = {
   form: {
     display: "grid",
     gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
-    gap: "0.5rem", // very tight gap
-    background: "#FFF",
-    padding: "0.75rem", // smaller padding
+    gap: "0.5rem",
+    background: "var(--bg)",
+    padding: "0.75rem",
     borderRadius: "0.5rem",
     boxShadow: "0 2px 6px rgba(0,0,0,0.05)",
     marginBottom: "1rem",
@@ -92,17 +90,17 @@ const styles = {
     marginBottom: "0.25rem",
     fontSize: "0.9rem",
     fontWeight: 600,
-    color: "#374151",
+    color: "var(--text)",
   },
   input: {
     width: "100%",
-    maxWidth: "250px",
     padding: "0.5rem",
     fontSize: "0.9rem",
-    border: "1px solid #E5E7EB",
+    border: "1px solid var(--border)",
     borderRadius: "0.4rem",
     outline: "none",
-    marginRight: "0.25rem", // minimal right spacing
+    background: "var(--bg)",
+    color: "var(--text)",
   },
   buttonContainer: {
     display: "flex",
@@ -110,15 +108,14 @@ const styles = {
   },
   button: {
     width: "100%",
-    maxWidth: "200px",
     padding: "0.6rem",
     fontSize: "0.9rem",
-    background: "linear-gradient(90deg, #6366F1, #4F46E5)",
+    background: "linear-gradient(90deg, var(--primary-alt), var(--primary))",
     color: "#FFF",
     border: "none",
     borderRadius: "0.4rem",
     cursor: "pointer",
     fontWeight: 600,
-    transition: "transform 0.1s, background 0.1s",
+    transition: "transform 0.1s",
   },
 };

@@ -1,12 +1,7 @@
-// src/pages/ReflectiveInsightsItems/GoalModal.jsx
-
+// File: src/pages/ReflectiveInsightsItems/GoalModal.jsx
 import React, { useState } from "react";
 
-export default function GoalModal({
-  goal,
-  onSave, // (goalId, newText) => void
-  onClose, // () => void
-}) {
+export default function GoalModal({ goal, onSave, onClose }) {
   const [isEditing, setIsEditing] = useState(false);
   const [text, setText] = useState(goal.reflectionText || "");
 
@@ -110,13 +105,14 @@ const styles = {
     zIndex: 9999,
   },
   modal: {
-    background: "#FFF",
+    background: "var(--bg)",
     borderRadius: "8px",
     padding: "2rem",
     maxWidth: "500px",
     width: "90%",
     position: "relative",
     boxSizing: "border-box",
+    boxShadow: "0 8px 24px rgba(0,0,0,0.1)",
   },
   closeBtn: {
     position: "absolute",
@@ -126,22 +122,23 @@ const styles = {
     border: "none",
     fontSize: "1.25rem",
     cursor: "pointer",
+    color: "var(--text-light)",
   },
   title: {
     margin: 0,
     fontSize: "1.5rem",
-    color: "#2D3748",
+    color: "var(--text)",
     marginBottom: "0.5rem",
   },
   progress: {
     fontSize: "1rem",
     fontWeight: 600,
-    color: "#4F46E5",
+    color: "var(--primary)",
     marginBottom: "1rem",
   },
   meta: {
     fontSize: "0.95rem",
-    color: "#6B7280",
+    color: "var(--text-light)",
     marginBottom: "1.5rem",
     lineHeight: 1.4,
   },
@@ -149,29 +146,35 @@ const styles = {
     display: "block",
     marginBottom: "0.5rem",
     fontWeight: 600,
+    color: "var(--text)",
   },
   textarea: {
     width: "100%",
     minHeight: "80px",
     padding: "0.75rem",
-    border: "1px solid #E5E7EB",
+    border: "1px solid var(--border)",
     borderRadius: "4px",
     resize: "vertical",
     marginBottom: "1rem",
     fontFamily: "'Lato', sans-serif",
+    fontSize: "0.875rem",
+    color: "var(--text)",
+    background: "var(--bg)",
   },
   display: {
     minHeight: "80px",
     padding: "0.75rem",
-    background: "#F9FAFB",
-    border: "1px solid #E5E7EB",
+    background: "var(--bg-alt)",
+    border: "1px solid var(--border)",
     borderRadius: "4px",
     marginBottom: "1rem",
     fontFamily: "'Lato', sans-serif",
+    fontSize: "0.875rem",
+    color: "var(--text)",
   },
   editBtn: {
     padding: "0.5rem 1rem",
-    background: "#6366F1",
+    background: "var(--primary)",
     color: "#FFF",
     border: "none",
     borderRadius: "4px",
@@ -185,8 +188,8 @@ const styles = {
   saveBtn: {
     flex: 1,
     padding: "0.5rem",
-    background: "#4F46E5",
-    color: "#FFF",
+    background: "var(--success-bg)",
+    color: "var(--success-text)",
     border: "none",
     borderRadius: "4px",
     cursor: "pointer",
@@ -195,8 +198,8 @@ const styles = {
   cancelBtn: {
     flex: 1,
     padding: "0.5rem",
-    background: "#E5E7EB",
-    color: "#374151",
+    background: "var(--border)",
+    color: "var(--text)",
     border: "none",
     borderRadius: "4px",
     cursor: "pointer",

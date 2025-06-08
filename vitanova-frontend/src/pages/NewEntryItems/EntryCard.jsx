@@ -1,5 +1,4 @@
-// src/components/EntryCard.jsx
-
+// File: src/components/EntryCard.jsx
 import React from "react";
 
 export default function EntryCard({ entry }) {
@@ -13,7 +12,6 @@ export default function EntryCard({ entry }) {
     });
   };
 
-  // snippet only for journal text
   const snippet =
     entry.text?.length > 100
       ? entry.text.slice(0, 100) + "…"
@@ -69,9 +67,9 @@ export default function EntryCard({ entry }) {
 
 const styles = {
   card: {
-    background: "#FFFFFF",
+    background: "var(--bg)",
     borderRadius: "0.75rem",
-    boxShadow: "0 4px 20px rgba(0,0,0,0.2)",
+    boxShadow: "0 4px 20px rgba(0,0,0,0.05)",
     padding: "2rem",
     maxWidth: "500px",
     width: "90%",
@@ -80,23 +78,23 @@ const styles = {
   header: {
     margin: 0,
     fontSize: "1.5rem",
-    color: "#2D3748",
+    color: "var(--text)",
     marginBottom: "0.5rem",
   },
   date: {
     fontSize: "0.9rem",
-    color: "#6B7280",
+    color: "var(--text-light)",
     marginBottom: "1rem",
   },
   text: {
     fontSize: "1rem",
-    color: "#4A5568",
+    color: "var(--text-light)",
     lineHeight: 1.5,
     marginBottom: "1rem",
   },
   section: {
     fontSize: "0.95rem",
-    color: "#4A5568",
+    color: "var(--text-light)",
     marginBottom: "0.75rem",
     lineHeight: 1.4,
   },

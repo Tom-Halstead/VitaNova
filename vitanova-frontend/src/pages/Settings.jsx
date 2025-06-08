@@ -1,77 +1,84 @@
-import React from "react";
-import { useNavigate } from "react-router-dom";
+// File: src/components/Settings.jsx
+import React, { useContext } from "react";
+import { ThemeContext } from "../context/ThemeContext";
 import { exportData, deleteAccount } from "../api/ApiServices";
 
 export default function Settings() {
-  const navigate = useNavigate();
+  const { themeName, setThemeName } = useContext(ThemeContext);
 
   const handleAccountDeletion = async () => {
-    const confirmed = window.confirm(
-      "Are you sure you want to delete your account? This cannot be undone."
-    );
-    if (!confirmed) return;
-
+    if (!window.confirm("Delete your account? This cannot be undone.")) return;
     try {
-      deleteAccount(); // ensure you await the async deletion
-
-      // Full redirect to Cognito logout URL
+      await deleteAccount();
       window.location.href =
         "https://us-east-2d1agk3shc.auth.us-east-2.amazoncognito.com/logout?client_id=2j12r8o421t03pnhhm0hjfi5qu&logout_uri=http://localhost:3000";
-    } catch (error) {
-      console.error("Account deletion failed:", error);
-      alert(
-        "There was an error deleting your account. Please try again later."
-      );
+    } catch {
+      alert("Error deleting account. Please try again later.");
     }
   };
 
   return (
     <div
+      className="card"
       style={{
-        maxWidth: "500px",
-        margin: "2rem auto",
-        padding: "2rem",
-        background: "#FFFFFF",
-        borderRadius: "0.5rem",
-        boxShadow: "0 4px 12px rgba(0,0,0,0.05)",
-        fontFamily: "'Lato', sans-serif",
+        background: "var(--bg)",
+        color: "var(--text)",
       }}
     >
       <h2
         style={{
+          textAlign: "center",
           fontSize: "1.75rem",
           fontWeight: 600,
-          color: "#374151",
           marginBottom: "1.5rem",
-          textAlign: "center",
         }}
       >
         Settings & Privacy
       </h2>
 
+      <div style={{ marginBottom: "1.5rem" }}>
+        <label
+          htmlFor="theme-select"
+          style={{
+            display: "block",
+            marginBottom: "0.5rem",
+            color: "var(--text)",
+          }}
+        >
+          Choose Theme:
+        </label>
+        <select
+          id="theme-select"
+          value={themeName}
+          onChange={(e) => setThemeName(e.target.value)}
+          style={{
+            width: "100%",
+            padding: "0.5rem",
+            fontSize: "1rem",
+            background: "var(--bg)",
+            color: "var(--text)",
+            border: "1px solid var(--border)",
+            borderRadius: "0.25rem",
+          }}
+        >
+          <option value="light">Light Mode</option>
+          <option value="dark">Dark Mode</option>
+        </select>
+      </div>
+
       <button
         onClick={exportData}
+        className="bg-primary-gradient"
         style={{
           width: "100%",
           padding: "0.75rem",
           fontSize: "1rem",
           fontWeight: 600,
-          background: "linear-gradient(90deg, #4F46E5, #667EEA)",
           color: "#FFF",
           border: "none",
           borderRadius: "0.5rem",
           cursor: "pointer",
-          boxShadow: "0 4px 14px rgba(0,0,0,0.1)",
-          transition: "transform 0.2s, box-shadow 0.2s",
           marginBottom: "1rem",
-        }}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.transform = "scale(1.03)";
-          e.currentTarget.style.boxShadow = "0 6px 18px rgba(0,0,0,0.15)";
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.transform = "scale(1)";
-          e.currentTarget.style.boxShadow = "0 4px 14px rgba(0,0,0,0.1)";
         }}
       >
         Export My Data
@@ -84,24 +91,18 @@ export default function Settings() {
           padding: "0.75rem",
           fontSize: "1rem",
           fontWeight: 600,
-          background: "#F87171",
+          background: "var(--primary)",
           color: "#FFF",
           border: "none",
           borderRadius: "0.5rem",
           cursor: "pointer",
-          boxShadow: "0 4px 14px rgba(0,0,0,0.1)",
-          transition: "background 0.2s, transform 0.2s, box-shadow 0.2s",
         }}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.background = "#EF4444";
-          e.currentTarget.style.transform = "scale(1.03)";
-          e.currentTarget.style.boxShadow = "0 6px 18px rgba(0,0,0,0.15)";
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.background = "#F87171";
-          e.currentTarget.style.transform = "scale(1)";
-          e.currentTarget.style.boxShadow = "0 4px 14px rgba(0,0,0,0.1)";
-        }}
+        onMouseEnter={(e) =>
+          (e.currentTarget.style.background = "var(--primary-alt)")
+        }
+        onMouseLeave={(e) =>
+          (e.currentTarget.style.background = "var(--primary)")
+        }
       >
         Delete My Account
       </button>

@@ -1,3 +1,19 @@
+/* File: src/index.css */
+:root {
+  --bg: #ffffff;
+  --bg-alt: #f3f4f6;
+  --primary: #4f46e5;
+  --primary-alt: #667eea;
+  --text: #111827;
+  --text-light: #4b5563;
+  --border: #d1d5db;
+
+  --success-bg: #48bb78;
+  --success-text: #ffffff;
+  --error-bg: #fed7d7;
+  --error-text: #c53030;
+}
+
 body {
   overflow-x: hidden;
   margin: 0;
@@ -6,6 +22,8 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  background-color: var(--bg-alt);
+  color: var(--text);
 }
 
 code {
@@ -16,4 +34,21 @@ code {
 iframe[style*="z-index: 2147483647"] {
   display: none !important;
   pointer-events: none !important;
+}
+
+.bg-primary-gradient {
+  background: linear-gradient(
+    to bottom,
+    var(--primary-alt) 0%,
+    var(--primary) 100%
+  );
+}
+
+.card {
+  max-width: 500px;
+  margin: 2rem auto;
+  padding: 2rem;
+  background: var(--bg);
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
