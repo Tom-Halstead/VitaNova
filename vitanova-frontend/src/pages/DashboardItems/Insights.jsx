@@ -10,133 +10,245 @@ export default function Insights() {
 
   useEffect(() => {
     (async () => {
-      const { entries = [] } = await listEntries(0, 1000);
-      setEntries(entries);
+      try {
+        // Fetch entries
+        const { entries: fetchedEntries = [] } = await listEntries(0, 1000);
+        setEntries(fetchedEntries);
 
-      // aggregate per date
-      const agg = entries.reduce((acc, e) => {
-        const d = e.entryDate;
-        if (!acc[d]) acc[d] = { sumPre: 0, sumPost: 0, count: 0 };
-        acc[d].sumPre += e.moodPre;
-        acc[d].sumPost += e.moodPost;
-        acc[d].count += 1;
-        return acc;
-      }, {});
+        // Aggregate by date
+        const agg = fetchedEntries.reduce((acc, e) => {
+          const d = e.entryDate;
+          if (!acc[d]) acc[d] = { sumPre: 0, sumPost: 0, count: 0 };
+          const moodPre = typeof e.moodPre === "number" ? e.moodPre : 0;
+          const moodPost = typeof e.moodPost === "number" ? e.moodPost : 0;
+          acc[d].sumPre += moodPre;
+          acc[d].sumPost += moodPost;
+          acc[d].count += 1;
+          return acc;
+        }, {});
 
-      // build sorted trend array
-      const trend = Object.entries(agg)
-        .sort(([a], [b]) => new Date(a) - new Date(b))
-        .map(([date, { sumPre, sumPost, count }]) => ({
-          date,
-          avgPre: sumPre / count,
-          avgPost: sumPost / count,
-        }));
+        // Build sorted trend array
+        const trend = Object.entries(agg)
+          .sort(([a], [b]) => new Date(a) - new Date(b))
+          .map(([date, { sumPre, sumPost, count }]) => ({
+            date,
+            avgPre: sumPre / count,
+            avgPost: sumPost / count,
+          }));
 
-      // compute metrics
-      const avgPre = trend.reduce((s, d) => s + d.avgPre, 0) / trend.length;
-      const avgPost = trend.reduce((s, d) => s + d.avgPost, 0) / trend.length;
-      const improvementDays = trend.filter((d) => d.avgPost > d.avgPre).length;
-      const improvementRate = Math.round(
-        (improvementDays / trend.length) * 100
-      );
-      let maxStreak = 0,
-        curr = 0;
-      trend.forEach((d) => {
-        if (d.avgPost > d.avgPre) {
-          curr++;
-          maxStreak = Math.max(maxStreak, curr);
-        } else curr = 0;
-      });
-      const best = trend.reduce(
-        (b, d) => (d.avgPost > b.avgPost ? d : b),
-        trend[0]
-      );
-      const worst = trend.reduce(
-        (w, d) => (d.avgPost < w.avgPost ? d : w),
-        trend[0]
-      );
-      const weekend = [],
-        weekday = [];
-      trend.forEach((d) => {
-        const day = new Date(d.date).getDay();
-        (day === 0 || day === 6 ? weekend : weekday).push(d.avgPost);
-      });
-      const avgWeekend = weekend.length
-        ? weekend.reduce((a, b) => a + b, 0) / weekend.length
-        : 0;
-      const avgWeekday = weekday.length
-        ? weekday.reduce((a, b) => a + b, 0) / weekday.length
-        : 0;
+        // No data → flag and exit
+        if (trend.length === 0) {
+          setMetrics({ hasData: false });
+          return;
+        }
 
-      setMetrics({
-        avgPre,
-        avgPost,
-        improvementRate,
-        maxStreak,
-        best,
-        worst,
-        avgWeekend: avgWeekend.toFixed(2),
-        avgWeekday: avgWeekday.toFixed(2),
-      });
+        // Compute core metrics
+        const avgPre = trend.reduce((s, d) => s + d.avgPre, 0) / trend.length;
+        const avgPost = trend.reduce((s, d) => s + d.avgPost, 0) / trend.length;
+        const improvementDays = trend.filter(
+          (d) => d.avgPost > d.avgPre
+        ).length;
+        const improvementRate = Math.round(
+          (improvementDays / trend.length) * 100
+        );
+
+        // Calculate streaks
+        let maxStreak = 0,
+          curr = 0;
+        trend.forEach((d) => {
+          if (d.avgPost > d.avgPre) {
+            curr++;
+            maxStreak = Math.max(maxStreak, curr);
+          } else {
+            curr = 0;
+          }
+        });
+
+        // Best/Worst days
+        const best = trend.reduce(
+          (b, d) => (d.avgPost > b.avgPost ? d : b),
+          trend[0]
+        );
+        const worst = trend.reduce(
+          (w, d) => (d.avgPost < w.avgPost ? d : w),
+          trend[0]
+        );
+
+        // Weekend vs Weekday averages
+        const weekendVals = [];
+        const weekdayVals = [];
+        trend.forEach((d) => {
+          const day = new Date(d.date).getDay();
+          (day === 0 || day === 6 ? weekendVals : weekdayVals).push(d.avgPost);
+        });
+        const avgWeekend = weekendVals.length
+          ? weekendVals.reduce((a, b) => a + b, 0) / weekendVals.length
+          : 0;
+        const avgWeekday = weekdayVals.length
+          ? weekdayVals.reduce((a, b) => a + b, 0) / weekdayVals.length
+          : 0;
+
+        // Save metrics
+        setMetrics({
+          hasData: true,
+          avgPre,
+          avgPost,
+          improvementRate,
+          maxStreak,
+          best,
+          worst,
+          avgWeekend: avgWeekend.toFixed(2),
+          avgWeekday: avgWeekday.toFixed(2),
+        });
+      } catch (err) {
+        console.error("Failed to load insights:", err);
+        setMetrics({ hasData: false });
+      }
     })();
   }, []);
 
-  if (!metrics)
+  // Loading state
+  if (!metrics) {
     return (
-      <div style={{ padding: 24, color: "var(--text-light)" }}>
+      <div
+        style={{
+          padding: 24,
+          color: "var(--text-light)",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          minHeight: "200px",
+        }}
+      >
         Loading insights…
       </div>
     );
+  }
+
+  // No entries at all
+  if (entries.length === 0) {
+    return (
+      <div
+        style={{
+          padding: 24,
+          color: "var(--text-light)",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          minHeight: "200px",
+        }}
+      >
+        No entries yet—create a journal entry to see your insights.
+      </div>
+    );
+  }
+
+  // Build summary cards
+  const summaryCards = [
+    {
+      title: "Average Mood Change",
+      summary: `You go from ${metrics.avgPre.toFixed(
+        2
+      )} → ${metrics.avgPost.toFixed(2)} on average.`,
+      details: `That’s a net change of ${(
+        metrics.avgPost - metrics.avgPre
+      ).toFixed(2)} points.`,
+    },
+    {
+      title: "Weekend vs Weekday",
+      summary: `Weekday avg ${metrics.avgWeekday}, weekend avg ${metrics.avgWeekend}.`,
+      details: "Try journaling more on weekdays to smooth out slumps!",
+    },
+  ];
+
+  if (metrics.hasData) {
+    summaryCards.push(
+      {
+        title: "Best Day",
+        summary: `${new Date(
+          metrics.best.date
+        ).toLocaleDateString()} (${metrics.best.avgPost.toFixed(2)})`,
+        details: "That was your peak—what made it special?",
+      },
+      {
+        title: "Lowest Day",
+        summary: `${new Date(
+          metrics.worst.date
+        ).toLocaleDateString()} (${metrics.worst.avgPost.toFixed(2)})`,
+        details:
+          "Reflect on what might’ve dragged you down and plan to address it.",
+      }
+    );
+  }
+
+  // Build progress bars
+  const progressBars = [
+    {
+      label: "Days Improved",
+      percent: metrics.hasData ? metrics.improvementRate : 0,
+      color: "var(--primary-alt)",
+    },
+    {
+      label: "Max Improvement Streak",
+      percent: entries.length
+        ? Math.round((metrics.maxStreak / entries.length) * 100)
+        : 0,
+      color: "var(--primary)",
+    },
+  ];
 
   return (
     <div
-      style={{ padding: 24, background: "var(--bg-alt)", color: "var(--text)" }}
+      style={{
+        padding: 24,
+        background: "var(--bg-alt)",
+        color: "var(--text)",
+        display: "flex",
+        justifyContent: "center",
+      }}
     >
-      <h2 style={{ marginBottom: 16 }}>🔍 Personalized Insights</h2>
+      <div style={{ maxWidth: 800, width: "100%" }}>
+        <h2 style={{ marginBottom: 16, textAlign: "center" }}>
+          🔍 Personalized Insights
+        </h2>
 
-      <InsightCard
-        title="Average Mood Change"
-        summary={`You go from ${metrics.avgPre.toFixed(
-          2
-        )} → ${metrics.avgPost.toFixed(2)} on average.`}
-        details={`That’s a net change of ${(
-          metrics.avgPost - metrics.avgPre
-        ).toFixed(2)} points.`}
-      />
+        {/* summary cards grid */}
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
+            gap: 16,
+            marginBottom: 24,
+          }}
+        >
+          {summaryCards.map((c, i) => (
+            <InsightCard
+              key={i}
+              title={c.title}
+              summary={c.summary}
+              details={c.details}
+            />
+          ))}
+        </div>
 
-      <ProgressBar
-        label="Days Your Mood Improved"
-        percent={metrics.improvementRate}
-        color="var(--primary-alt)"
-      />
-
-      <ProgressBar
-        label="Longest Improvement Streak"
-        percent={Math.round((metrics.maxStreak / entries.length) * 100)}
-        color="var(--primary)"
-      />
-
-      <InsightCard
-        title="Weekend vs Weekday"
-        summary={`Weekdays avg ${metrics.avgWeekday}, weekends avg ${metrics.avgWeekend}.`}
-        details="Try journaling more on weekdays to boost those mid-week slumps!"
-      />
-
-      <InsightCard
-        title="Best Day"
-        summary={`${new Date(
-          metrics.best.date
-        ).toLocaleDateString()} (${metrics.best.avgPost.toFixed(2)})`}
-        details="That was your peak—what made it special?"
-      />
-
-      <InsightCard
-        title="Lowest Day"
-        summary={`${new Date(
-          metrics.worst.date
-        ).toLocaleDateString()} (${metrics.worst.avgPost.toFixed(2)})`}
-        details="Reflect on what might’ve dragged you down, then plan to address it."
-      />
+        {/* progress bars grid */}
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
+            gap: 16,
+          }}
+        >
+          {progressBars.map((b, i) => (
+            <ProgressBar
+              key={i}
+              label={b.label}
+              percent={b.percent}
+              color={b.color}
+            />
+          ))}
+        </div>
+      </div>
     </div>
   );
 }

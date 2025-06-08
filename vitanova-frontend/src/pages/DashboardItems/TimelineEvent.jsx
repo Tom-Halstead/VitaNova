@@ -66,7 +66,7 @@ const styles = {
   wrapper: {
     display: "flex",
     alignItems: "center",
-    marginBottom: "2.5rem",
+    marginBottom: "1rem",
     position: "relative",
     zIndex: 1,
   },
