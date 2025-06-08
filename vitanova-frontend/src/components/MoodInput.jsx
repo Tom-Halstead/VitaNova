@@ -1,3 +1,4 @@
+// File: src/components/MoodInput.jsx
 import React from "react";
 
 const emotions = [
@@ -22,14 +23,19 @@ const emotions = [
   { value: 10, label: "Blissful", icon: "😇" },
 ];
 
-export default function MoodInput({ label, value, onChange }) {
+export default function MoodInput({
+  label,
+  value,
+  onChange,
+  labelColor = "var(--text)",
+}) {
   return (
     <div style={{ marginBottom: "1rem", fontFamily: "'Lato', sans-serif" }}>
       <label
         style={{
           display: "block",
-          fontSize: "0.875rem",
-          color: "#374151",
+          fontSize: "0.95rem",
+          color: labelColor,
           marginBottom: "0.5rem",
         }}
       >
@@ -41,21 +47,21 @@ export default function MoodInput({ label, value, onChange }) {
         style={{
           width: "100%",
           padding: "0.75rem",
-          background: "#FFFFFF",
-          border: "1px solid #E5E7EB",
+          background: "var(--bg)",
+          border: "1px solid var(--border)",
           borderRadius: "0.375rem",
           fontSize: "1rem",
-          color: "#374151",
+          color: "var(--text)",
           outline: "none",
           cursor: "pointer",
           transition: "border-color 0.2s, box-shadow 0.2s",
         }}
         onFocus={(e) => {
-          e.currentTarget.style.borderColor = "#667EEA";
-          e.currentTarget.style.boxShadow = "0 0 0 3px rgba(102,126,234,0.3)";
+          e.currentTarget.style.borderColor = "var(--primary)";
+          e.currentTarget.style.boxShadow = "0 0 0 3px rgba(79,70,229,0.3)";
         }}
         onBlur={(e) => {
-          e.currentTarget.style.borderColor = "#E5E7EB";
+          e.currentTarget.style.borderColor = "var(--border)";
           e.currentTarget.style.boxShadow = "none";
         }}
       >

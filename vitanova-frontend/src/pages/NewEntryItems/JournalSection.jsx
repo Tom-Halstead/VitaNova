@@ -15,7 +15,7 @@ export default function JournalSection({
   const labelStyle = {
     fontSize: "0.95rem",
     fontWeight: 500,
-    color: "var(--text-light)",
+    color: "var(--text)", // increased contrast
     marginBottom: "0.3rem",
   };
   const inputStyle = {
@@ -77,16 +77,16 @@ export default function JournalSection({
           label="Mood Before"
           value={moodPre}
           onChange={setMoodPre}
-          labelColor="var(--text-light)"
-          iconColor="var(--text)"
+          labelColor="var(--text)" // stronger contrast
+          iconColor="var(--primary)" // accent color for the emoji
         />
 
         <MoodInput
           label="Mood After"
           value={moodPost}
           onChange={setMoodPost}
-          labelColor="var(--text-light)"
-          iconColor="var(--text)"
+          labelColor="var(--text)"
+          iconColor="var(--primary)"
         />
       </div>
     </div>

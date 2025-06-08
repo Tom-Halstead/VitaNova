@@ -1,3 +1,4 @@
+// File: src/components/TimelineEvent.jsx
 import React, { useState } from "react";
 
 export default function TimelineEvent({ evt, idx, onSelect }) {
@@ -8,7 +9,7 @@ export default function TimelineEvent({ evt, idx, onSelect }) {
   return (
     <div
       style={{
-        ...styles.eventWrapper,
+        ...styles.wrapper,
         flexDirection: isLeft ? "row-reverse" : "row",
       }}
       onMouseEnter={() => setHover(true)}
@@ -16,17 +17,23 @@ export default function TimelineEvent({ evt, idx, onSelect }) {
     >
       <div
         style={{
-          ...styles.iconCircle,
-          borderColor: evt.type === "entry" ? "#6366F1" : "#D53F8C",
+          ...styles.icon,
+          borderColor:
+            evt.type === "entry" ? "var(--primary)" : "var(--error-bg)",
         }}
         onClick={onSelect}
       >
         {evt.type === "entry" ? (
-          <svg viewBox="0 0 24 24" fill="#6366F1" width="20" height="20">
+          <svg viewBox="0 0 24 24" fill="var(--primary)" width="20" height="20">
             {/* pen icon path */}
           </svg>
         ) : (
-          <svg viewBox="0 0 24 24" fill="#D53F8C" width="20" height="20">
+          <svg
+            viewBox="0 0 24 24"
+            fill="var(--error-bg)"
+            width="20"
+            height="20"
+          >
             {/* flag icon path */}
           </svg>
         )}
@@ -34,17 +41,17 @@ export default function TimelineEvent({ evt, idx, onSelect }) {
 
       <div
         style={{
-          ...styles.eventCard,
+          ...styles.card,
           alignItems: isLeft ? "flex-end" : "flex-start",
         }}
         onClick={onSelect}
       >
-        <div style={styles.eventDate}>{evt.displayDate}</div>
-        <div style={styles.eventTitle}>{evt.title}</div>
-        <div style={styles.eventDetail}>{evt.detail}</div>
+        <div style={styles.date}>{evt.displayDate}</div>
+        <div style={styles.title}>{evt.title}</div>
+        <div style={styles.detail}>{evt.detail}</div>
 
         {hover && (
-          <div style={styles.hoverTooltip}>
+          <div style={styles.tooltip}>
             {lines.map((line, i) => (
               <div key={i}>{line}</div>
             ))}
@@ -56,18 +63,18 @@ export default function TimelineEvent({ evt, idx, onSelect }) {
 }
 
 const styles = {
-  eventWrapper: {
+  wrapper: {
     display: "flex",
     alignItems: "center",
     marginBottom: "2.5rem",
     position: "relative",
     zIndex: 1,
   },
-  iconCircle: {
+  icon: {
     width: "36px",
     height: "36px",
     borderRadius: "50%",
-    background: "#FFF",
+    background: "var(--bg)",
     border: "3px solid",
     display: "flex",
     alignItems: "center",
@@ -75,38 +82,39 @@ const styles = {
     cursor: "pointer",
     transition: "transform 0.2s",
   },
-  eventCard: {
-    background: "#FFF",
+  card: {
+    background: "var(--bg)",
     borderRadius: "0.75rem",
     padding: "1rem 1.25rem",
     boxShadow: "0 8px 24px rgba(0,0,0,0.08)",
     maxWidth: "300px",
     cursor: "pointer",
     position: "relative",
+    color: "var(--text)",
   },
-  eventDate: {
+  date: {
     fontSize: "0.875rem",
-    color: "#6B7280",
+    color: "var(--text-light)",
     marginBottom: "0.5rem",
   },
-  eventTitle: {
+  title: {
     fontSize: "1rem",
     fontWeight: 600,
-    color: "#2D3748",
+    color: "var(--text)",
     marginBottom: "0.5rem",
   },
-  eventDetail: {
+  detail: {
     fontSize: "0.9rem",
-    color: "#4A5568",
+    color: "var(--text-light)",
     lineHeight: 1.4,
   },
-  hoverTooltip: {
+  tooltip: {
     position: "absolute",
     bottom: "100%",
     left: "50%",
     transform: "translateX(-50%) translateY(-8px)",
-    background: "#374151",
-    color: "#FFF",
+    background: "var(--text)",
+    color: "var(--bg)",
     padding: "0.5rem",
     borderRadius: "0.25rem",
     fontSize: "0.85rem",
