@@ -1,4 +1,5 @@
 // File: src/components/ActiveGoalsGrid.jsx
+// (No changes needed here; it already renders directly from props.)
 import React from "react";
 import GoalCard from "./GoalCard";
 

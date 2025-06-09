@@ -201,14 +201,14 @@ export default function ReflectiveInsights() {
         )}
 
         <div style={{ marginBottom: "2em" }}>
-          <TimelineBar
+          {/* <TimelineBar
             completedGoals={completedGoals}
             startDate={earliestDate}
             onSelectGoal={(goal) => {
               setSelectedGoal(goal);
               startEditing(goal.goalId, goal.reflectionText);
             }}
-          />
+          /> */}
         </div>
 
         <div
@@ -235,7 +235,19 @@ export default function ReflectiveInsights() {
           </button>
         </div>
 
-        {showAllTabs && <AllGoalsTabView goals={goals} />}
+        {showAllTabs && (
+          // remount this view whenever the length of `goals` changes
+          <AllGoalsTabView key={goals.length} goals={goals} />
+        )}
+
+        <TimelineBar
+          completedGoals={completedGoals}
+          startDate={earliestDate}
+          onSelectGoal={(goal) => {
+            setSelectedGoal(goal);
+            startEditing(goal.goalId, goal.reflectionText);
+          }}
+        />
 
         {selectedGoal && (
           <GoalModal

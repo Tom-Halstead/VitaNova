@@ -18,18 +18,29 @@ export default function NavBar() {
 
   if (pathname === "/") return null;
 
+  // Choose nav & text colors based on theme
+  const isLight = themeName === "light";
+  const navBackground = isLight
+    ? "#AEE3F5" // solid sky-blue to match homepage
+    : "linear-gradient(to bottom, #1a202c 0%, #2d3748 100%)";
+  const textColor = isLight ? "#111827" : "#EDF2F7";
+
   const navStyle = {
     display: "grid",
     gridTemplateColumns: mobile ? "1fr 1fr 1fr 1fr" : "repeat(12,1fr)",
     alignItems: "center",
     padding: "0.75rem 1rem",
-    background:
-      "linear-gradient(to bottom, var(--primary-alt) 0%, var(--primary) 100%)",
+    background: navBackground,
+    ...(isLight && {
+      backgroundImage:
+        "radial-gradient(circle at center, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0) 40%)",
+    }),
     boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
     position: "sticky",
     top: 0,
     zIndex: 100,
   };
+
   const toggleStyle = {
     display: mobile ? "block" : "none",
     gridColumn: "12/13",
@@ -37,22 +48,23 @@ export default function NavBar() {
     background: "none",
     border: "none",
     fontSize: "1.5rem",
-    color: "#FFF", // always white on gradient
+    color: textColor,
     cursor: "pointer",
   };
+
   const linksStyle = {
     display: mobile ? "none" : "flex",
     gridColumn: "4/9",
     gap: "1rem",
   };
-  const activeLink = {
-    color: "#FFF",
-    fontWeight: 700,
+
+  const baseLink = {
+    color: textColor,
     textDecoration: "none",
   };
-  const baseLink = {
-    color: "#FFF", // changed from var(--text) to white
-    textDecoration: "none",
+  const activeLink = {
+    ...baseLink,
+    fontWeight: 700,
   };
 
   const panelStyle = {
@@ -62,16 +74,22 @@ export default function NavBar() {
     top: "3.5rem",
     left: "1rem",
     right: "1rem",
-    background:
-      "linear-gradient(180deg, var(--primary) 0%, var(--primary-alt) 100%)",
+    background: isLight
+      ? "#AEE3F5"
+      : "linear-gradient(180deg, #2d3748 0%, #1a202c 100%)",
+    ...(isLight && {
+      backgroundImage:
+        "radial-gradient(circle at center, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0) 40%)",
+    }),
     borderRadius: "0.5rem",
     boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
     padding: "0.75rem 0",
     gap: "0.5rem",
     zIndex: 99,
   };
+
   const mobileLink = {
-    color: "#FFF",
+    color: textColor,
     padding: "0.75rem 1rem",
     textAlign: "center",
     textDecoration: "none",
@@ -79,7 +97,7 @@ export default function NavBar() {
   };
   const mobileActive = {
     ...mobileLink,
-    background: "rgba(255,255,255,0.2)",
+    background: isLight ? "rgba(255,255,255,0.6)" : "rgba(255,255,255,0.1)",
     borderRadius: "0.375rem",
     fontWeight: 600,
   };
@@ -124,19 +142,17 @@ export default function NavBar() {
         >
           {/* Theme toggle */}
           <button
-            onClick={() =>
-              setThemeName(themeName === "light" ? "dark" : "light")
-            }
+            onClick={() => setThemeName(isLight ? "dark" : "light")}
             style={{
               fontSize: "1.25rem",
               background: "none",
               border: "none",
               cursor: "pointer",
-              color: "#FFF",
+              color: textColor,
             }}
             title="Toggle light/dark"
           >
-            {themeName === "light" ? "🌙" : "☀️"}
+            {isLight ? "🌙" : "☀️"}
           </button>
           {isAuthenticated() && (
             <button
@@ -146,17 +162,21 @@ export default function NavBar() {
               }
               style={{
                 padding: "0.5rem 1rem",
-                background: "#FCA5A5",
+                background: isLight ? "#E53E3E" : "#FBB6CE",
                 color: "#FFF",
                 border: "none",
                 borderRadius: "0.375rem",
                 cursor: "pointer",
               }}
               onMouseEnter={(e) =>
-                (e.currentTarget.style.background = "#F87171")
+                (e.currentTarget.style.background = isLight
+                  ? "#C53030"
+                  : "#F687B3")
               }
               onMouseLeave={(e) =>
-                (e.currentTarget.style.background = "#FCA5A5")
+                (e.currentTarget.style.background = isLight
+                  ? "#E53E3E"
+                  : "#FBB6CE")
               }
             >
               Logout
@@ -184,18 +204,18 @@ export default function NavBar() {
           ))}
           <button
             onClick={() => {
-              setThemeName(themeName === "light" ? "dark" : "light");
+              setThemeName(isLight ? "dark" : "light");
               setOpen(false);
             }}
             style={{
               margin: "0.5rem auto",
               background: "none",
               border: "none",
-              color: "#FFF",
+              color: textColor,
               cursor: "pointer",
             }}
           >
-            {themeName === "light" ? "Switch to Dark" : "Switch to Light"}
+            {isLight ? "Switch to Dark" : "Switch to Light"}
           </button>
         </div>
       </nav>

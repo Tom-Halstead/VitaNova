@@ -3,43 +3,36 @@ import React, { useState, useEffect } from "react";
 import { updateGoal } from "../../api/GoalsApi";
 
 export default function AllGoalsTabView({ goals }) {
-  const [localGoals, setLocalGoals] = useState([]);
-  const [selectedGoalId, setSelectedGoalId] = useState(null);
+  const [selectedGoalId, setSelectedGoalId] = useState(
+    goals.length ? goals[0].goalId : null
+  );
   const [editingGoalId, setEditingGoalId] = useState(null);
   const [draftReflection, setDraftReflection] = useState("");
 
+  // Reset selectedGoalId if the current one disappears (e.g. new array came in)
   useEffect(() => {
-    if (Array.isArray(goals)) {
-      setLocalGoals(goals.slice());
-      if (goals.length && !goals.some((g) => g.goalId === selectedGoalId)) {
-        setSelectedGoalId(goals[0].goalId);
-      }
-    } else {
-      setLocalGoals([]);
-      setSelectedGoalId(null);
+    if (goals.length && !goals.some((g) => g.goalId === selectedGoalId)) {
+      setSelectedGoalId(goals[0].goalId);
     }
-  }, [goals]);
+  }, [goals, selectedGoalId]);
 
-  const selectedGoal =
-    localGoals.find((g) => g.goalId === selectedGoalId) || localGoals[0] || {};
+  const selectedGoal = goals.find((g) => g.goalId === selectedGoalId) || {};
 
   const startEditing = (id) => {
-    const goal = localGoals.find((g) => g.goalId === id);
+    const goal = goals.find((g) => g.goalId === id);
     setEditingGoalId(id);
     setDraftReflection(goal?.reflectionText || "");
   };
+
   const cancelEditing = () => {
     setEditingGoalId(null);
     setDraftReflection("");
   };
+
   const saveReflection = async (id) => {
     try {
       await updateGoal(id, { reflectionText: draftReflection });
-      setLocalGoals((prev) =>
-        prev.map((g) =>
-          g.goalId === id ? { ...g, reflectionText: draftReflection } : g
-        )
-      );
+      // parent should update its goals list (and pass down updated prop)
     } catch (err) {
       console.error("Failed to save reflection:", err);
     } finally {
@@ -48,14 +41,14 @@ export default function AllGoalsTabView({ goals }) {
     }
   };
 
-  if (!localGoals.length) {
+  if (!goals.length) {
     return <div style={styles.empty}>No goals available to display.</div>;
   }
 
   return (
     <div style={styles.container}>
       <div style={styles.tabsRow}>
-        {localGoals.map((g) => {
+        {goals.map((g) => {
           const isActive = g.goalId === selectedGoalId;
           const isCompleted = g.status === "COMPLETED";
           return (
