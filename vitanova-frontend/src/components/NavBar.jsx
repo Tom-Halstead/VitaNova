@@ -134,6 +134,7 @@ export default function NavBar() {
           <button
             onClick={() => setThemeName(isLight ? "dark" : "light")}
             style={{
+              marginRight: "1rem",
               fontSize: "1.25rem",
               background: "none",
               border: "none",

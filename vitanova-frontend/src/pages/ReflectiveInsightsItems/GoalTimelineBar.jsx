@@ -1,14 +1,9 @@
-// File: src/pages/ReflectiveInsightsItems/GoalTimelineBar.jsx
 import React, { useMemo, useState } from "react";
 
 /** Parse ISO string to Date */
-function parseISO(dateString) {
-  return new Date(dateString);
-}
+const parseISO = (s) => new Date(s);
 /** Clamp to [0,1] */
-function clamp01(x) {
-  return Math.min(Math.max(x, 0), 1);
-}
+const clamp01 = (x) => Math.min(Math.max(x, 0), 1);
 
 export default function GoalTimelineBar({
   completedGoals,
@@ -21,20 +16,32 @@ export default function GoalTimelineBar({
     text: "",
   });
 
-  // Compute endDate and span
+  // 1) Always compute grouping (hook #2)
+  const goalsByDay = useMemo(() => {
+    return completedGoals.reduce((map, g) => {
+      if (!g.completionDate) return map;
+      const d = parseISO(g.completionDate);
+      if (isNaN(d)) return map;
+      const key = d.toDateString();
+      (map[key] = map[key] || []).push(g);
+      return map;
+    }, {});
+  }, [completedGoals]);
+
+  // 2) Always compute timeline span (hook #3)
   const { endDate, spanMs } = useMemo(() => {
     if (!completedGoals.length) return { endDate: startDate, spanMs: 1 };
-    const dates = completedGoals
-      .map((g) => parseISO(g.completionDate))
-      .filter((d) => d instanceof Date && !isNaN(d));
-    const latest =
-      dates.length === 0
-        ? startDate
-        : new Date(Math.max(...dates.map((d) => d.getTime())));
-    const span = Math.max(latest.getTime() - startDate.getTime(), 1);
-    return { endDate: latest, spanMs: span };
+    const times = completedGoals
+      .map((g) => parseISO(g.completionDate)?.getTime() || NaN)
+      .filter((t) => !isNaN(t));
+    const latest = times.length ? new Date(Math.max(...times)) : startDate;
+    return {
+      endDate: latest,
+      spanMs: Math.max(latest.getTime() - startDate.getTime(), 1),
+    };
   }, [completedGoals, startDate]);
 
+  // 3) Early return for empty (no hooks here)
   if (!completedGoals.length) {
     return (
       <div style={styles.empty}>
@@ -44,12 +51,14 @@ export default function GoalTimelineBar({
     );
   }
 
-  // Compute offset percentage
+  // Offset calculator
   const offsetPct = (iso) => {
     const d = parseISO(iso);
-    if (!(d instanceof Date) || isNaN(d)) return "0%";
-    const pct = clamp01((d.getTime() - startDate.getTime()) / spanMs) * 100;
-    return pct.toFixed(2) + "%";
+    if (isNaN(d)) return "0%";
+    return (
+      (clamp01((d.getTime() - startDate.getTime()) / spanMs) * 100).toFixed(2) +
+      "%"
+    );
   };
 
   return (
@@ -64,19 +73,33 @@ export default function GoalTimelineBar({
         </div>
 
         {completedGoals.map((g) => {
-          if (!g.completionDate) return null;
-          const x = offsetPct(g.completionDate);
+          const { goalId, completionDate, type } = g;
+          if (!completionDate) return null;
+
+          const date = parseISO(completionDate);
+          const dayKey = date.toDateString();
+          const group = goalsByDay[dayKey] || [];
+          const idx = group.findIndex((x) => x.goalId === goalId);
+          const count = group.length;
+
+          const basePct = (date.getTime() - startDate.getTime()) / spanMs;
+          const spacingPct = 0.01;
+          const offsetFromCenter = (idx - (count - 1) / 2) * spacingPct;
+          const finalPct = clamp01(basePct + offsetFromCenter);
+          const leftStyle = (finalPct * 100).toFixed(2) + "%";
+
           return (
             <div
-              key={g.goalId}
-              style={{ ...styles.markerWrapper, left: x }}
+              key={goalId}
+              style={{
+                ...styles.markerWrapper,
+                left: leftStyle,
+              }}
               onMouseEnter={() =>
                 setTooltip({
                   visible: true,
-                  xPct: x,
-                  text: `${g.type} — ${new Date(
-                    g.completionDate
-                  ).toLocaleDateString()}`,
+                  xPct: leftStyle,
+                  text: `${type} — ${date.toLocaleDateString()}`,
                 })
               }
               onMouseLeave={() => setTooltip((t) => ({ ...t, visible: false }))}
