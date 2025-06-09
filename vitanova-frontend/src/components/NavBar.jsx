@@ -18,23 +18,17 @@ export default function NavBar() {
 
   if (pathname === "/") return null;
 
-  // Choose nav & text colors based on theme
   const isLight = themeName === "light";
-  const navBackground = isLight
-    ? "#AEE3F5" // solid sky-blue to match homepage
-    : "linear-gradient(to bottom, #1a202c 0%, #2d3748 100%)";
-  const textColor = isLight ? "#111827" : "#EDF2F7";
+  const textColor = isLight ? "#1f2937" : "#edf2f7";
 
+  // Semi-transparent background + blur for maximum blending
   const navStyle = {
     display: "grid",
     gridTemplateColumns: mobile ? "1fr 1fr 1fr 1fr" : "repeat(12,1fr)",
     alignItems: "center",
     padding: "0.75rem 1rem",
-    background: navBackground,
-    ...(isLight && {
-      backgroundImage:
-        "radial-gradient(circle at center, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0) 40%)",
-    }),
+    backgroundColor: isLight ? "rgba(174,227,245,0.75)" : "rgba(45,55,72,0.75)",
+    backdropFilter: "blur(10px) saturate(180%)",
     boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
     position: "sticky",
     top: 0,
@@ -74,13 +68,8 @@ export default function NavBar() {
     top: "3.5rem",
     left: "1rem",
     right: "1rem",
-    background: isLight
-      ? "#AEE3F5"
-      : "linear-gradient(180deg, #2d3748 0%, #1a202c 100%)",
-    ...(isLight && {
-      backgroundImage:
-        "radial-gradient(circle at center, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0) 40%)",
-    }),
+    backgroundColor: isLight ? "rgba(174,227,245,0.85)" : "rgba(45,55,72,0.85)",
+    backdropFilter: "blur(10px) saturate(180%)",
     borderRadius: "0.5rem",
     boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
     padding: "0.75rem 0",
@@ -97,7 +86,9 @@ export default function NavBar() {
   };
   const mobileActive = {
     ...mobileLink,
-    background: isLight ? "rgba(255,255,255,0.6)" : "rgba(255,255,255,0.1)",
+    backgroundColor: isLight
+      ? "rgba(255,255,255,0.5)"
+      : "rgba(255,255,255,0.1)",
     borderRadius: "0.375rem",
     fontWeight: 600,
   };
@@ -140,7 +131,6 @@ export default function NavBar() {
             justifySelf: "end",
           }}
         >
-          {/* Theme toggle */}
           <button
             onClick={() => setThemeName(isLight ? "dark" : "light")}
             style={{
@@ -162,20 +152,20 @@ export default function NavBar() {
               }
               style={{
                 padding: "0.5rem 1rem",
-                background: isLight ? "#E53E3E" : "#FBB6CE",
+                backgroundColor: isLight ? "#C53030" : "#FBB6CE",
                 color: "#FFF",
                 border: "none",
                 borderRadius: "0.375rem",
                 cursor: "pointer",
               }}
               onMouseEnter={(e) =>
-                (e.currentTarget.style.background = isLight
-                  ? "#C53030"
+                (e.currentTarget.style.backgroundColor = isLight
+                  ? "#9B2C2C"
                   : "#F687B3")
               }
               onMouseLeave={(e) =>
-                (e.currentTarget.style.background = isLight
-                  ? "#E53E3E"
+                (e.currentTarget.style.backgroundColor = isLight
+                  ? "#C53030"
                   : "#FBB6CE")
               }
             >

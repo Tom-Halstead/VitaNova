@@ -1,6 +1,6 @@
 // File: src/components/EntryPreview.jsx
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 
 export default function EntryPreview({
   date,
@@ -20,7 +20,15 @@ export default function EntryPreview({
   equipment,
   notes,
 }) {
-  // ── Define hasActivity here ──
+  // ── Responsive state ──
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 600);
+  useEffect(() => {
+    const onResize = () => setIsMobile(window.innerWidth < 600);
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
+
+  // ── Determine if any activity fields exist ──
   const hasActivity =
     Boolean(activityType) ||
     Boolean(duration) ||
@@ -32,12 +40,15 @@ export default function EntryPreview({
     Boolean(equipment) ||
     Boolean(notes);
 
-  // Helper to render only fields that have values
+  // ── Helper to render only fields that have values ──
   const renderField = (iconNode, label, value) => {
     if (!value) return null;
     return (
       <div
-        style={styles.activityRow}
+        style={{
+          ...styles.activityRow,
+          ...(isMobile ? styles.activityRowMobile : {}),
+        }}
         onMouseEnter={(e) =>
           Object.assign(e.currentTarget.style, styles.activityRowHover)
         }
@@ -56,7 +67,7 @@ export default function EntryPreview({
     );
   };
 
-  // ── Inline SVG icons ── (unchanged paths, colors use CSS variables)
+  // ── Inline SVG icons ──
   const RunSVG = () => (
     <svg viewBox="0 0 24 24" fill="var(--primary)" width="20" height="20">
       {/* … */}
@@ -102,7 +113,12 @@ export default function EntryPreview({
         </h2>
 
         {/* ── Date & Mood Summary ── */}
-        <div style={styles.summaryGrid}>
+        <div
+          style={{
+            ...styles.summaryGrid,
+            ...(isMobile ? styles.summaryGridMobile : {}),
+          }}
+        >
           <div style={{ ...styles.summaryBox, background: "var(--bg)" }}>
             <span style={styles.summaryIcon}>📅</span>
             <span style={styles.summaryLabel}>Date</span>
@@ -138,7 +154,12 @@ export default function EntryPreview({
         {hasActivity && (
           <div style={styles.section}>
             <h3 style={styles.sectionHeader}>🔥 Activity Details</h3>
-            <div style={styles.activitySection}>
+            <div
+              style={{
+                ...styles.activitySection,
+                ...(isMobile ? styles.activitySectionMobile : {}),
+              }}
+            >
               {renderField(RunSVG(), "Type", activityType)}
               {renderField(
                 DurationSVG(),
@@ -169,7 +190,7 @@ export default function EntryPreview({
             </div>
 
             {notes && (
-              <div style={{ marginTop: "2rem" }}>
+              <div style={{ marginTop: isMobile ? "1rem" : "2rem" }}>
                 <h4 style={styles.subHeader}>🗒️ Notes</h4>
                 <div style={styles.notesCard}>
                   <p style={styles.notesText}>{notes}</p>
@@ -183,11 +204,19 @@ export default function EntryPreview({
         {photos.length > 0 && (
           <div style={styles.section}>
             <h3 style={styles.sectionHeader}>📸 Photos</h3>
-            <div style={styles.photosGrid}>
+            <div
+              style={{
+                ...styles.photosGrid,
+                ...(isMobile ? styles.photosGridMobile : {}),
+              }}
+            >
               {photos.map((file, i) => (
                 <div
                   key={i}
-                  style={styles.photoWrapper}
+                  style={{
+                    ...styles.photoWrapper,
+                    ...(isMobile ? styles.photoWrapperMobile : {}),
+                  }}
                   onMouseEnter={(e) =>
                     Object.assign(
                       e.currentTarget.style,
@@ -257,6 +286,9 @@ const styles = {
     gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
     gap: "1rem",
   },
+  summaryGridMobile: {
+    gridTemplateColumns: "1fr",
+  },
   summaryBox: {
     borderRadius: "0.75rem",
     padding: "1rem",
@@ -266,20 +298,6 @@ const styles = {
     justifyContent: "center",
     boxShadow: "0 5px 15px rgba(0, 0, 0, 0.05)",
     transition: "transform 0.2s ease",
-  },
-  summaryIcon: {
-    fontSize: "1.5rem",
-    marginBottom: "0.5rem",
-  },
-  summaryLabel: {
-    fontSize: "0.95rem",
-    fontWeight: 600,
-    color: "var(--text-light)",
-    marginBottom: "0.25rem",
-  },
-  summaryValue: {
-    fontSize: "1rem",
-    color: "var(--text)",
   },
   section: {
     marginTop: "2.5rem",
@@ -312,6 +330,9 @@ const styles = {
     padding: "1rem",
     boxShadow: "0 5px 15px rgba(0, 0, 0, 0.04)",
   },
+  activitySectionMobile: {
+    padding: "0.5rem",
+  },
   activityRow: {
     display: "grid",
     gridTemplateColumns: "32px 1fr 1fr",
@@ -324,6 +345,10 @@ const styles = {
       "background 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease",
     cursor: "default",
     marginBottom: "0.75rem",
+  },
+  activityRowMobile: {
+    gridTemplateColumns: "32px 1fr",
+    padding: "0.5rem",
   },
   activityRowHover: {
     background: "var(--bg-alt)",
@@ -347,6 +372,37 @@ const styles = {
     color: "var(--text)",
     paddingLeft: "0.5rem",
   },
+  photosGrid: {
+    display: "flex",
+    flexWrap: "wrap",
+    gap: "0.75rem",
+  },
+  photosGridMobile: {
+    justifyContent: "center",
+    gap: "0.5rem",
+  },
+  photoWrapper: {
+    width: "120px",
+    height: "120px",
+    overflow: "hidden",
+    borderRadius: "0.75rem",
+    border: "1px solid var(--border)",
+    boxShadow: "0 5px 15px rgba(0, 0, 0, 0.02)",
+    transition: "transform 0.2s ease, box-shadow 0.2s ease",
+  },
+  photoWrapperMobile: {
+    width: "80px",
+    height: "80px",
+  },
+  photoWrapperHover: {
+    transform: "translateY(-3px)",
+    boxShadow: "0 8px 25px rgba(0, 0, 0, 0.08)",
+  },
+  photo: {
+    width: "100%",
+    height: "100%",
+    objectFit: "cover",
+  },
   subHeader: {
     fontSize: "1.1rem",
     fontWeight: 600,
@@ -364,28 +420,5 @@ const styles = {
     lineHeight: 1.6,
     color: "var(--text)",
     whiteSpace: "pre-wrap",
-  },
-  photosGrid: {
-    display: "flex",
-    flexWrap: "wrap",
-    gap: "0.75rem",
-  },
-  photoWrapper: {
-    width: "120px",
-    height: "120px",
-    overflow: "hidden",
-    borderRadius: "0.75rem",
-    border: "1px solid var(--border)",
-    boxShadow: "0 5px 15px rgba(0, 0, 0, 0.02)",
-    transition: "transform 0.2s ease, box-shadow 0.2s ease",
-  },
-  photoWrapperHover: {
-    transform: "translateY(-3px)",
-    boxShadow: "0 8px 25px rgba(0, 0, 0, 0.08)",
-  },
-  photo: {
-    width: "100%",
-    height: "100%",
-    objectFit: "cover",
   },
 };
