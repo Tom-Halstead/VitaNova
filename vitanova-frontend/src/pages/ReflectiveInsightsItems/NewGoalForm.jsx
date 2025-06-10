@@ -101,6 +101,7 @@ const styles = {
     outline: "none",
     background: "var(--bg)",
     color: "var(--text)",
+    marginRight: "1rem",
   },
   buttonContainer: {
     display: "flex",
