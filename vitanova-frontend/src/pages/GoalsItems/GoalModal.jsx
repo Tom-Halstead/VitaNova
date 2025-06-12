@@ -1,4 +1,4 @@
-// File: src/pages/ReflectiveInsightsItems/GoalModal.jsx
+// File: src/pages/GoalsItems/GoalModal.jsx
 import React, { useState } from "react";
 
 export default function GoalModal({ goal, onSave, onClose }) {

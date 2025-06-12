@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react";
 import { listEntries } from "../../api/EntriesApi";
 import { listGoals } from "../../api/GoalsApi";
 import TimelineEvent from "../DashboardItems/TimelineEvent";
-import GoalModal from "../ReflectiveInsightsItems/GoalModal";
+import GoalModal from "../GoalsItems/GoalModal";
 import EntryModal from "../NewEntryItems/EntryModal";
 import { useNavigate } from "react-router-dom";
 

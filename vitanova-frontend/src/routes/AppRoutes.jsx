@@ -8,7 +8,7 @@ import Insights from "../pages/DashboardItems/Insights";
 import NewEntry from "../pages/NewEntryItems/NewEntry";
 import EntryList from "../pages/NewEntryItems/Entries";
 import EntryDetail from "../pages/NewEntryItems/EntryDetail";
-import ReflectiveInsights from "../pages/ReflectiveInsightsItems/ReflectiveInsights";
+import GoalsHomepage from "../pages/GoalsItems/GoalsHomepage";
 import Settings from "../pages/Settings";
 import ProtectedRoute from "./ProtectedRoute";
 
@@ -61,7 +61,7 @@ export default function AppRoutes() {
         path="/insights-goals"
         element={
           <ProtectedRoute>
-            <ReflectiveInsights />
+            <GoalsHomepage />
           </ProtectedRoute>
         }
       />

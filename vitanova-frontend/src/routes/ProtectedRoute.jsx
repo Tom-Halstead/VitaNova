@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { Navigate } from "react-router-dom";
 
-const API_BASE = process.env.REACT_APP_API_BASE || "http://localhost:8080";
+const API_BASE = "http://localhost:8080";
 
 export default function ProtectedRoute({ children }) {
   const [auth, setAuth] = useState({ status: "checking", error: null });
