@@ -12,7 +12,7 @@ public class HealthController {
     @GetMapping(value = "/health", produces = MediaType.TEXT_PLAIN_VALUE)
     @ResponseStatus(HttpStatus.OK)
     public String health() {
-        return "OK BIATCH!";
+        return "OK BIATCH";
     }
 
 
