@@ -28,7 +28,7 @@ public class CognitoLogoutHandler extends SimpleUrlLogoutSuccessHandler {
                                         HttpServletResponse response,
                                         Authentication authentication) {
         return UriComponentsBuilder
-                .fromHttpUrl(domain + "/logout")
+                .fromUriString(domain + "/logout")
                 .queryParam("client_id", clientId)
                 .queryParam("logout_uri", logoutRedirectUrl)
                 .encode(StandardCharsets.UTF_8)
