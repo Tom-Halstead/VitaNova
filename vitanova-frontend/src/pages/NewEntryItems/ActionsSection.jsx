@@ -49,7 +49,10 @@ export default function ActionsSection({ saving, onPreview }) {
           e.currentTarget.style.color = "var(--primary)";
         }}
       >
-        <span role="img">👁️</span> Preview
+        <span role="img" aria-label="Preview">
+          👁️
+        </span>{" "}
+        Preview
       </button>
       <button
         type="submit"

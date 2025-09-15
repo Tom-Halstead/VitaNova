@@ -248,7 +248,12 @@ export default function ActivityDetails({
 
           {/* Comments */}
           <details style={{ marginTop: "1rem", marginBottom: "1rem" }}>
-            <summary style={summaryStyle}>🗒️ Additional Comments</summary>
+            <summary style={summaryStyle}>
+              <span role="img" aria-label="Comments">
+                🗒️
+              </span>{" "}
+              Additional Comments
+            </summary>
             <textarea
               value={activity.notes}
               onChange={upd("notes")}
@@ -264,7 +269,12 @@ export default function ActivityDetails({
 
           {/* Photos */}
           <div style={{ marginTop: "1rem" }}>
-            <h3 style={titleStyle}>📸 Photos</h3>
+            <h3 style={titleStyle}>
+              <span role="img" aria-label="Photos">
+                📸
+              </span>{" "}
+              Photos
+            </h3>
             <PhotoUploader onFiles={setPhotos} />
             {photos.length > 0 && (
               <p style={label}>

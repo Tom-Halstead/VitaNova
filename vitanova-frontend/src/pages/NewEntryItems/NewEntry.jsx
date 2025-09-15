@@ -135,7 +135,10 @@ export default function NewEntry() {
       <div style={container}>
         <div style={card}>
           <h2 style={title}>
-            <span role="img">📋</span> Preview
+            <span role="img" aria-label="Preview">
+              📋
+            </span>{" "}
+            Preview
           </h2>
           <EntryPreview
             date={date}
@@ -185,11 +188,19 @@ export default function NewEntry() {
               fontWeight: 600,
             }}
           >
-            <span role="img">✅</span> Entry saved successfully!
+            <span role="img" aria-label="Save Success">
+              ✅
+            </span>{" "}
+            Entry saved successfully!
           </div>
         )}
 
-        <h2 style={title}>📝 New Journal / Activity Entry</h2>
+        <h2 style={title}>
+          <span role="img" aria-label="New Entry">
+            📝
+          </span>{" "}
+          New Journal / Activity Entry
+        </h2>
         {error && (
           <div
             style={{

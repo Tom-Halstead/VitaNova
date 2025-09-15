@@ -61,7 +61,10 @@ export default function JournalSection({
       >
         <div style={{ display: "flex", flexDirection: "column" }}>
           <label htmlFor="entry-date" style={labelStyle}>
-            <span role="img">📅</span> Entry Date
+            <span role="img" aria-label="Entry Date">
+              📅
+            </span>{" "}
+            Entry Date
           </label>
           <input
             id="entry-date"

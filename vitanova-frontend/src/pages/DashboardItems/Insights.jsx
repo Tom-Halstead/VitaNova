@@ -209,7 +209,10 @@ export default function Insights() {
     >
       <div style={{ maxWidth: 800, width: "100%" }}>
         <h2 style={{ marginBottom: 16, textAlign: "center" }}>
-          🔍 Personalized Insights
+          <span role="img" aria-label="Personalized Insights">
+            🔍
+          </span>{" "}
+          Personalized Insights
         </h2>
 
         {/* summary cards grid */}

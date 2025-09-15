@@ -108,7 +108,10 @@ export default function EntryPreview({
     <div style={styles.outerContainer}>
       <div style={styles.cardContainer}>
         <h2 style={styles.header}>
-          📋 Entry Preview
+          <span role="img" aria-label="Image">
+            📋
+          </span>{" "}
+          Entry Preview
           <div style={styles.headerUnderline} />
         </h2>
 
@@ -120,19 +123,25 @@ export default function EntryPreview({
           }}
         >
           <div style={{ ...styles.summaryBox, background: "var(--bg)" }}>
-            <span style={styles.summaryIcon}>📅</span>
+            <span style={styles.summaryIcon} role="img" aria-label="Date">
+              📅
+            </span>
             <span style={styles.summaryLabel}>Date</span>
             <span style={styles.summaryValue}>{date}</span>
           </div>
           <div style={{ ...styles.summaryBox, background: "var(--bg)" }}>
-            <span style={styles.summaryIcon}>😊</span>
+            <span style={styles.summaryIcon} role="img" aria-label="MoodBefore">
+              😊
+            </span>
             <span style={styles.summaryLabel}>Mood Before</span>
             <span style={styles.summaryValue}>
               {getEmoji(moodPre)} ({moodPre})
             </span>
           </div>
           <div style={{ ...styles.summaryBox, background: "var(--bg)" }}>
-            <span style={styles.summaryIcon}>😊</span>
+            <span style={styles.summaryIcon} role="img" aria-label="MoodAfter">
+              😊
+            </span>
             <span style={styles.summaryLabel}>Mood After</span>
             <span style={styles.summaryValue}>
               {getEmoji(moodPost)} ({moodPost})
@@ -143,7 +152,12 @@ export default function EntryPreview({
         {/* ── Journal Text ── */}
         {text && (
           <div style={styles.section}>
-            <h3 style={styles.sectionHeader}>🖋 Journal Text</h3>
+            <h3 style={styles.sectionHeader}>
+              <span role="img" aria-label="JournalText">
+                🖋
+              </span>{" "}
+              Journal Text
+            </h3>
             <div style={styles.journalCard}>
               <p style={styles.journalText}>{text}</p>
             </div>
@@ -153,7 +167,12 @@ export default function EntryPreview({
         {/* ── Activity Details ── */}
         {hasActivity && (
           <div style={styles.section}>
-            <h3 style={styles.sectionHeader}>🔥 Activity Details</h3>
+            <h3 style={styles.sectionHeader}>
+              <span role="img" aria-label="ActivityDetails">
+                🔥
+              </span>{" "}
+              Activity Details
+            </h3>
             <div
               style={{
                 ...styles.activitySection,
@@ -191,7 +210,12 @@ export default function EntryPreview({
 
             {notes && (
               <div style={{ marginTop: isMobile ? "1rem" : "2rem" }}>
-                <h4 style={styles.subHeader}>🗒️ Notes</h4>
+                <h4 style={styles.subHeader}>
+                  <span role="img" aria-label="Notes">
+                    🗒️
+                  </span>{" "}
+                  Notes
+                </h4>
                 <div style={styles.notesCard}>
                   <p style={styles.notesText}>{notes}</p>
                 </div>
@@ -203,7 +227,12 @@ export default function EntryPreview({
         {/* ── Photos ── */}
         {photos.length > 0 && (
           <div style={styles.section}>
-            <h3 style={styles.sectionHeader}>📸 Photos</h3>
+            <h3 style={styles.sectionHeader}>
+              <span role="img" aria-label="Photos">
+                📸
+              </span>{" "}
+              Photos
+            </h3>
             <div
               style={{
                 ...styles.photosGrid,

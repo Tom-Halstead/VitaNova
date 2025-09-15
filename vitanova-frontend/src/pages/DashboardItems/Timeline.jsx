@@ -5,13 +5,11 @@ import { listGoals } from "../../api/GoalsApi";
 import TimelineEvent from "../DashboardItems/TimelineEvent";
 import GoalModal from "../GoalsItems/GoalModal";
 import EntryModal from "../NewEntryItems/EntryModal";
-import { useNavigate } from "react-router-dom";
 
 export default function Timeline() {
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedEvent, setSelectedEvent] = useState(null);
-  const navigate = useNavigate();
 
   useEffect(() => {
     Promise.all([listEntries(0, 1000), listGoals()])
@@ -101,7 +99,12 @@ export default function Timeline() {
 
   return (
     <div style={styles.pageWrapper}>
-      <h2 style={styles.pageHeader}>🕓 Activity & Goal Timeline</h2>
+      <h2 style={styles.pageHeader}>
+        <span role="img" aria-label="Activity/Goal Timeline">
+          🕓
+        </span>{" "}
+        Activity & Goal Timeline
+      </h2>
       <div style={styles.timelineContainer}>
         <div style={styles.spine} />
         {events.map((evt, idx) => (

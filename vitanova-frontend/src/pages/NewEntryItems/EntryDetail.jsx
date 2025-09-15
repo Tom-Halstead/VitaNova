@@ -97,7 +97,10 @@ export default function EntryDetail() {
         <div style={styles.section}>
           <h3 style={styles.sectionHeader}>
             {" "}
-            <span role="img">😊</span> Mood
+            <span role="img" aria-label="Mood">
+              😊
+            </span>{" "}
+            Mood
           </h3>
           <div style={styles.moodGrid}>
             {["moodPre", "moodPost"].map((k, i) => {
@@ -118,7 +121,10 @@ export default function EntryDetail() {
           <div style={styles.section}>
             <h3 style={styles.sectionHeader}>
               {" "}
-              <span role="img">🔥</span> Activity Details
+              <span role="img" aria-label="Activity">
+                🔥
+              </span>{" "}
+              Activity Details
             </h3>
             <div style={styles.activityBox}>
               {entry.activityType && renderField("Type", entry.activityType)}
@@ -146,7 +152,10 @@ export default function EntryDetail() {
             {entry.notes && (
               <div style={styles.notesSection}>
                 <h4 style={styles.subHeader}>
-                  <span role="img">🗒️</span> Notes
+                  <span role="img" aria-label="Notes">
+                    🗒️
+                  </span>{" "}
+                  Notes
                 </h4>
                 <div style={styles.notesBox}>
                   <p style={styles.notesText}>{entry.notes}</p>
