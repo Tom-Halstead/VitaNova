@@ -51,16 +51,6 @@ export default function GoalTimelineBar({
     );
   }
 
-  // Offset calculator
-  const offsetPct = (iso) => {
-    const d = parseISO(iso);
-    if (isNaN(d)) return "0%";
-    return (
-      (clamp01((d.getTime() - startDate.getTime()) / spanMs) * 100).toFixed(2) +
-      "%"
-    );
-  };
-
   return (
     <div style={styles.container}>
       <h3 style={styles.header}>Timeline of Completed Goals</h3>

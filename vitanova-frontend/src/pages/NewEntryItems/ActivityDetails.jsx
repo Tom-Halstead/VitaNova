@@ -53,8 +53,7 @@ export default function ActivityDetails({
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
       <h3 style={titleStyle}>
-        🔥 Activity Details{" "}
-        <span style={subtitleStyle}>(select type first)</span>
+        Activity Details <span style={subtitleStyle}>(select type first)</span>
       </h3>
 
       {/* Activity Type */}

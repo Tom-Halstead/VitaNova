@@ -1,7 +1,5 @@
 // File: src/pages/NewEntry.jsx
 import React, { useState } from "react";
-import MoodInput from "./MoodInput";
-import PhotoUploader from "../../components/PhotoUploader";
 import { createEntry } from "../../api/EntriesApi";
 
 import EntryPreview from "./EntryPreview";
@@ -136,7 +134,9 @@ export default function NewEntry() {
     return (
       <div style={container}>
         <div style={card}>
-          <h2 style={title}>📋 Preview</h2>
+          <h2 style={title}>
+            <span role="img">📋</span> Preview
+          </h2>
           <EntryPreview
             date={date}
             moodPre={moodPre}
@@ -159,7 +159,7 @@ export default function NewEntry() {
               cursor: "pointer",
             }}
           >
-            ← Back to Form
+            <span role="img">←</span> Back to Form
           </button>
         </div>
       </div>
@@ -185,7 +185,7 @@ export default function NewEntry() {
               fontWeight: 600,
             }}
           >
-            ✅ Entry saved successfully!
+            <span role="img">✅</span> Entry saved successfully!
           </div>
         )}
 

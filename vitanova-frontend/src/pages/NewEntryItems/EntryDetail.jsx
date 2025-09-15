@@ -95,7 +95,10 @@ export default function EntryDetail() {
         </div>
 
         <div style={styles.section}>
-          <h3 style={styles.sectionHeader}>😊 Mood</h3>
+          <h3 style={styles.sectionHeader}>
+            {" "}
+            <span role="img">😊</span> Mood
+          </h3>
           <div style={styles.moodGrid}>
             {["moodPre", "moodPost"].map((k, i) => {
               const { icon, label } = findEmotion(entry[k]);
@@ -113,7 +116,10 @@ export default function EntryDetail() {
 
         {hasActivity && (
           <div style={styles.section}>
-            <h3 style={styles.sectionHeader}>🔥 Activity Details</h3>
+            <h3 style={styles.sectionHeader}>
+              {" "}
+              <span role="img">🔥</span> Activity Details
+            </h3>
             <div style={styles.activityBox}>
               {entry.activityType && renderField("Type", entry.activityType)}
               {entry.durationMin &&
@@ -139,7 +145,9 @@ export default function EntryDetail() {
             </div>
             {entry.notes && (
               <div style={styles.notesSection}>
-                <h4 style={styles.subHeader}>🗒️ Notes</h4>
+                <h4 style={styles.subHeader}>
+                  <span role="img">🗒️</span> Notes
+                </h4>
                 <div style={styles.notesBox}>
                   <p style={styles.notesText}>{entry.notes}</p>
                 </div>
