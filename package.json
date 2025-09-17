@@ -36,7 +36,15 @@
     "concurrently": "^9.1.2"
   },
   "scripts": {
-    "start": "concurrently \"npm --prefix vitanova-frontend run start:react\" \"mvn spring-boot:run -f vitanova-backend/pom.xml\""
+    "start": "npm run dev",
+
+    "dev": "concurrently \"npm --prefix vitanova-frontend run start:react\" \"mvn spring-boot:run -f vitanova-backend/pom.xml -Dspring-boot.run.profiles=dev\"",
+
+    "dev:api": "mvn spring-boot:run -f vitanova-backend/pom.xml -Dspring-boot.run.profiles=dev",
+
+    "prod:api:local": "cross-env SPRING_PROFILES_ACTIVE=prod SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5432/vitanova_like_prod SPRING_DATASOURCE_USERNAME=postgres SPRING_DATASOURCE_PASSWORD=postgres mvn spring-boot:run -f vitanova-backend/pom.xml",
+
+    "build:frontend": "npm --prefix vitanova-frontend run build"
   },
   "keywords": [],
   "author": "",
