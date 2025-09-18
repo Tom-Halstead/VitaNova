@@ -1,11 +1,22 @@
-# 1. Base Corretto 17 from AWS public ECR
-FROM public.ecr.aws/amazoncorretto/amazoncorretto:17
+# ---------- Build stage ----------
+FROM maven:3.9.9-eclipse-temurin-17 AS build
+WORKDIR /workspace
+COPY pom.xml .
+COPY src ./src
+# Build a Spring Boot fat jar
+RUN mvn -q -DskipTests package
 
-# 2. Work directory inside container
+# ---------- Runtime stage ----------
+FROM eclipse-temurin:17-jre
 WORKDIR /app
+# copy the repackaged boot jar (adjust glob if your jar name differs)
+COPY --from=build /workspace/target/*SNAPSHOT.jar /app/app.jar
 
-# 3. Copy your Spring Boot fat-JAR
-COPY target/*.jar app.jar
+# App Runner routes to this port
+ENV SERVER_PORT=8080
+EXPOSE 8080
 
-# 4. Default startup command
-ENTRYPOINT ["java","-jar","app.jar"]
+# Good container JVM defaults
+ENV JAVA_TOOL_OPTIONS="-XX:MaxRAMPercentage=75"
+
+ENTRYPOINT ["java","-jar","/app/app.jar"]
