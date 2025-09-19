@@ -88,13 +88,4 @@ public class AppConfig {
     }
 
 
-
-    @Bean
-    FlywayMigrationStrategy repairThenMigrate() {
-        return flyway -> {
-            flyway.repair();   // updates checksums to match the files
-            flyway.migrate();  // runs any later migrations
-        };
-    }
-
     }
