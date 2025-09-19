@@ -1,22 +1,20 @@
-# ---------- Build stage ----------
-FROM maven:3.9.9-eclipse-temurin-17 AS build
-WORKDIR /workspace
-COPY pom.xml .
-COPY src ./src
-# Build a Spring Boot fat jar
-RUN mvn -q -DskipTests package
+# Runtime-only image; jar is built by CI and copied from target/
+FROM public.ecr.aws/amazoncorretto/amazoncorretto:17
 
-# ---------- Runtime stage ----------
-FROM eclipse-temurin:17-jre
+# Avoid surprises: set a consistent workdir
 WORKDIR /app
-# copy the repackaged boot jar (adjust glob if your jar name differs)
-COPY --from=build /workspace/target/*SNAPSHOT.jar /app/app.jar
 
-# App Runner routes to this port
+# (Optional but good) JVM tuned for containers
+ENV JAVA_TOOL_OPTIONS="-XX:MaxRAMPercentage=75"
+
+# Spring will listen here in App Runner
 ENV SERVER_PORT=8080
 EXPOSE 8080
 
-# Good container JVM defaults
-ENV JAVA_TOOL_OPTIONS="-XX:MaxRAMPercentage=75"
+# Copy the fat jar produced by `mvn package` in CI
+# If your jar name differs, set JAR_FILE arg from CI or change the path below.
+ARG JAR_FILE=target/vitanova-backend-0.0.1-SNAPSHOT.jar
+COPY ${JAR_FILE} /app/app.jar
 
+# Start
 ENTRYPOINT ["java","-jar","/app/app.jar"]
