@@ -1,4 +1,4 @@
-name: CI/CD Pipeline (Auto App Runner)
+name: CI/CD Pipeline (App Runner)
 
 on:
   push:
@@ -8,12 +8,13 @@ jobs:
   build-and-push:
     runs-on: ubuntu-latest
 
+    # Build from backend folder
     defaults:
       run:
         working-directory: vitanova-backend
 
     steps:
-      - name: Checkout code
+      - name: Checkout
         uses: actions/checkout@v4
 
       - name: Set up Java 17
@@ -21,6 +22,7 @@ jobs:
         with:
           distribution: temurin
           java-version: '17'
+          cache: maven
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
@@ -30,29 +32,27 @@ jobs:
           aws-region:            us-east-2
 
       - name: Login to Amazon ECR
+        id: ecr
         uses: aws-actions/amazon-ecr-login@v2
         with:
           registries: ${{ secrets.AWS_ACCOUNT_ID }}
 
-      - name: Cache Maven (optional)
-        uses: actions/cache@v4
-        with:
-          path: ~/.m2/repository
-          key: maven-${{ runner.os }}-${{ hashFiles('**/pom.xml') }}
-          restore-keys: maven-${{ runner.os }}-
-
-      - name: Build Spring Boot jar
-        run: ./mvnw -q clean package -DskipTests
-
-      - name: Build & push Docker image (:prod)
-        env:
-          AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
-          AWS_REGION: us-east-2
-          IMAGE_NAME: vitanova-backend
-          JAR_FILE: target/vitanova-backend-0.0.1-SNAPSHOT.jar
+      - name: Ensure mvnw is executable (and LF)
         run: |
-          REGISTRY="${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com"
-          docker build --build-arg JAR_FILE="$JAR_FILE" \
-            -t $REGISTRY/$IMAGE_NAME:prod \
+          sed -i 's/\r$//' mvnw || true
+          chmod +x mvnw
+
+      - name: Build Spring Boot JAR
+        run: ./mvnw -q -B -U clean package -DskipTests
+
+      - name: Build & push Docker image (:prod only)
+        env:
+          ECR_REGISTRY:  ${{ steps.ecr.outputs.registry }}
+          ECR_REPOSITORY: vitanova-backend
+          JAR_FILE:      target/vitanova-backend-0.0.1-SNAPSHOT.jar
+        run: |
+          docker build \
+            --build-arg JAR_FILE="$JAR_FILE" \
+            -t "$ECR_REGISTRY/$ECR_REPOSITORY:prod" \
             .
-          docker push $REGISTRY/$IMAGE_NAME:prod
+          docker push "$ECR_REGISTRY/$ECR_REPOSITORY:prod"
