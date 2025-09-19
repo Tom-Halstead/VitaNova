@@ -1,11 +1,11 @@
-name: CI/CD Pipeline
+name: CI/CD Pipeline (Auto App Runner)
 
 on:
   push:
     branches: [ main ]
 
 jobs:
-  build-and-deploy:
+  build-and-push:
     runs-on: ubuntu-latest
 
     defaults:
@@ -14,13 +14,10 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
-      - name: Make mvnw executable
-        run: chmod +x mvnw
-
-      - name: Set up Java
-        uses: actions/setup-java@v3
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '17'
@@ -32,25 +29,34 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region:            us-east-2
 
-      - name: Authenticate to Amazon ECR
+      - name: Login to Amazon ECR
         uses: aws-actions/amazon-ecr-login@v2
         with:
           registries: ${{ secrets.AWS_ACCOUNT_ID }}
 
-      - name: Build with Maven
-        run: ./mvnw clean package -DskipTests
+      # Optional but speeds up builds
+      - name: Cache Maven
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository
+          key: maven-${{ runner.os }}-${{ hashFiles('**/pom.xml') }}
+          restore-keys: maven-${{ runner.os }}-
 
-      - name: Build and push Docker image
+      - name: Build Spring Boot jar
+        run: ./mvnw -q clean package -DskipTests
+
+      - name: Build & push Docker image (:prod and :latest)
         env:
           AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
           AWS_REGION: us-east-2
           IMAGE_NAME: vitanova-backend
+          JAR_FILE: target/vitanova-backend-0.0.1-SNAPSHOT.jar
         run: |
           REGISTRY="${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com"
-          echo "Building image $REGISTRY/$IMAGE_NAME:latest"
-          docker build -t $REGISTRY/$IMAGE_NAME:latest .
+          echo "Building $REGISTRY/$IMAGE_NAME:prod"
+          docker build --build-arg JAR_FILE="$JAR_FILE" \
+            -t $REGISTRY/$IMAGE_NAME:prod \
+            -t $REGISTRY/$IMAGE_NAME:latest \
+            .
+          docker push $REGISTRY/$IMAGE_NAME:prod
           docker push $REGISTRY/$IMAGE_NAME:latest
-
-
-
-
