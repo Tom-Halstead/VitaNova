@@ -1,8 +1,6 @@
 package com.vitanova.backend.config;
 
 
-import com.vitanova.backend.auth.controller.CognitoLogoutHandler;
-import org.springframework.boot.autoconfigure.flyway.FlywayMigrationStrategy;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.Customizer;
