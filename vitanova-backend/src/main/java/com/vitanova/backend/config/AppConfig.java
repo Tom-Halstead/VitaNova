@@ -2,6 +2,7 @@ package com.vitanova.backend.config;
 
 
 import com.vitanova.backend.auth.controller.CognitoLogoutHandler;
+import org.springframework.boot.autoconfigure.flyway.FlywayMigrationStrategy;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.Customizer;
@@ -86,5 +87,14 @@ public class AppConfig {
         return http.build();
     }
 
+
+
+    @Bean
+    FlywayMigrationStrategy repairThenMigrate() {
+        return flyway -> {
+            flyway.repair();   // updates checksums to match the files
+            flyway.migrate();  // runs any later migrations
+        };
+    }
 
     }
