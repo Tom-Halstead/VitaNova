@@ -46,9 +46,9 @@ public class AppConfig {
                                 "/static/**",
                                 "/oauth2/**",
                                 "/login/oauth2/**",
-                                "/logout",
+                                "/logout/**",
                                 "/actuator",
-                                "/actuator/health"
+                                "/actuator/health/**"
                         ).permitAll()
                         .requestMatchers("/api/**").authenticated()
                         .anyRequest().permitAll()       // SPA paths → forward to index.html
