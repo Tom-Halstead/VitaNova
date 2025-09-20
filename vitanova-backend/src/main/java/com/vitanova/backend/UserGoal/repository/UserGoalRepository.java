@@ -6,7 +6,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface UserGoalRepository extends JpaRepository<UserGoalModel, Integer> {
-    Page<UserGoalModel> findByUserUserId(Integer userId, Pageable pageable);
+    Page<UserGoalModel> findByUser_UserId(Integer userId, Pageable pageable);
 }
 
 

@@ -43,7 +43,7 @@ public class UserGoalService {
                 int userId = userService.getUserIdByCognitoSub(cognitoSub);
                 Pageable pg = PageRequest.of(page, size, Sort.by("createdAt").descending());
                 return userGoalRepo
-                        .findByUserUserId(userId, pg)
+                        .findByUser_UserId(userId, pg)
                         .map(TO_DTO);
         }
 
