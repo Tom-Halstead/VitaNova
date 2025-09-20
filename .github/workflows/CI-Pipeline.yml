@@ -53,8 +53,8 @@ jobs:
           JAR_FILE:      target/vitanova-backend-0.0.1-SNAPSHOT.jar
         run: |
           docker build --build-arg JAR_FILE="$JAR_FILE" \
-            -t "$ECR_REGISTRY/$ECR_REPOSITORY:prod" .
-          docker push "$ECR_REGISTRY/$ECR_REPOSITORY:prod"
+            -t "$ECR_REGISTRY/$ECR_REPOSITORY:latest" .
+          docker push "$ECR_REGISTRY/$ECR_REPOSITORY:latest"
 
 
 
