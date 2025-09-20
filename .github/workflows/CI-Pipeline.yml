@@ -67,17 +67,21 @@ on:
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
+
+    env:
+      AWS_REGION: us-east-2
+      SERVICE_ARN: ${{ secrets.SERVICE_ARN }}   # optional; leave unset to skip update
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      # AWS creds for ECR + (optional) App Runner update
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-access-key-id:     ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region:            us-east-2
+          aws-region:            ${{ env.AWS_REGION }}
 
       - name: Who am I?
         run: aws sts get-caller-identity
@@ -86,8 +90,7 @@ jobs:
         id: ecr
         uses: aws-actions/amazon-ecr-login@v2
 
-      # Build & push with BuildKit + cache
-      - name: Build & push multi-stage image
+      - name: Build & push (multi-stage Dockerfile)
         uses: docker/build-push-action@v6
         with:
           context: ./vitanova-backend
@@ -100,22 +103,20 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-      # OPTIONAL: pin App Runner to :prod and trigger a deploy
-      # (Set secret SERVICE_ARN with your App Runner service ARN)
-      - name: Update App Runner to use :prod (optional)
-        if: ${{ secrets.SERVICE_ARN != '' }}
+      # Optional: point App Runner at :prod and trigger deploy
+      - name: Update App Runner to :prod
+        if: ${{ env.SERVICE_ARN != '' }}
+        env:
+          ECR_REGISTRY: ${{ steps.ecr.outputs.registry }}
         run: |
           aws apprunner update-service \
-            --service-arn "${{ secrets.SERVICE_ARN }}" \
+            --service-arn "$SERVICE_ARN" \
             --source-configuration "{
               \"ImageRepository\": {
-                \"ImageIdentifier\": \"${{ steps.ecr.outputs.registry }}/vitanova-backend:prod\",
+                \"ImageIdentifier\": \"${ECR_REGISTRY}/vitanova-backend:prod\",
                 \"ImageRepositoryType\": \"ECR\",
                 \"ImageConfiguration\": { \"Port\": \"8080\" }
               },
-              \"AutoDeploymentsEnabled\": true,
-              \"AuthenticationConfiguration\": {
-                \"AccessRoleArn\": \"arn:aws:iam::${{ steps.ecr.outputs.registry%%.* }}:role/service-role/AppRunnerECRAccessRole\"
-              }
+              \"AutoDeploymentsEnabled\": true
             }"
-          aws apprunner start-deployment --service-arn "${{ secrets.SERVICE_ARN }}"
+          aws apprunner start-deployment --service-arn "$SERVICE_ARN"
