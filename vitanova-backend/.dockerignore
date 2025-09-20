@@ -1,3 +1,13 @@
+# keep these ignores
 .git
-target
 node_modules
+
+# ignore everything in target, except built JARs
+target/*
+!target/*.jar
+
+# (optional) cut more noise
+.vscode
+.idea
+*.iml
+*.log
