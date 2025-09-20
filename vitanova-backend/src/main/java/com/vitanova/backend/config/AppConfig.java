@@ -57,7 +57,7 @@ public class AppConfig {
                         .loginPage("/oauth2/authorization/cognito")
                         .defaultSuccessUrl("http://localhost:3000/dashboard", true)
                         .failureHandler((req, res, ex) -> {
-                            ex.printStackTrace();  // logs the full stacktrace
+                            System.out.println("Reason for error: " + ex.getCause().getMessage());
                             String msg = URLEncoder.encode(ex.getMessage(), StandardCharsets.UTF_8);
                             res.sendRedirect("http://localhost:3000/?oauth2_error=" + msg);
                         })
