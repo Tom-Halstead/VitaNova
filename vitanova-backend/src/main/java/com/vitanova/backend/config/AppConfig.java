@@ -1,6 +1,7 @@
 package com.vitanova.backend.config;
 
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.Customizer;
@@ -19,12 +20,12 @@ import java.nio.charset.StandardCharsets;
 @EnableWebSecurity
 public class AppConfig {
 
-
-    private final CognitoLogoutHandler cognitoLogoutHandler;
-
-    public AppConfig(CognitoLogoutHandler cognitoLogoutHandler) {
-        this.cognitoLogoutHandler = cognitoLogoutHandler;
-    }
+//    @Autowired
+//    private final CognitoLogoutHandler cognitoLogoutHandler;
+//
+//    public AppConfig(CognitoLogoutHandler cognitoLogoutHandler) {
+//        this.cognitoLogoutHandler = cognitoLogoutHandler;
+//    }
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -52,13 +53,6 @@ public class AppConfig {
                         .anyRequest().permitAll()       // SPA paths → forward to index.html
                 )
 
-                // OAuth2 code-flow login via Cognito
-//                .oauth2Login(login -> login
-//                        .loginPage("/oauth2/authorization/cognito")
-//                        // after code exchange, send user back to CRA dev server
-//                        .defaultSuccessUrl("http://localhost:3000/dashboard", true)
-//                        .failureUrl("http://localhost:3000/")
-//                )
                 .oauth2Login(login -> login
                         .loginPage("/oauth2/authorization/cognito")
                         .defaultSuccessUrl("http://localhost:3000/dashboard", true)
@@ -74,7 +68,7 @@ public class AppConfig {
                 .logout(logout -> logout
                         .logoutUrl("/logout")
                         .addLogoutHandler(new SecurityContextLogoutHandler()) // clear Spring session
-                        .logoutSuccessHandler(cognitoLogoutHandler)           // redirect to Cognito /logout
+//                        .logoutSuccessHandler(cognitoLogoutHandler)           // redirect to Cognito /logout
                         .invalidateHttpSession(true)
                         .deleteCookies("JSESSIONID")
                 )
