@@ -57,12 +57,12 @@ public class AppConfig {
                 .oauth2Login(login -> login
                         .loginPage("/oauth2/authorization/cognito")
 //                        .defaultSuccessUrl("http://localhost:3000/dashboard", true)
-                        .defaultSuccessUrl("https://m2rusixcfd.us-east-2.awsapprunner.com//dashboard", true)
+                        .defaultSuccessUrl("https://m2rusixcfd.us-east-2.awsapprunner.com/dashboard", true)
                         .failureHandler((req, res, ex) -> {
                             System.out.println("Reason for error: " + ex.getCause().getMessage());
                             String msg = URLEncoder.encode(ex.getMessage(), StandardCharsets.UTF_8);
 //                            res.sendRedirect("http://localhost:3000/?oauth2_error=" + msg);
-                                    res.sendRedirect("https://m2rusixcfd.us-east-2.awsapprunner.com//?oauth2_error=" + msg);
+                                    res.sendRedirect("https://m2rusixcfd.us-east-2.awsapprunner.com/?oauth2_error=" + msg);
                         })
                 )
 
