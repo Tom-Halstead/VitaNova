@@ -1,7 +1,7 @@
 // src/api/apiServices.js
 
 // 1) Export the base URL so it's defined everywhere
-export const API_BASE = "http://localhost:8080";
+export const REACT_APP_API_BASE = process.env.REACT_APP_API_BASE || "";
 
 // 2) Low-level request helper
 export async function request(
@@ -22,7 +22,7 @@ export async function request(
     config.body = JSON.stringify(body);
   }
 
-  const res = await fetch(`${API_BASE}${path}`, config);
+  const res = await fetch(`${REACT_APP_API_BASE}${path}`, config);
   if (!res.ok) {
     const text = await res.text();
     throw new Error(`API ${method} ${path} failed: ${res.status} ${text}`);
@@ -37,7 +37,7 @@ export async function request(
  * Export all user data (returns a Blob).
  */
 export async function exportData() {
-  const res = await fetch(`${API_BASE}/api/settings/export`, {
+  const res = await fetch(`${REACT_APP_API_BASE}/api/settings/export`, {
     method: "GET",
     credentials: "include",
     headers: {
