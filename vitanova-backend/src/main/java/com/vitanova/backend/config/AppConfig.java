@@ -55,14 +55,12 @@ public class AppConfig {
                 )
 
                 .oauth2Login(login -> login
-                        .loginPage("https://m2rusixcfd.us-east-2.awsapprunner.com/oauth2/authorization/cognito")
-//                        .defaultSuccessUrl("http://localhost:3000/dashboard", true)
-                                .defaultSuccessUrl("http://vitanova-frontend.s3-website.us-east-2.amazonaws.com/dashboard", true)
+                        .loginPage("/oauth2/authorization/cognito")
+                                .defaultSuccessUrl("https://vitanova-app.com/dashboard", true)
                                 .failureHandler((req, res, ex) -> {
                             System.out.println("Reason for error: " + ex.getCause().getMessage());
                             String msg = URLEncoder.encode(ex.getMessage(), StandardCharsets.UTF_8);
-//                            res.sendRedirect("http://localhost:3000/?oauth2_error=" + msg);
-                                    res.sendRedirect("https://m2rusixcfd.us-east-2.awsapprunner.com/?oauth2_error=" + msg);
+                                    res.sendRedirect("https://vitanova-app.com/?oauth2_error=" + "Couldn't login: " + msg);
                         })
                 )
 
@@ -74,6 +72,7 @@ public class AppConfig {
 //                        .logoutSuccessHandler(cognitoLogoutHandler)           // redirect to Cognito /logout
                         .invalidateHttpSession(true)
                         .deleteCookies("JSESSIONID")
+                                .logoutSuccessUrl("https://vitanova-app.com")
                 )
 
         // NOTE: resource-server (JWT) disabled in dev; re-enable for prod.
