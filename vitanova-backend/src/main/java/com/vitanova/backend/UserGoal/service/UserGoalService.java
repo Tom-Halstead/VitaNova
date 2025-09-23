@@ -81,7 +81,7 @@ public class UserGoalService {
                 int userId = userService.getUserIdByCognitoSub(cognitoSub);
                 UserGoalModel goal = userGoalRepo.findById(goalId)
                         .filter(g -> g.getUser().getUserId() == userId)
-                        .orElseThrow(() -> new IllegalArgumentException("No such goal!"));
+                        .orElseThrow(() -> new IllegalArgumentException("No such goal"));
 
                 // Partial update logic (only override if non‐null in req):
                 if (req.getType() != null) {
