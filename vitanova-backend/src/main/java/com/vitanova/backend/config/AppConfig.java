@@ -58,9 +58,9 @@ public class AppConfig {
                         .loginPage("/oauth2/authorization/cognito")
                                 .defaultSuccessUrl("https://vitanova-app.com/dashboard", true)
                                 .failureHandler((req, res, ex) -> {
-                            System.out.println("Reason for error: " + ex.getCause().getMessage());
-                            String msg = URLEncoder.encode(ex.getMessage(), StandardCharsets.UTF_8);
-                                    res.sendRedirect("https://vitanova-app.com/?oauth2_error=" + "Couldn't login: " + msg);
+                            String reason = (ex.getCause() != null) ? ex.getCause().getMessage() : ex.getMessage();
+                            String msg = URLEncoder.encode(reason, StandardCharsets.UTF_8);
+                            res.sendRedirect("https://vitanova-app.com/?oauth2_error=" + "Couldn't login: " + msg);
                         })
                 )
 

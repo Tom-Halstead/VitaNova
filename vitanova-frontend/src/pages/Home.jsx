@@ -3,7 +3,7 @@ import React from "react";
 export default function Home() {
   const handleLogin = () =>
     (window.location.href =
-      "http://localhost:8080/oauth2/authorization/cognito");
+      "https://api.vitanova-app.com/oauth2/authorization/cognito");
   return (
     <div
       style={{
