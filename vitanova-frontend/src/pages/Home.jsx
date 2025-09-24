@@ -2,8 +2,7 @@ import React from "react";
 
 export default function Home() {
   const handleLogin = () =>
-    (window.location.href =
-      "https://api.vitanova-app.com/oauth2/authorization/cognito");
+    (window.location.href = "/oauth2/authorization/cognito");
   return (
     <div
       style={{
