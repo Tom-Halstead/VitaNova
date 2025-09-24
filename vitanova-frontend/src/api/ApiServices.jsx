@@ -1,7 +1,7 @@
 // src/api/apiServices.js
 
 // 1) Export the base URL so it's defined everywhere
-export const REACT_APP_API_BASE = process.env.REACT_APP_API_BASE || "";
+export const REACT_APP_API_BASE = (process.env.REACT_APP_API_BASE ?? "").trim();
 
 // 2) Low-level request helper
 export async function request(
