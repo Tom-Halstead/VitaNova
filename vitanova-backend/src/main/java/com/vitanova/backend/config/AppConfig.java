@@ -11,9 +11,13 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 
 
 @Configuration
@@ -26,6 +30,32 @@ public class AppConfig {
 //    public AppConfig(CognitoLogoutHandler cognitoLogoutHandler) {
 //        this.cognitoLogoutHandler = cognitoLogoutHandler;
 //    }
+
+
+
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration cfg = new CorsConfiguration();
+        // Only explicit origins when sending cookies (no "*")
+        cfg.setAllowedOrigins(List.of(
+                "https://vitanova-app.com",
+                "http://localhost:3000"
+        ));
+        cfg.setAllowedMethods(List.of("GET","POST","PUT","PATCH","DELETE","OPTIONS"));
+        cfg.setAllowedHeaders(List.of("Authorization","Content-Type","Accept","Origin","X-Requested-With"));
+        cfg.setAllowCredentials(true);      // required for cookies
+        cfg.setMaxAge(3600L);               // cache preflight for 1h
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", cfg);
+        return source;
+    }
+
+
+
+
+
+
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {

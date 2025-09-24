@@ -6,13 +6,31 @@ import { exportData, deleteAccount } from "../api/ApiServices";
 export default function Settings() {
   const { themeName, setThemeName } = useContext(ThemeContext);
 
+  const COGNITO_DOMAIN =
+    "https://us-east-2d1agk3shc.auth.us-east-2.amazoncognito.com";
+  const CLIENT_ID = "2j12r8o421t03pnhhm0hjfi5qu";
+  const LOGOUT_REDIRECT = "https://vitanova-app.com"; // must be in Cognito Allowed sign-out URLs
+
   const handleAccountDeletion = async () => {
     if (!window.confirm("Delete your account? This cannot be undone.")) return;
+
     try {
+      // 1) Delete the account (your API)
       await deleteAccount();
-      window.location.href =
-        "https://us-east-2d1agk3shc.auth.us-east-2.amazoncognito.com/logout?client_id=2j12r8o421t03pnhhm0hjfi5qu&logout_uri=http://localhost:3000";
-    } catch {
+
+      // 2) (Optional, but recommended) clear Spring session/cookie, then ignore any error
+      await fetch("https://api.vitanova-app.com/logout", {
+        method: "POST",
+        credentials: "include",
+      }).catch(() => {});
+
+      // 3) Send the browser to Cognito Hosted UI logout
+      const logoutUrl =
+        `${COGNITO_DOMAIN}/logout?client_id=${CLIENT_ID}` +
+        `&logout_uri=${encodeURIComponent(LOGOUT_REDIRECT)}`;
+      window.location.assign(logoutUrl);
+      // or: window.location.href = logoutUrl;
+    } catch (_) {
       alert("Error deleting account. Please try again later.");
     }
   };

@@ -3,6 +3,7 @@ import React, { useState, useEffect, useContext } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import { ThemeContext } from "../context/ThemeContext";
 import { isAuthenticated } from "../utils/authUtils";
+import { COGNITO_DOMAIN, CLIENT_ID, LOGOUT_REDIRECT } from "../pages/Settings";
 
 export default function NavBar() {
   const { pathname } = useLocation();
@@ -147,10 +148,20 @@ export default function NavBar() {
           </button>
           {isAuthenticated() && (
             <button
-              onClick={() =>
-                (window.location.href =
-                  "https://us-east-2d1agk3shc.auth.us-east-2.amazoncognito.com/logout?client_id=2j12r8o421t03pnhhm0hjfi5qu&logout_uri=http://localhost:3000")
-              }
+              onClick={async () => {
+                try {
+                  await fetch("https://api.vitanova-app.com/logout", {
+                    method: "POST",
+                    credentials: "include",
+                  });
+                } catch {}
+
+                const url =
+                  `${COGNITO_DOMAIN}/logout?client_id=${CLIENT_ID}` +
+                  `&logout_uri=${encodeURIComponent(LOGOUT_REDIRECT)}`;
+
+                window.location.assign(url);
+              }}
               style={{
                 padding: "0.5rem 1rem",
                 backgroundColor: isLight ? "#C53030" : "#FBB6CE",
