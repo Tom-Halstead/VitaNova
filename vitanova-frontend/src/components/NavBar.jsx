@@ -2,14 +2,14 @@
 import React, { useState, useEffect, useContext } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import { ThemeContext } from "../context/ThemeContext";
-import { isAuthenticated } from "../utils/authUtils";
-import { COGNITO_DOMAIN, CLIENT_ID, LOGOUT_REDIRECT } from "../pages/Settings";
+import { isAuthenticated, API_BASE, getLogoutUrl } from "../utils/authUtils";
 
 export default function NavBar() {
   const { pathname } = useLocation();
   const { themeName, setThemeName } = useContext(ThemeContext);
   const [open, setOpen] = useState(false);
   const [mobile, setMobile] = useState(window.innerWidth < 768);
+  const [authed, setAuthed] = useState(false);
 
   useEffect(() => {
     const onResize = () => setMobile(window.innerWidth < 768);
@@ -17,12 +17,15 @@ export default function NavBar() {
     return () => window.removeEventListener("resize", onResize);
   }, []);
 
+  useEffect(() => {
+    (async () => setAuthed(await isAuthenticated()))();
+  }, [pathname]);
+
   if (pathname === "/") return null;
 
   const isLight = themeName === "light";
   const textColor = isLight ? "#1f2937" : "#edf2f7";
 
-  // Semi-transparent background + blur for maximum blending
   const navStyle = {
     display: "grid",
     gridTemplateColumns: mobile ? "1fr 1fr 1fr 1fr" : "repeat(12,1fr)",
@@ -53,14 +56,8 @@ export default function NavBar() {
     gap: "1rem",
   };
 
-  const baseLink = {
-    color: textColor,
-    textDecoration: "none",
-  };
-  const activeLink = {
-    ...baseLink,
-    fontWeight: 700,
-  };
+  const baseLink = { color: textColor, textDecoration: "none" };
+  const activeLink = { ...baseLink, fontWeight: 700 };
 
   const panelStyle = {
     display: open && mobile ? "flex" : "none",
@@ -146,21 +143,17 @@ export default function NavBar() {
           >
             {isLight ? "🌙" : "☀️"}
           </button>
-          {isAuthenticated() && (
+
+          {authed && (
             <button
               onClick={async () => {
                 try {
-                  await fetch("https://api.vitanova-app.com/logout", {
+                  await fetch(`${API_BASE}/logout`, {
                     method: "POST",
                     credentials: "include",
                   });
                 } catch {}
-
-                const url =
-                  `${COGNITO_DOMAIN}/logout?client_id=${CLIENT_ID}` +
-                  `&logout_uri=${encodeURIComponent(LOGOUT_REDIRECT)}`;
-
-                window.location.assign(url);
+                window.location.assign(getLogoutUrl());
               }}
               style={{
                 padding: "0.5rem 1rem",

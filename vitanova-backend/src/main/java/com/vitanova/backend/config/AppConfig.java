@@ -24,15 +24,6 @@ import java.util.List;
 @EnableWebSecurity
 public class AppConfig {
 
-//    @Autowired
-//    private final CognitoLogoutHandler cognitoLogoutHandler;
-//
-//    public AppConfig(CognitoLogoutHandler cognitoLogoutHandler) {
-//        this.cognitoLogoutHandler = cognitoLogoutHandler;
-//    }
-
-
-
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration cfg = new CorsConfiguration();
@@ -50,10 +41,6 @@ public class AppConfig {
         source.registerCorsConfiguration("/**", cfg);
         return source;
     }
-
-
-
-
 
 
 
