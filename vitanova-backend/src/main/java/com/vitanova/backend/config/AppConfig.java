@@ -77,7 +77,7 @@ public class AppConfig {
                                 .failureHandler((req, res, ex) -> {
                             String reason = (ex.getCause() != null) ? ex.getCause().getMessage() : ex.getMessage();
                             String msg = URLEncoder.encode(reason, StandardCharsets.UTF_8);
-                            res.sendRedirect("https://vitanova-app.com/?oauth2_error=" + "Couldn't login : " + msg);
+                            res.sendRedirect("https://vitanova-app.com/?oauth2_error=" + "Couldn't login :  " + msg);
                         })
                 )
 
